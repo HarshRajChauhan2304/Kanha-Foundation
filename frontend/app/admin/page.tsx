@@ -143,7 +143,8 @@ const TEXT_KEY_MAP: Record<string, { title: string }> = {
   "impacts_intro_desc_2": { title: "Our Impact Page - Intro Paragraph 2" },
   "impacts_intro_proof": { title: "Our Impact Page - Proof Guarantee Text" },
   "impacts_timeline_title": { title: "Our Impact Page - Timeline Heading Title" },
-  "impacts_timeline_subtitle": { title: "Our Impact Page - Timeline Subtitle Text" }
+  "impacts_timeline_subtitle": { title: "Our Impact Page - Timeline Subtitle Text" },
+  "whatsapp_community_link": { title: "Global Settings - WhatsApp Community Invitation Link" }
 };
 
 const CATEGORIES = [

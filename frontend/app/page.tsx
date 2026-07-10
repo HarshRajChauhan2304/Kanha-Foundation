@@ -86,6 +86,7 @@ export default function Home() {
   const [tutorialVideo, setTutorialVideo] = useState("/DIL%20KAHTA%20HAI.mp4");
   const [educationBanner, setEducationBanner] = useState("https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=600&auto=format&fit=crop&q=80");
   const [birthdayBanner, setBirthdayBanner] = useState("https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=600&auto=format&fit=crop&q=80");
+  const [whatsappLink, setWhatsappLink] = useState("");
 
   // Dynamic metrics stats cards list state
   const [statsCards, setStatsCards] = useState<any[]>([
@@ -287,6 +288,18 @@ export default function Home() {
       })
       .catch(err => console.error("Error fetching home media settings:", err));
 
+    fetch('/api/page-texts')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          const wLink = data.find((t: any) => t.key === 'whatsapp_community_link');
+          if (wLink && wLink.value) {
+            setWhatsappLink(wLink.value);
+          }
+        }
+      })
+      .catch(err => console.error("Error loading page texts:", err));
+
     const fetchStatsAndDonations = () => {
       // Fetch active stats cards configurations dynamically
       fetch('/api/stats-cards')
@@ -443,18 +456,36 @@ export default function Home() {
         </div>
       </section>
 
-      {/* How to Donate? Watch Now! Info Ribbon (Matching user screenshot: located below stats ribbon) */}
-      <div 
-        onClick={() => setIsTutorialOpen(true)}
-        className="bg-[#F3A61E] py-3 px-4 text-center flex items-center justify-center gap-2.5 font-extrabold text-[#1E4D2B] transition-all hover:bg-[#e0981b] cursor-pointer relative z-30 select-none shadow-inner text-sm tracking-wide"
-      >
-        {/* Play Icon Badge */}
-        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#1E4D2B] text-[#F3A61E] shadow-sm">
-          <svg className="h-3 w-3 fill-current ml-0.5" viewBox="0 0 24 24">
-            <path d="M8 5v14l11-7z" />
-          </svg>
+      {/* How to Donate? Watch Now! & Join WhatsApp Community ribbons (located below stats ribbon) */}
+      <div className={`grid grid-cols-1 ${whatsappLink ? 'md:grid-cols-2' : ''} select-none relative z-30 shadow-inner w-full`}>
+        <div 
+          onClick={() => setIsTutorialOpen(true)}
+          className="bg-[#F3A61E] py-3 px-4 text-center flex items-center justify-center gap-2.5 font-extrabold text-[#1E4D2B] transition-all hover:bg-[#e0981b] cursor-pointer text-sm tracking-wide md:border-r border-[#1E4D2B]/10"
+        >
+          {/* Play Icon Badge */}
+          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#1E4D2B] text-[#F3A61E] shadow-sm">
+            <svg className="h-3 w-3 fill-current ml-0.5" viewBox="0 0 24 24">
+              <path d="M8 5v14l11-7z" />
+            </svg>
+          </div>
+          <span>How to Donate? Watch Now!</span>
         </div>
-        <span>How to Donate? Watch Now!</span>
+
+        {whatsappLink && (
+          <a
+            href={whatsappLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-[#25D366] hover:bg-[#20ba59] py-3.5 px-4 text-center flex items-center justify-center gap-2.5 font-extrabold text-[#1E4D2B] transition-all cursor-pointer text-sm tracking-wide border-t md:border-t-0 border-[#1E4D2B]/10"
+          >
+            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#1E4D2B] text-white shadow-sm">
+              <svg className="h-4.5 w-4.5 fill-current" viewBox="0 0 24 24">
+                <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.513 2.262 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.717-1.458L0 24zm6.208-3.79c1.666.988 3.32 1.48 4.95 1.483 5.405 0 9.802-4.398 9.805-9.805.002-2.618-1.015-5.082-2.87-6.937C16.29 3.097 13.824 2.08 11.205 2.08c-5.412 0-9.803 4.398-9.806 9.806-.001 1.77.478 3.5 1.388 5.008L1.75 22.25l5.515-1.44z"/>
+              </svg>
+            </div>
+            <span>Join Our WhatsApp Community!</span>
+          </a>
+        )}
       </div>
 
       

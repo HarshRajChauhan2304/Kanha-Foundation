@@ -68,5 +68,10 @@
     "key": "impacts_timeline_subtitle",
     "title": "Our Impact Page - Timeline Subtitle Text",
     "value": "Choose a cause, customise if you want, pay securely — then receive proof on WhatsApp and email."
+  },
+  {
+    "key": "whatsapp_community_link",
+    "title": "Global Settings - WhatsApp Community Invitation Link",
+    "value": "https://chat.whatsapp.com/L41B9t2c3E5FD6g7H8i9Jk"
   }
 ]
