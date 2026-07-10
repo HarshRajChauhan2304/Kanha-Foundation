@@ -368,7 +368,7 @@ export default function Home() {
   };
 
   return (
-    <div className="flex-1 bg-zinc-50 dark:bg-[#07100b] font-sans pb-0 relative pt-0">
+    <div className="flex-1 bg-zinc-50 dark:bg-[#07100b] font-sans pb-0 relative pt-[57px] md:pt-[78px]">
       
       {/* Full-Width Video/Image Hero Section directly below Navbar */}
       <section className="relative w-full overflow-hidden bg-black h-[300px] md:h-[500px] shadow-lg">
