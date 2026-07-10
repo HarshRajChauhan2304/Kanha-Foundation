@@ -1,0 +1,38 @@
+[
+  {
+    "id": 1,
+    "title": "Nourishing Slum Children in Ranchi",
+    "category": "Food Relief",
+    "desc": "We distributed fresh hot meals directly to over 500 children in local settlements. Each pack includes fresh rice, pulses, and vegetables, cooked in highly hygienic kitchens. Every drive is fully tracked and updated to sponsors.",
+    "image": "/uploads/1783629298697_thali.png",
+    "stats": "500+ Children Fed",
+    "date": "July 2026"
+  },
+  {
+    "id": 2,
+    "title": "Empowering schoolkids with Study Kits",
+    "category": "Education",
+    "desc": "Many child students have no basic pencils or notebook supplies. Our volunteers packed and delivered comprehensive school kits containing pens, drawing blocks, bags, and pencil cases to encourage learning.",
+    "image": "/uploads/1783629355588_group_study_kit.png",
+    "stats": "150+ Kits Distributed",
+    "date": "June 2026"
+  },
+  {
+    "id": 3,
+    "title": "Distribution of Menstrual Kits",
+    "category": "Women Care",
+    "desc": "Providing hygienic pads and sanitary kits to adolescent girls in rural settlements to foster dignity, good health, and lower school dropout rates. Includes awareness talks by healthcare volunteers.",
+    "image": "/uploads/1783629381690_hygiene_kit.png",
+    "stats": "300+ Girls Supported",
+    "date": "June 2026"
+  },
+  {
+    "id": 4,
+    "title": "Stray Cow & Dog Daily Feed Campaign",
+    "category": "Stray Care",
+    "desc": "Ensuring stray cows and street animals receive fresh green fodder, clean water, and food daily. Our localized teams run regular checks and coordinate volunteer feeders across major zones.",
+    "image": "/uploads/1783629405401_cow.png",
+    "stats": "100+ Animals Fed Daily",
+    "date": "July 2026"
+  }
+]

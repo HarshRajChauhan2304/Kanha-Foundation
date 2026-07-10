@@ -1,0 +1,13 @@
+home_hero ➔ Home page ka main video/image background banner.
+about_header ➔ About Us page ke sabse upar ka header background.
+about_vision ➔ About Us page ke "Our Vision" section ki image.
+about_mission ➔ About Us page ke "Our Mission" section ki image.
+about_team ➔ About Us page ke "Our Team" section ki image.
+about_tutorial_video ➔ "How to Donate? Watch Now!" par click karne se chalne wala video.
+about_footer_banner ➔ About Us page ke sabse niche wali landscape (smiling kids) banner image.
+home_volunteer_banner ➔ Home page ke Volunteer onboarding card ka image.
+home_trust_top_left ➔ Home page ke "Why People Trust Us" section ki upper-left image.
+home_trust_bottom_right ➔ Home page ke "Why People Trust Us" section ki lower-right image.
+
+
+HarshRaj@4729

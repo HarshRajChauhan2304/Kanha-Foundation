@@ -1,0 +1,56 @@
+[
+  {
+    "id": 1,
+    "title": "Donations Raised",
+    "base_value": 0,
+    "prefix": "₹",
+    "suffix": "+",
+    "icon": "rupee",
+    "category": "raised"
+  },
+  {
+    "id": 2,
+    "title": "Active Donors",
+    "base_value": 0,
+    "prefix": "",
+    "suffix": "+",
+    "icon": "users",
+    "category": "donors"
+  },
+  {
+    "id": 3,
+    "title": "Birthday Giving",
+    "base_value": 0,
+    "prefix": "",
+    "suffix": "+",
+    "icon": "cake",
+    "category": "birthday"
+  },
+  {
+    "id": 4,
+    "title": "Lives Impacted",
+    "base_value": 0,
+    "prefix": "",
+    "suffix": "+",
+    "icon": "heart",
+    "category": "lives"
+  },
+  {
+    "id": 5,
+    "title": "Meals Served",
+    "base_value": 0,
+    "prefix": "",
+    "suffix": "+",
+    "icon": "meals",
+    "category": "meals"
+  },
+  {
+    "id": 1783188136129,
+    "title": "Providing Education",
+    "base_value": 0,
+    "prefix": "",
+    "suffix": "+",
+    "icon": "child-studykit",
+    "category": "studykit"
+  }
+]

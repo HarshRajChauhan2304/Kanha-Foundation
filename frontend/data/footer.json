@@ -1,0 +1,61 @@
+{
+  "logo": "/logo.png",
+  "companyOverview": [
+    {
+      "label": "About Us",
+      "href": "/about"
+    },
+    {
+      "label": "Our Values",
+      "href": "/about#values"
+    },
+    {
+      "label": "Privacy Notice",
+      "href": "/privacy"
+    },
+    {
+      "label": "Terms & Conditions",
+      "href": "/terms"
+    },
+    {
+      "label": "Disclaimer",
+      "href": "/privacy#disclaimer"
+    }
+  ],
+  "quickLinks": [
+    {
+      "label": "Knowledge",
+      "href": "/blog"
+    },
+    {
+      "label": "FAQs",
+      "href": "/causes"
+    },
+    {
+      "label": "Return & Refund Policy",
+      "href": "/refund"
+    }
+  ],
+  "contact": {
+    "email": "support@kanhafoundation.org",
+    "ctaText": "Need help fast? Fill out our form or email"
+  },
+  "social": [
+    {
+      "platform": "Instagram",
+      "href": "https://instagram.com"
+    },
+    {
+      "platform": "Facebook",
+      "href": "https://facebook.com"
+    },
+    {
+      "platform": "YouTube",
+      "href": "https://youtube.com"
+    },
+    {
+      "platform": "LinkedIn",
+      "href": "https://linkedin.com"
+    }
+  ]
+}

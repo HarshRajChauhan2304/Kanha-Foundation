@@ -1,0 +1,42 @@
+[
+  {
+    "key": "about_banner_title_prefix",
+    "title": "About Page - Top Banner Title Prefix Text",
+    "value": "About"
+  },
+  {
+    "key": "about_banner_title_highlight",
+    "title": "About Page - Top Banner Title Highlighted Text",
+    "value": "Kanha Foundation"
+  },
+  {
+    "key": "impacts_banner_title_prefix",
+    "title": "Our Impact Page - Top Banner Title Prefix Text",
+    "value": "20+"
+  },
+  {
+    "key": "impacts_banner_title_highlight",
+    "title": "Our Impact Page - Top Banner Title Highlighted Text",
+    "value": "Lives Impacted"
+  },
+  {
+    "key": "impacts_banner_subtitle",
+    "title": "Our Impact Page - Top Banner Subtitle Text",
+    "value": "Real people. Real stories. Real change — powered by everyday givers like you."
+  },
+  {
+    "key": "causes_banner_title_prefix",
+    "title": "Causes Page - Top Banner Title Prefix Text",
+    "value": "Causes"
+  },
+  {
+    "key": "causes_banner_title_highlight",
+    "title": "Causes Page - Top Banner Title Highlighted Text",
+    "value": "We Care"
+  },
+  {
+    "key": "about_vision_desc",
+    "title": "About Page - Vision Description",
+    "value": "To create a just, equitable, and compassionate society where every child, animal, and needy individual gets proper care, nutrition, and education."
+  }
+]

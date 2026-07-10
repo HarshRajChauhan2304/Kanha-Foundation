@@ -1,0 +1,50 @@
+[
+  {
+    "title": "Sponsor a Food Packet for Underpriviled Children",
+    "price": "₹ 300.00",
+    "image": "/uploads/1783278856056_food1.jpeg",
+    "video": "",
+    "category": "Giving To The Needy",
+    "id": 1
+  },
+  {
+    "title": "Sponsor a Wholesome Thali for Underpriviled Children",
+    "price": "₹ 800.00",
+    "image": "/uploads/1783278966727_food2.jpeg",
+    "video": "",
+    "category": "Giving To The Needy",
+    "id": 2
+  },
+  {
+    "title": "Sponsor Menstrual Hygiene  Kit for Underprivilged  Girls",
+    "price": "₹ 200.00",
+    "image": "/uploads/1783279217172_menkit.jpeg",
+    "video": "",
+    "category": "Women Care",
+    "id": 3
+  },
+  {
+    "title": "Birthday  Celebration with Slum Kids (10 Food Packets + 1Cake)",
+    "price": "₹ 600.00",
+    "image": "/uploads/1783279412022_food1.jpeg",
+    "video": "",
+    "category": "Birthday Giving",
+    "id": 4
+  },
+  {
+    "title": "Birthday Celebration With Slum Kids",
+    "price": "₹ 1200",
+    "image": "/uploads/1783279492895_food2.jpeg",
+    "video": "",
+    "category": "Birthday Giving",
+    "id": 5
+  },
+  {
+    "title": "Sponsor Study Kit for an Underprivilged Children",
+    "price": "₹ 150",
+    "image": "/uploads/1783279627812_book.jpeg",
+    "video": "",
+    "category": "Education",
+    "id": 6
+  }
+]

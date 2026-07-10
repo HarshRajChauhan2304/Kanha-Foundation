@@ -1,0 +1,86 @@
+[
+  {
+    "key": "home_hero_video",
+    "url": "/uploads/1783497840023_CREATE_VIDEO_USING_THIS_PIC_AN.mp4",
+    "title": "Home Page - Hero Background Video",
+    "type": "video"
+  },
+  {
+    "key": "about_header",
+    "url": "/uploads/1783675073183_ChatGPT_Image_Jul_10__2026__02_46_36_PM.png",
+    "title": "About Page - Top Banner Header Image",
+    "type": "image"
+  },
+  {
+    "key": "impacts_header",
+    "url": "/uploads/1783682128756_ChatGPT_Image_Jul_10__2026__04_38_17_PM.png",
+    "title": "Our Impact Page - Top Banner Header Image",
+    "type": "image"
+  },
+  {
+    "key": "causes_header",
+    "url": "/uploads/1783683652022_ChatGPT_Image_Jul_10__2026__05_06_17_PM.png",
+    "title": "Causes Page - Top Banner Header Image",
+    "type": "image"
+  },
+  {
+    "key": "about_tutorial_video",
+    "url": "/uploads/1783507902634_CREATE_VIDEO_USING_THIS_PIC_AN.mp4",
+    "title": "About Page - How to Donate Tutorial Video",
+    "type": "video"
+  },
+  {
+    "key": "about_vision",
+    "url": "/uploads/1783512061946_ChatGPT_Image_Jul_8__2026__05_26_34_PM.png",
+    "title": "About Page - Our Vision Section Image",
+    "type": "image"
+  },
+  {
+    "key": "about_mission",
+    "url": "/uploads/1783512033718_ChatGPT_Image_Jul_8__2026__05_28_49_PM.png",
+    "title": "About Page - Our Mission Section Image",
+    "type": "image"
+  },
+  {
+    "key": "home_education_campaign",
+    "url": "/uploads/1783528854421_ChatGPT_Image_Jul_8__2026__06_26_13_PM.png",
+    "title": "Home Page - Education Campaign Banner",
+    "type": "image"
+  },
+  {
+    "key": "home_birthday_campaign",
+    "url": "/uploads/1783515278026_ChatGPT_Image_Jul_8__2026__06_21_12_PM.png",
+    "title": "Home Page - Birthday Campaign Banner",
+    "type": "image"
+  },
+  {
+    "key": "about_team",
+    "url": "/uploads/1783629520322_team.png",
+    "title": "About Page - Our Team Section Image",
+    "type": "image"
+  },
+  {
+    "key": "about_footer_banner",
+    "url": "/uploads/1783629589588_volunteer.png",
+    "title": "About Page - Footer Banner (Smiling Kids)",
+    "type": "image"
+  },
+  {
+    "key": "home_volunteer_banner",
+    "url": "/uploads/1783629633435_team.png",
+    "title": "Home Page - Volunteer Onboarding Banner",
+    "type": "image"
+  },
+  {
+    "key": "home_trust_top_left",
+    "url": "/uploads/1783674650119_ChatGPT_Image_Jul_10__2026__12_40_07_PM.png",
+    "title": "Home Page - Trust Section (Top-Left Image)",
+    "type": "image"
+  },
+  {
+    "key": "home_trust_bottom_right",
+    "url": "/uploads/1783674663684_ChatGPT_Image_Jul_10__2026__02_35_46_PM.png",
+    "title": "Home Page - Trust Section (Bottom-Right Image)",
+    "type": "image"
+  }
+]

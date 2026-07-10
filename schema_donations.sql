@@ -1,0 +1,27 @@
+-- SQL Script to update public.donations table structure in Supabase
+-- Run this in your Supabase Dashboard SQL Editor (https://supabase.com)
+
+ALTER TABLE public.donations 
+ADD COLUMN IF NOT EXISTS email TEXT,
+ADD COLUMN IF NOT EXISTS phone TEXT,
+ADD COLUMN IF NOT EXISTS donation_for TEXT,
+ADD COLUMN IF NOT EXISTS is_anonymous BOOLEAN DEFAULT FALSE,
+ADD COLUMN IF NOT EXISTS printed_name TEXT,
+ADD COLUMN IF NOT EXISTS delivery_date TEXT,
+ADD COLUMN IF NOT EXISTS photo_url TEXT,
+ADD COLUMN IF NOT EXISTS video_wish TEXT,
+ADD COLUMN IF NOT EXISTS instagram_id TEXT,
+ADD COLUMN IF NOT EXISTS is_gift BOOLEAN DEFAULT FALSE,
+ADD COLUMN IF NOT EXISTS gift_message TEXT,
+ADD COLUMN IF NOT EXISTS is_other_request BOOLEAN DEFAULT FALSE,
+ADD COLUMN IF NOT EXISTS other_request_text TEXT,
+ADD COLUMN IF NOT EXISTS receive_marketing BOOLEAN DEFAULT FALSE,
+ADD COLUMN IF NOT EXISTS marketing_phone TEXT,
+ADD COLUMN IF NOT EXISTS marketing_email TEXT,
+ADD COLUMN IF NOT EXISTS is_dedicated BOOLEAN DEFAULT FALSE,
+ADD COLUMN IF NOT EXISTS dedicated_to TEXT,
+ADD COLUMN IF NOT EXISTS dedication_msg TEXT,
+ADD COLUMN IF NOT EXISTS receipt_id TEXT,
+ADD COLUMN IF NOT EXISTS transaction_date TEXT,
+ADD COLUMN IF NOT EXISTS payment_method TEXT,
+ADD COLUMN IF NOT EXISTS payment_status TEXT;

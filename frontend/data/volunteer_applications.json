@@ -1,0 +1,52 @@
+[
+  {
+    "name": "Harsh Raj Chauhan",
+    "email": "harshrajchauhan9419@gmail.com",
+    "phone": "+917488164529",
+    "city": "Patna",
+    "motivation": "",
+    "skills": [
+      "Food Distribution & Relief Work",
+      "Animal Welfare & Rescue support"
+    ],
+    "status": "Approved",
+    "password": "Harsh@123",
+    "profile_photo": "",
+    "gender": "Male",
+    "terms_accepted": true,
+    "id": 7
+  },
+  {
+    "name": "Harsh Raj Chauhan",
+    "email": "harshrajchauhan9419@gmail.com",
+    "phone": "+917488164529",
+    "city": "Patna",
+    "motivation": "",
+    "skills": [
+      "Food Distribution & Relief Work",
+      "Animal Welfare & Rescue support"
+    ],
+    "status": "Approved",
+    "profile_photo": "/uploads/1783362052759_1783063353522_harsh_pic_removebg_preview__3_.png",
+    "gender": "Male",
+    "terms_accepted": true,
+    "id": 1783359586211
+  },
+  {
+    "name": "Aman Kumar",
+    "email": "amankumar21@gmail.com",
+    "phone": "+917488164529",
+    "city": "Patna",
+    "motivation": "i want to join",
+    "skills": [
+      "Food Distribution & Relief Work",
+      "Tree Plantation & Nature Drives"
+    ],
+    "status": "Approved",
+    "password": "Aman@123",
+    "profile_photo": "/uploads/1783404636476_1783063353522_harsh_pic_removebg_preview__3_.png",
+    "gender": "Male",
+    "terms_accepted": true,
+    "id": 8
+  }
+]
