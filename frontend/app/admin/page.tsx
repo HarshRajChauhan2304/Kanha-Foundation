@@ -96,7 +96,7 @@ interface VolunteerTask {
   feedback?: string;
 }
 
-type TabType = "Causes" | "Reviews" | "Blogs" | "Stories" | "DetailedStories" | "SuccessStories" | "Donations" | "Highlights" | "Applications" | "Tasks" | "PageMedia" | "PageTexts" | "StatsCards" | "Categories" | "RoleManagement" | "Navbar" | "Footer" | "AdminProfile" | "StarVolunteers" | "ContactInfo" | "ContactSubmissions";
+type TabType = "Causes" | "Reviews" | "Blogs" | "Stories" | "DetailedStories" | "SuccessStories" | "Donations" | "Highlights" | "Applications" | "Tasks" | "PageMedia" | "PageTexts" | "StatsCards" | "Categories" | "RoleManagement" | "Navbar" | "Footer" | "AdminProfile" | "StarVolunteers" | "ContactInfo" | "ContactSubmissions" | "WhatsAppCommunity";
 type AuthMode = "signin" | "signup" | "forgot";
 
 const KEY_MAP: Record<string, { title: string; type: string }> = {
@@ -217,6 +217,8 @@ export default function AdminPanelPage() {
   const [taskFormTime, setTaskFormTime] = useState("");
   const [taskFormStatus, setTaskFormStatus] = useState("Pending");
   const [taskFormAssignedMoney, setTaskFormAssignedMoney] = useState("");
+  const [whatsappCommunityLinkInput, setWhatsappCommunityLinkInput] = useState("");
+  const [isSavingWhatsappLink, setIsSavingWhatsappLink] = useState(false);
 
   // Task Completion Proof View States for Admin
   const [isViewProofModalOpen, setIsViewProofModalOpen] = useState(false);
@@ -492,6 +494,16 @@ export default function AdminPanelPage() {
         const res = await fetch('/api/page-texts');
         const data = await res.json();
         setPageTexts(Array.isArray(data) ? data : []);
+      } else if (activeTab === "WhatsAppCommunity") {
+        const res = await fetch('/api/page-texts');
+        const data = await res.json();
+        setPageTexts(Array.isArray(data) ? data : []);
+        if (Array.isArray(data)) {
+          const matched = data.find((t: any) => t.key === "whatsapp_community_link");
+          setWhatsappCommunityLinkInput(matched ? matched.value : "");
+        } else {
+          setWhatsappCommunityLinkInput("");
+        }
       } else if (activeTab === "StatsCards") {
         const res = await fetch('/api/stats-cards');
         const data = await res.json();
@@ -1516,7 +1528,7 @@ export default function AdminPanelPage() {
 
         {/* Tab Selection Row */}
         <div className="flex border-b border-zinc-900 gap-1.5 mb-10 overflow-x-auto pb-2 scrollbar-none">
-          {(["Causes", "Reviews", "Blogs", "Stories", "DetailedStories", "SuccessStories", "Donations", "Highlights", "Applications", "Tasks", "StarVolunteers", "ContactInfo", "ContactSubmissions", "PageMedia", "PageTexts", "StatsCards", "Categories", "RoleManagement", "Navbar", "Footer", "AdminProfile"] as TabType[]).map((tab) => {
+          {(["Causes", "Reviews", "Blogs", "Stories", "DetailedStories", "SuccessStories", "Donations", "Highlights", "Applications", "Tasks", "StarVolunteers", "ContactInfo", "ContactSubmissions", "PageMedia", "PageTexts", "StatsCards", "Categories", "RoleManagement", "Navbar", "Footer", "WhatsAppCommunity", "AdminProfile"] as TabType[]).map((tab) => {
             const isTabActive = activeTab === tab;
             const pendingCount = tab === "Applications" ? volApps.filter(a => a.status === "Pending" || !a.status).length : 0;
             return (
@@ -1530,7 +1542,7 @@ export default function AdminPanelPage() {
                 }`}
               >
                 <span>
-                  {tab === "StarVolunteers" ? "Star Volunteers" : tab === "Applications" ? "Volunteer Apps" : tab === "PageMedia" ? "Page Banners & Media" : tab === "PageTexts" ? "Page Layout Texts" : tab === "StatsCards" ? "Stats Ribbon" : tab === "RoleManagement" ? "Role Manager" : tab === "Navbar" ? "Navbar Config" : tab === "Footer" ? "Footer Config" : tab === "AdminProfile" ? "My Profile" : tab === "DetailedStories" ? "Detailed Stories" : tab === "SuccessStories" ? "Success Stories" : tab === "ContactInfo" ? "Contact Info Cards" : tab === "ContactSubmissions" ? "Contact Messages" : tab}
+                  {tab === "StarVolunteers" ? "Star Volunteers" : tab === "Applications" ? "Volunteer Apps" : tab === "PageMedia" ? "Page Banners & Media" : tab === "PageTexts" ? "Page Layout Texts" : tab === "StatsCards" ? "Stats Ribbon" : tab === "RoleManagement" ? "Role Manager" : tab === "Navbar" ? "Navbar Config" : tab === "Footer" ? "Footer Config" : tab === "AdminProfile" ? "My Profile" : tab === "DetailedStories" ? "Detailed Stories" : tab === "SuccessStories" ? "Success Stories" : tab === "ContactInfo" ? "Contact Info Cards" : tab === "ContactSubmissions" ? "Contact Messages" : tab === "WhatsAppCommunity" ? "WhatsApp Community" : tab}
                 </span>
                 {pendingCount > 0 && (
                   <span className="px-2 py-0.5 bg-red-650 text-white text-[9px] font-black rounded-full shadow-sm animate-bounce">
@@ -2872,6 +2884,106 @@ export default function AdminPanelPage() {
                     ))}
                   </tbody>
                 </table>
+              </div>
+            )}
+
+            {activeTab === "WhatsAppCommunity" && (
+              <div className="bg-[#101412] p-8 sm:p-10 rounded-[2.5rem] border border-zinc-800/80 shadow-lg text-left max-w-2xl mx-auto space-y-6">
+                <div>
+                  <h2 className="text-xl font-black text-white flex items-center gap-2">
+                    <span>💬</span> WhatsApp Community Settings
+                  </h2>
+                  <p className="text-xs text-zinc-400 mt-1">
+                    Manage the global invitation link for the WhatsApp Community. Setting this link displays the "Join Community" button in the website footer and homepage. Deleting or clearing it will hide the buttons.
+                  </p>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">
+                      WhatsApp Community Invitation Link
+                    </label>
+                    <input
+                      type="url"
+                      value={whatsappCommunityLinkInput}
+                      onChange={(e) => setWhatsappCommunityLinkInput(e.target.value)}
+                      placeholder="e.g., https://chat.whatsapp.com/L1234567890abcdef"
+                      className="w-full px-4 py-3.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white focus:outline-none focus:ring-1 focus:ring-emerald-500 font-mono"
+                    />
+                  </div>
+
+                  <div className="flex gap-3 pt-2">
+                    <button
+                      type="button"
+                      disabled={isSavingWhatsappLink}
+                      onClick={async () => {
+                        setIsSavingWhatsappLink(true);
+                        try {
+                          const existingItem = pageTexts.find((t: any) => t.key === "whatsapp_community_link");
+                          const method = existingItem ? "PUT" : "POST";
+                          const res = await fetch("/api/page-texts", {
+                            method,
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                              key: "whatsapp_community_link",
+                              title: "Global Settings - WhatsApp Community Invitation Link",
+                              value: whatsappCommunityLinkInput
+                            })
+                          });
+                          const result = await res.json();
+                          if (result.success) {
+                            triggerAlert("WhatsApp Community Link saved successfully!");
+                            // Refresh page texts
+                            const refRes = await fetch('/api/page-texts');
+                            const refData = await refRes.json();
+                            setPageTexts(Array.isArray(refData) ? refData : []);
+                          } else {
+                            triggerAlert("Failed to save link: " + (result.error || "Unknown error"));
+                          }
+                        } catch (err: any) {
+                          triggerAlert("Error: " + err.message);
+                        } finally {
+                          setIsSavingWhatsappLink(false);
+                        }
+                      }}
+                      className="px-6 py-3 bg-[#1E4D2B] hover:bg-[#15381E] text-white font-extrabold text-xs rounded-xl shadow-lg transition-colors cursor-pointer disabled:opacity-50 border border-emerald-800/40"
+                    >
+                      {isSavingWhatsappLink ? "Saving..." : "Save Link"}
+                    </button>
+
+                    <button
+                      type="button"
+                      disabled={isSavingWhatsappLink}
+                      onClick={async () => {
+                        if (!window.confirm("Are you sure you want to delete the WhatsApp Community Link? This will hide the Join Community buttons from the live website.")) return;
+                        setIsSavingWhatsappLink(true);
+                        try {
+                          const res = await fetch("/api/page-texts?key=whatsapp_community_link", {
+                            method: "DELETE"
+                          });
+                          const result = await res.json();
+                          if (result.success) {
+                            setWhatsappCommunityLinkInput("");
+                            triggerAlert("WhatsApp Community Link deleted successfully!");
+                            // Refresh page texts
+                            const refRes = await fetch('/api/page-texts');
+                            const refData = await refRes.json();
+                            setPageTexts(Array.isArray(refData) ? refData : []);
+                          } else {
+                            triggerAlert("Failed to delete link: " + (result.error || "Unknown error"));
+                          }
+                        } catch (err: any) {
+                          triggerAlert("Error: " + err.message);
+                        } finally {
+                          setIsSavingWhatsappLink(false);
+                        }
+                      }}
+                      className="px-6 py-3 bg-red-650/10 hover:bg-red-650/20 border border-red-900/40 text-red-400 font-extrabold text-xs rounded-xl transition-colors cursor-pointer disabled:opacity-50"
+                    >
+                      Delete / Clear Link
+                    </button>
+                  </div>
+                </div>
               </div>
             )}
 
