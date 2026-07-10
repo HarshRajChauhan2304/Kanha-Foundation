@@ -1,0 +1,10 @@
+[
+  {
+    "id": 1783699644511,
+    "name": "Jane Doe",
+    "email": "jane@example.com",
+    "phone": "+91 99999 88888",
+    "message": "Hello, this is a test contact message from the automated test script. Keep up the good work!",
+    "created_at": "2026-07-10T16:07:24.522Z"
+  }
+]

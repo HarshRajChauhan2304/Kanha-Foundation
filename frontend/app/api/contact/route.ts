@@ -2,7 +2,48 @@ import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import fs from 'fs';
 import path from 'path';
+import { resilientDelete } from '@/lib/db-fallback';
 
+export const dynamic = 'force-dynamic';
+
+// GET all contact submissions
+export async function GET() {
+  let submissions: any[] = [];
+  let useFallback = false;
+
+  try {
+    const { data, error } = await supabaseAdmin
+      .from('contact_submissions')
+      .select('*')
+      .order('id', { ascending: false });
+
+    if (error || !data || data.length === 0) {
+      useFallback = true;
+    } else {
+      submissions = data;
+    }
+  } catch (err) {
+    useFallback = true;
+  }
+
+  if (useFallback) {
+    try {
+      const dataPath = path.join(process.cwd(), 'data', 'contact_submissions.json');
+      if (fs.existsSync(dataPath)) {
+        const fileContent = fs.readFileSync(dataPath, 'utf-8');
+        submissions = JSON.parse(fileContent);
+        // Sort newest first by id/timestamp
+        submissions.sort((a: any, b: any) => b.id - a.id);
+      }
+    } catch (e) {
+      console.error("Failed to read contact submissions fallback JSON:", e);
+    }
+  }
+
+  return NextResponse.json(submissions);
+}
+
+// POST a new contact submission from front-end form
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -11,6 +52,8 @@ export async function POST(request: Request) {
     if (!name || !email || !message) {
       return NextResponse.json({ success: false, error: "Please fill in all required fields (Name, Email, Message)." }, { status: 400 });
     }
+
+    const timestampId = Date.now();
 
     // 1. Store in local JSON file as backup
     try {
@@ -29,7 +72,7 @@ export async function POST(request: Request) {
         }
       }
       const newSubmission = {
-        id: Date.now(),
+        id: timestampId,
         name,
         email,
         phone: phone || "",
@@ -47,6 +90,7 @@ export async function POST(request: Request) {
     const { error } = await supabaseAdmin
       .from('contact_submissions')
       .insert([{
+        id: timestampId,
         name,
         email,
         phone: phone || null,
@@ -65,5 +109,27 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: true });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+  }
+}
+
+// DELETE a contact submission
+export async function DELETE(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+    if (!id) {
+      return NextResponse.json({ success: false, error: "ID parameter missing" }, { status: 400 });
+    }
+
+    const result = await resilientDelete({
+      table: 'contact_submissions',
+      idOrKey: Number(id),
+      idField: 'id',
+      fallbackFile: 'contact_submissions.json'
+    });
+
+    return NextResponse.json(result);
+  } catch (error: any) {
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }

@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Givea - Give With Heart",
-  description: "A platform to support local and global donation projects.",
+  title: "Kanha Foundation",
+  description: "Official donation platform for Kanha Foundation - supporting community growth, education, stray care, and dynamic food relief projects.",
 };
 
 export default function RootLayout({

@@ -204,37 +204,12 @@ export default function Navbar() {
         <div className="mx-auto flex max-w-7xl items-center justify-between">
           
           {/* Left section: Hamburger & Logo */}
-          <div className="flex items-center space-x-3">
-            {/* Kanha Foundation Logo */}
-            {!isVolunteerLoggedIn && (
-              <a href="/" className="flex items-center space-x-3 group">
-                  <img
-                    src={navbarData.logo}
-                    alt={`${navbarData.name} Logo`}
-                    className="navbar-logo w-auto object-contain drop-shadow-md -mt-1 md:-mt-1.5"
-                    style={{ 
-                      backgroundColor: "transparent",
-                      "--logo-size": navbarData.logoSize ? `${navbarData.logoSize}px` : "104px"
-                    } as React.CSSProperties}
-                    onError={(e)=>{(e.target as HTMLImageElement).src="/kanha_logo_round.png"}}
-                  />
-                  <span 
-                    className="text-white font-semibold uppercase tracking-wider"
-                    style={{
-                      fontFamily: navbarData.fontFamily,
-                      fontSize: `${navbarData.fontSize}px`
-                    }}
-                  >
-                    {navbarData.name}
-                  </span>
-              </a>
-            )}
-
+          <div className="flex items-center space-x-2">
             {/* Hamburger menu for mobile */}
             {!isVolunteerLoggedIn && (
               <button
                 onClick={() => setIsMobileMenuOpen(true)}
-                className="inline-flex items-center justify-center rounded-md p-2 text-white hover:bg-white/10 focus:outline-none transition-colors md:hidden cursor-pointer"
+                className="inline-flex items-center justify-center rounded-md p-1.5 text-white hover:bg-white/10 focus:outline-none transition-colors md:hidden cursor-pointer"
                 aria-label="Open main menu"
               >
                 <svg
@@ -251,6 +226,31 @@ export default function Navbar() {
                   />
                 </svg>
               </button>
+            )}
+
+            {/* Kanha Foundation Logo */}
+            {!isVolunteerLoggedIn && (
+              <a href="/" className="flex items-center space-x-2 group">
+                  <img
+                    src={navbarData.logo}
+                    alt={`${navbarData.name} Logo`}
+                    className="navbar-logo w-auto object-contain drop-shadow-sm -mt-0.5"
+                    style={{ 
+                      backgroundColor: "transparent",
+                      "--logo-size": navbarData.logoSize ? `${navbarData.logoSize * 0.75}px` : "78px"
+                    } as React.CSSProperties}
+                    onError={(e)=>{(e.target as HTMLImageElement).src="/kanha_logo_round.png"}}
+                  />
+                  <span 
+                    className="text-white font-semibold uppercase tracking-wider hidden sm:inline"
+                    style={{
+                      fontFamily: navbarData.fontFamily,
+                      fontSize: `${navbarData.fontSize}px`
+                    }}
+                  >
+                    {navbarData.name}
+                  </span>
+              </a>
             )}
           </div>
 

@@ -38,5 +38,35 @@
     "key": "about_vision_desc",
     "title": "About Page - Vision Description",
     "value": "To create a just, equitable, and compassionate society where every child, animal, and needy individual gets proper care, nutrition, and education."
+  },
+  {
+    "key": "impacts_intro_title",
+    "title": "Our Impact Page - Intro Title",
+    "value": "At Kanha Foundation, impact isn't a promise — it's a responsibility."
+  },
+  {
+    "key": "impacts_intro_desc_1",
+    "title": "Our Impact Page - Intro Paragraph 1",
+    "value": "Every contribution made on Kanha Foundation turns into action on the ground. From feeding hungry children and supporting women's hygiene, to caring for stray animals and planting trees — each cause is executed with transparency, speed, and heart."
+  },
+  {
+    "key": "impacts_intro_desc_2",
+    "title": "Our Impact Page - Intro Paragraph 2",
+    "value": "We work closely with on-ground teams and partner organizations to ensure that every donation reaches where it's needed the most. What makes us different is simple: you don't just give — you see your impact."
+  },
+  {
+    "key": "impacts_intro_proof",
+    "title": "Our Impact Page - Proof Guarantee Text",
+    "value": "Photos, videos, names printed on food packets, birthday celebrations, feeding drives — because generosity deserves proof, not just gratitude."
+  },
+  {
+    "key": "impacts_timeline_title",
+    "title": "Our Impact Page - Timeline Heading Title",
+    "value": "Follow these simple steps to support a cause."
+  },
+  {
+    "key": "impacts_timeline_subtitle",
+    "title": "Our Impact Page - Timeline Subtitle Text",
+    "value": "Choose a cause, customise if you want, pay securely — then receive proof on WhatsApp and email."
   }
 ]

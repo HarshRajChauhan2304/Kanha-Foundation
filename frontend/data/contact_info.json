@@ -1,0 +1,23 @@
+[
+  {
+    "id": 1,
+    "title": "Registered Address",
+    "value": "Kanha Foundation Office,\n G 96,Block G,Gamma 2, Greater Noida,U.P. ,India",
+    "type": "address",
+    "icon": "map-pin"
+  },
+  {
+    "id": 2,
+    "title": "Email Inquiry",
+    "value": "kanhafoundation223@gmail.com",
+    "type": "email",
+    "icon": "mail"
+  },
+  {
+    "id": 3,
+    "title": "WhatsApp Support",
+    "value": "+91 74881 64529",
+    "type": "whatsapp",
+    "icon": "whatsapp"
+  }
+]

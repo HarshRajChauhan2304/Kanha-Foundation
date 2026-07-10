@@ -1,6 +1,12 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import pageMediaData from '@/data/page_media.json';
+
+const getFallbackMedia = (key: string, defaultUrl: string) => {
+  const item = pageMediaData.find((m: any) => m.key === key);
+  return item ? item.url : defaultUrl;
+};
 
 const TIMELINE_STEPS = [
   {
@@ -93,7 +99,7 @@ export default function OurImpactsPage() {
   const [isVideoOpen, setIsVideoOpen] = useState(false);
   const [tutorialVideo, setTutorialVideo] = useState("/DIL%20KAHTA%20HAI.mp4");
   const [mediaSettings, setMediaSettings] = useState<Record<string, string>>({
-    impacts_header: "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=1600&auto=format&fit=crop&q=80"
+    impacts_header: getFallbackMedia("impacts_header", "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=1600&auto=format&fit=crop&q=80")
   });
   const [textSettings, setTextSettings] = useState<Record<string, string>>({
     impacts_banner_title_prefix: "1.2 cr+",
@@ -180,9 +186,9 @@ export default function OurImpactsPage() {
           className="absolute inset-0 w-full h-full object-fill brightness-[0.3]"
         />
         <div className="relative z-10 text-center text-white px-4">
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight drop-shadow-md flex flex-wrap justify-center items-center gap-3">
+          <h1 className="text-3xl sm:text-5xl md:text-6xl font-black tracking-tight drop-shadow-md flex flex-wrap justify-center items-center gap-3">
             <span>{textSettings.impacts_banner_title_prefix || "1.2 cr+"}</span>
-            <span className="bg-[#F3A61E] rounded-3xl px-6 py-1.5 text-black text-3xl sm:text-4xl md:text-5xl font-black shadow-lg">
+            <span className="bg-[#F3A61E] rounded-3xl px-6 py-1.5 text-black text-2xl sm:text-4xl md:text-5xl font-black shadow-lg">
               {textSettings.impacts_banner_title_highlight || "Lives Impacted"}
             </span>
           </h1>
@@ -195,18 +201,18 @@ export default function OurImpactsPage() {
       {/* Intro Description section */}
       <section className="mx-auto max-w-4xl px-4 py-16 text-center">
         <h2 className="text-xl sm:text-2xl font-black text-gray-900 dark:text-white leading-snug">
-          At Givea, impact isn't a promise — it's a responsibility.
+          {textSettings.impacts_intro_title || "At Givea, impact isn't a promise — it's a responsibility."}
         </h2>
         
         <div className="mt-8 space-y-6 text-sm sm:text-base text-gray-600 dark:text-gray-400 leading-relaxed font-normal">
           <p>
-            Every contribution made on Givea turns into action on the ground. From feeding hungry children and supporting women's hygiene, to caring for stray animals and planting trees — each cause is executed with transparency, speed, and heart.
+            {textSettings.impacts_intro_desc_1 || "Every contribution made on Givea turns into action on the ground. From feeding hungry children and supporting women's hygiene, to caring for stray animals and planting trees — each cause is executed with transparency, speed, and heart."}
           </p>
           <p>
-            We work closely with on-ground teams and partner organizations to ensure that every donation reaches where it's needed the most. What makes us different is simple: you don't just give — you see your impact.
+            {textSettings.impacts_intro_desc_2 || "We work closely with on-ground teams and partner organizations to ensure that every donation reaches where it's needed the most. What makes us different is simple: you don't just give — you see your impact."}
           </p>
           <p className="font-bold text-gray-800 dark:text-gray-200 border-t border-gray-150 dark:border-zinc-800 pt-6">
-            Photos, videos, names printed on food packets, birthday celebrations, feeding drives — because generosity deserves proof, not just gratitude.
+            {textSettings.impacts_intro_proof || "Photos, videos, names printed on food packets, birthday celebrations, feeding drives — because generosity deserves proof, not just gratitude."}
           </p>
         </div>
       </section>
@@ -242,10 +248,10 @@ export default function OurImpactsPage() {
             How it works
           </span>
           <h2 className="text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-4xl mt-3">
-            Follow these simple steps to support a cause.
+            {textSettings.impacts_timeline_title || "Follow these simple steps to support a cause."}
           </h2>
           <p className="mt-4 text-xs sm:text-sm text-gray-500 dark:text-gray-400">
-            Choose a cause, customise if you want, pay securely — then receive proof on WhatsApp and email.
+            {textSettings.impacts_timeline_subtitle || "Choose a cause, customise if you want, pay securely — then receive proof on WhatsApp and email."}
           </p>
         </div>
 

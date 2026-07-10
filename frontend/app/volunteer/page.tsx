@@ -218,7 +218,7 @@ export default function VolunteerRegistrationPage() {
                       setIsPhotoUploading(false);
                     }
                   }}
-                  className="absolute inset-0 opacity-0 cursor-pointer"
+                  className="absolute inset-0 opacity-0 cursor-pointer z-10"
                 />
               </div>
             </div>

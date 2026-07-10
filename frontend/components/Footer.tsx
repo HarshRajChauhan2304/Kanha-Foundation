@@ -24,7 +24,7 @@ export default function Footer() {
       <div className="mx-auto max-w-7xl">
         
         {/* Main 3-Column Responsive Grid */}
-        <div className="grid grid-cols-3 gap-2 sm:gap-8 text-left">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
           
           {/* Column 1: Company Overview */}
           <div className="space-y-3 md:pl-8 text-left">

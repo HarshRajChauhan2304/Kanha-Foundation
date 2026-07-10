@@ -2,6 +2,12 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Counter from "@/components/Counter";
+import pageMediaData from '@/data/page_media.json';
+
+const getFallbackMedia = (key: string, defaultUrl: string) => {
+  const item = pageMediaData.find((m: any) => m.key === key);
+  return item ? item.url : defaultUrl;
+};
 
 const renderIcon = (iconName: string) => {
   switch (iconName) {
@@ -76,12 +82,12 @@ const [extraData, setExtraData] = useState({
 });
   // Page Media CMS settings
   const [mediaSettings, setMediaSettings] = useState<Record<string, string>>({
-    about_header: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=1600&auto=format&fit=crop&q=80",
-    about_vision: "https://images.unsplash.com/photo-1509062522246-3755977927d7?w=600&auto=format&fit=crop&q=80",
-    about_mission: "https://images.unsplash.com/photo-1542810634-71277d95dcbb?w=600&auto=format&fit=crop&q=80",
-    about_team: "https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=600&auto=format&fit=crop&q=80",
-    about_tutorial_video: "/DIL%20KAHTA%20HAI.mp4",
-    about_footer_banner: "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=1200&auto=format&fit=crop&q=80"
+    about_header: getFallbackMedia("about_header", "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=1600&auto=format&fit=crop&q=80"),
+    about_vision: getFallbackMedia("about_vision", "https://images.unsplash.com/photo-1509062522246-3755977927d7?w=600&auto=format&fit=crop&q=80"),
+    about_mission: getFallbackMedia("about_mission", "https://images.unsplash.com/photo-1542810634-71277d95dcbb?w=600&auto=format&fit=crop&q=80"),
+    about_team: getFallbackMedia("about_team", "https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=600&auto=format&fit=crop&q=80"),
+    about_tutorial_video: getFallbackMedia("about_tutorial_video", "/DIL%20KAHTA%20HAI.mp4"),
+    about_footer_banner: getFallbackMedia("about_footer_banner", "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=1200&auto=format&fit=crop&q=80")
   });
 
   // Page Texts CMS settings
@@ -219,9 +225,9 @@ const [extraData, setExtraData] = useState({
         
         {/* Title Container */}
         <div className="relative z-10 text-center text-white px-4">
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight drop-shadow-md flex flex-wrap justify-center items-center gap-3">
+          <h1 className="text-3xl sm:text-5xl md:text-6xl font-black tracking-tight drop-shadow-md flex flex-wrap justify-center items-center gap-3">
             <span>{textSettings.about_banner_title_prefix || "About"}</span>
-            <span className="bg-[#F3A61E] rounded-3xl px-6 py-1.5 text-black text-3xl sm:text-4xl md:text-5xl font-black shadow-lg">
+            <span className="bg-[#F3A61E] rounded-3xl px-6 py-1.5 text-black text-2xl sm:text-4xl md:text-5xl font-black shadow-lg">
               {textSettings.about_banner_title_highlight || "Kanha Foundation"}
             </span>
           </h1>

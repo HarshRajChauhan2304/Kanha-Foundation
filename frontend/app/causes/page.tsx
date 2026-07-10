@@ -2,6 +2,12 @@
 import React, { useState } from 'react';
 import CauseCard from '@/components/CauseCard';
 import causesData from '@/data/causes.json';
+import pageMediaData from '@/data/page_media.json';
+
+const getFallbackMedia = (key: string, defaultUrl: string) => {
+  const item = pageMediaData.find((m: any) => m.key === key);
+  return item ? item.url : defaultUrl;
+};
 
 const DEFAULT_CATEGORIES = [
   "All Causes",
@@ -20,7 +26,7 @@ export default function CausesPage() {
   const [selectedCategory, setSelectedCategory] = useState("All Causes");
   const [categories, setCategories] = useState<string[]>(DEFAULT_CATEGORIES);
   const [mediaSettings, setMediaSettings] = useState<Record<string, string>>({
-    causes_header: "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=1600&auto=format&fit=crop&q=80"
+    causes_header: getFallbackMedia("causes_header", "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=1600&auto=format&fit=crop&q=80")
   });
   const [textSettings, setTextSettings] = useState<Record<string, string>>({
     causes_banner_title_prefix: "Causes",
@@ -90,9 +96,9 @@ export default function CausesPage() {
           className="absolute inset-0 w-full h-full object-fill brightness-[0.4]"
         />
         <div className="relative z-10 text-center text-white px-4">
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight drop-shadow-md flex flex-wrap justify-center items-center gap-3">
+          <h1 className="text-3xl sm:text-5xl md:text-6xl font-black tracking-tight drop-shadow-md flex flex-wrap justify-center items-center gap-3">
             <span>{textSettings.causes_banner_title_prefix || "Causes"}</span>
-            <span className="bg-[#F3A61E] rounded-3xl px-6 py-1.5 text-black text-3xl sm:text-4xl md:text-5xl font-black shadow-lg">
+            <span className="bg-[#F3A61E] rounded-3xl px-6 py-1.5 text-black text-2xl sm:text-4xl md:text-5xl font-black shadow-lg">
               {textSettings.causes_banner_title_highlight || "We Care"}
             </span>
           </h1>

@@ -96,7 +96,7 @@ interface VolunteerTask {
   feedback?: string;
 }
 
-type TabType = "Causes" | "Reviews" | "Blogs" | "Stories" | "DetailedStories" | "SuccessStories" | "Donations" | "Highlights" | "Applications" | "Tasks" | "PageMedia" | "PageTexts" | "StatsCards" | "Categories" | "RoleManagement" | "Navbar" | "Footer" | "AdminProfile" | "StarVolunteers";
+type TabType = "Causes" | "Reviews" | "Blogs" | "Stories" | "DetailedStories" | "SuccessStories" | "Donations" | "Highlights" | "Applications" | "Tasks" | "PageMedia" | "PageTexts" | "StatsCards" | "Categories" | "RoleManagement" | "Navbar" | "Footer" | "AdminProfile" | "StarVolunteers" | "ContactInfo" | "ContactSubmissions";
 type AuthMode = "signin" | "signup" | "forgot";
 
 const KEY_MAP: Record<string, { title: string; type: string }> = {
@@ -137,7 +137,13 @@ const TEXT_KEY_MAP: Record<string, { title: string }> = {
   "about_volunteers_title": { title: "About Page - Volunteers Section Title" },
   "about_volunteers_sub": { title: "About Page - Volunteers Section Subtitle" },
   "about_footer_cta_title": { title: "About Page - Footer CTA Section Title" },
-  "about_footer_cta_desc": { title: "About Page - Footer CTA Section Description" }
+  "about_footer_cta_desc": { title: "About Page - Footer CTA Section Description" },
+  "impacts_intro_title": { title: "Our Impact Page - Intro Title" },
+  "impacts_intro_desc_1": { title: "Our Impact Page - Intro Paragraph 1" },
+  "impacts_intro_desc_2": { title: "Our Impact Page - Intro Paragraph 2" },
+  "impacts_intro_proof": { title: "Our Impact Page - Proof Guarantee Text" },
+  "impacts_timeline_title": { title: "Our Impact Page - Timeline Heading Title" },
+  "impacts_timeline_subtitle": { title: "Our Impact Page - Timeline Subtitle Text" }
 };
 
 const CATEGORIES = [
@@ -179,6 +185,8 @@ export default function AdminPanelPage() {
   const [detailedStories, setDetailedStories] = useState<any[]>([]);
   const [successStories, setSuccessStories] = useState<any[]>([]);
   const [donations, setDonations] = useState<Donation[]>([]);
+  const [contactInfoList, setContactInfoList] = useState<any[]>([]);
+  const [contactSubmissionsList, setContactSubmissionsList] = useState<any[]>([]);
   const [volApps, setVolApps] = useState<VolunteerApplication[]>([]);
   const [tasks, setTasks] = useState<VolunteerTask[]>([]);
   const [pageMedia, setPageMedia] = useState<PageMediaConfig[]>([]);
@@ -467,6 +475,14 @@ export default function AdminPanelPage() {
         const volRes = await fetch('/api/volunteer');
         const volData = await volRes.json();
         setVolApps(Array.isArray(volData) ? volData.filter((a: any) => a.status === "Approved") : []);
+      } else if (activeTab === "ContactInfo") {
+        const res = await fetch('/api/contact-info');
+        const data = await res.json();
+        setContactInfoList(Array.isArray(data) ? data : []);
+      } else if (activeTab === "ContactSubmissions") {
+        const res = await fetch('/api/contact');
+        const data = await res.json();
+        setContactSubmissionsList(Array.isArray(data) ? data : []);
       } else if (activeTab === "PageMedia") {
         const res = await fetch('/api/page-media', { cache: 'no-store' });
         const data = await res.json();
@@ -895,6 +911,11 @@ export default function AdminPanelPage() {
       setFormWeekLabel(item.week_label || "");
       setFormTasksCompleted(item.tasks_completed?.toString() || "0");
       setFormVolunteerId(item.volunteer_id?.toString() || "");
+    } else if (activeTab === "ContactInfo") {
+      setFormTitle(item.title);
+      setFormDesc(item.value);
+      setFormStatus(item.type);
+      setFormImage(item.icon);
     }
     setIsModalOpen(true);
   };
@@ -934,6 +955,10 @@ export default function AdminPanelPage() {
       ? "/api/stories/detailed"
       : activeTab === "SuccessStories"
       ? "/api/success-stories"
+      : activeTab === "ContactInfo"
+      ? "/api/contact-info"
+      : activeTab === "ContactSubmissions"
+      ? "/api/contact"
       : `/api/${activeTab.toLowerCase()}`;
     
     // Build payload based on Tab
@@ -1082,7 +1107,19 @@ export default function AdminPanelPage() {
       bodyPayload = {
         key: formAuthor,
         title: formTitle,
-        value: formDesc
+        value: formDesc,
+      };
+    } else if (activeTab === "ContactInfo") {
+      if (!formTitle.trim() || !formDesc.trim() || !formStatus.trim() || !formImage.trim()) {
+        triggerAlert("Please fill all required fields.");
+        return;
+      }
+      bodyPayload = {
+        ...bodyPayload,
+        title: formTitle,
+        value: formDesc,
+        type: formStatus,
+        icon: formImage
       };
     } else if (activeTab === "StarVolunteers") {
       if (!formTitle.trim() || !formGender || !formGrade || !formDesc.trim()) {
@@ -1191,11 +1228,13 @@ export default function AdminPanelPage() {
     const isStar = activeTab === "StarVolunteers";
     const isDetStories = activeTab === "DetailedStories";
     const isSuccessStories = activeTab === "SuccessStories";
+    const isContactInfo = activeTab === "ContactInfo";
+    const isContactSub = activeTab === "ContactSubmissions";
     const confirmName = activeTab === "Highlights" 
       ? highlightSubTab.substring(0, highlightSubTab.length - 1) 
       : activeTab === "Categories"
       ? "Category"
-      : isApp ? "Volunteer Application" : isMedia ? "Media Section Banner" : isTexts ? "Text Setting" : isTasks ? "Volunteer Task" : isStar ? "Star Volunteer" : isDetStories ? "Detailed Story" : isSuccessStories ? "Success Story" : activeTab.substring(0, activeTab.length - 1);
+      : isApp ? "Volunteer Application" : isMedia ? "Media Section Banner" : isTexts ? "Text Setting" : isTasks ? "Volunteer Task" : isStar ? "Star Volunteer" : isDetStories ? "Detailed Story" : isSuccessStories ? "Success Story" : isContactInfo ? "Contact Info Card" : isContactSub ? "Contact Message" : activeTab.substring(0, activeTab.length - 1);
       
     if (!window.confirm(`Are you sure you want to delete this ${confirmName}?`)) return;
 
@@ -1205,6 +1244,10 @@ export default function AdminPanelPage() {
       ? `/api/volunteer?id=${idOrKey}`
       : activeTab === "StarVolunteers"
       ? `/api/volunteer/star?id=${idOrKey}`
+      : activeTab === "ContactInfo"
+      ? `/api/contact-info?id=${idOrKey}`
+      : activeTab === "ContactSubmissions"
+      ? `/api/contact?id=${idOrKey}`
       : isMedia
       ? `/api/page-media?key=${idOrKey}`
       : isTexts
@@ -1427,7 +1470,7 @@ export default function AdminPanelPage() {
                 {adminUsername}
               </span>
             </div>
-            {activeTab !== "Applications" && activeTab !== "RoleManagement" && activeTab !== "Navbar" && activeTab !== "Footer" && activeTab !== "AdminProfile" && (
+            {activeTab !== "Applications" && activeTab !== "ContactSubmissions" && activeTab !== "RoleManagement" && activeTab !== "Navbar" && activeTab !== "Footer" && activeTab !== "AdminProfile" && (
               <button
                 onClick={openAddModal}
                 className="px-5 py-2.5 bg-[#1E4D2B] hover:bg-[#15381E] text-white text-xs font-black uppercase tracking-wider rounded-full transition-all cursor-pointer flex items-center gap-2 border border-emerald-800/40"
@@ -1435,7 +1478,7 @@ export default function AdminPanelPage() {
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
                 </svg>
-                Add {activeTab === "Blogs" ? "Blog" : activeTab === "Highlights" ? (highlightSubTab === "directors" ? "Director" : "Volunteer") : activeTab === "Tasks" ? "Volunteer Task" : activeTab === "StarVolunteers" ? "Star Volunteer" : activeTab === "PageMedia" ? "Banner/Media Setting" : activeTab === "PageTexts" ? "Text Setting" : activeTab === "Categories" ? "Category" : activeTab.substring(0, activeTab.length - 1)}
+                Add {activeTab === "Blogs" ? "Blog" : activeTab === "Highlights" ? (highlightSubTab === "directors" ? "Director" : "Volunteer") : activeTab === "Tasks" ? "Volunteer Task" : activeTab === "StarVolunteers" ? "Star Volunteer" : activeTab === "PageMedia" ? "Banner/Media Setting" : activeTab === "PageTexts" ? "Text Setting" : activeTab === "Categories" ? "Category" : activeTab === "ContactInfo" ? "Contact Card" : activeTab.substring(0, activeTab.length - 1)}
               </button>
             )}
             <button
@@ -1472,7 +1515,7 @@ export default function AdminPanelPage() {
 
         {/* Tab Selection Row */}
         <div className="flex border-b border-zinc-900 gap-1.5 mb-10 overflow-x-auto pb-2 scrollbar-none">
-          {(["Causes", "Reviews", "Blogs", "Stories", "DetailedStories", "SuccessStories", "Donations", "Highlights", "Applications", "Tasks", "StarVolunteers", "PageMedia", "PageTexts", "StatsCards", "Categories", "RoleManagement", "Navbar", "Footer", "AdminProfile"] as TabType[]).map((tab) => {
+          {(["Causes", "Reviews", "Blogs", "Stories", "DetailedStories", "SuccessStories", "Donations", "Highlights", "Applications", "Tasks", "StarVolunteers", "ContactInfo", "ContactSubmissions", "PageMedia", "PageTexts", "StatsCards", "Categories", "RoleManagement", "Navbar", "Footer", "AdminProfile"] as TabType[]).map((tab) => {
             const isTabActive = activeTab === tab;
             const pendingCount = tab === "Applications" ? volApps.filter(a => a.status === "Pending" || !a.status).length : 0;
             return (
@@ -1486,7 +1529,7 @@ export default function AdminPanelPage() {
                 }`}
               >
                 <span>
-                  {tab === "StarVolunteers" ? "Star Volunteers" : tab === "Applications" ? "Volunteer Apps" : tab === "PageMedia" ? "Page Banners & Media" : tab === "PageTexts" ? "Page Layout Texts" : tab === "StatsCards" ? "Stats Ribbon" : tab === "RoleManagement" ? "Role Manager" : tab === "Navbar" ? "Navbar Config" : tab === "Footer" ? "Footer Config" : tab === "AdminProfile" ? "My Profile" : tab === "DetailedStories" ? "Detailed Stories" : tab === "SuccessStories" ? "Success Stories" : tab}
+                  {tab === "StarVolunteers" ? "Star Volunteers" : tab === "Applications" ? "Volunteer Apps" : tab === "PageMedia" ? "Page Banners & Media" : tab === "PageTexts" ? "Page Layout Texts" : tab === "StatsCards" ? "Stats Ribbon" : tab === "RoleManagement" ? "Role Manager" : tab === "Navbar" ? "Navbar Config" : tab === "Footer" ? "Footer Config" : tab === "AdminProfile" ? "My Profile" : tab === "DetailedStories" ? "Detailed Stories" : tab === "SuccessStories" ? "Success Stories" : tab === "ContactInfo" ? "Contact Info Cards" : tab === "ContactSubmissions" ? "Contact Messages" : tab}
                 </span>
                 {pendingCount > 0 && (
                   <span className="px-2 py-0.5 bg-red-650 text-white text-[9px] font-black rounded-full shadow-sm animate-bounce">
@@ -1602,6 +1645,67 @@ export default function AdminPanelPage() {
                       <td className="px-6 py-4 whitespace-nowrap"><img src={s.url} alt={s.alt} className="h-10 w-14 object-cover rounded-lg border border-zinc-800" /></td>
                       <td className="px-6 py-4"><p className="text-sm font-bold text-white">{s.alt}</p></td>
                       <td className="px-6 py-4 text-right"><div className="flex justify-end gap-2"><button onClick={() => openEditModal(s)} className="px-3 py-1 border border-zinc-700 rounded text-xs text-zinc-300 cursor-pointer">Edit</button><button onClick={() => handleDelete(s.id)} className="px-3 py-1 bg-red-650/15 border border-red-900/40 rounded text-xs text-red-400 cursor-pointer">Delete</button></div></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+
+            {activeTab === "ContactInfo" && (
+              <table className="min-w-full divide-y divide-zinc-800 text-left">
+                <thead>
+                  <tr className="bg-zinc-900/60 text-zinc-400 text-xs font-black uppercase tracking-wider">
+                    <th className="px-6 py-4">Icon</th>
+                    <th className="px-6 py-4">Title</th>
+                    <th className="px-6 py-4">Type</th>
+                    <th className="px-6 py-4">Value</th>
+                    <th className="px-6 py-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-zinc-900">
+                  {contactInfoList.map((c) => (
+                    <tr key={c.id} className="hover:bg-zinc-900/30 transition-colors">
+                      <td className="px-6 py-4"><span className="px-3 py-1 bg-zinc-800 rounded font-mono text-xs text-white">{c.icon}</span></td>
+                      <td className="px-6 py-4"><p className="text-sm font-bold text-white">{c.title}</p></td>
+                      <td className="px-6 py-4"><span className="px-2.5 py-0.5 rounded bg-zinc-800 text-[#52c47c] text-[10px] font-black">{c.type}</span></td>
+                      <td className="px-6 py-4"><p className="text-xs text-zinc-400 whitespace-pre-line max-w-xs">{c.value}</p></td>
+                      <td className="px-6 py-4 text-right">
+                        <div className="flex justify-end gap-2">
+                          <button onClick={() => openEditModal(c)} className="px-3 py-1 border border-zinc-700 rounded text-xs text-zinc-300 cursor-pointer">Edit</button>
+                          <button onClick={() => handleDelete(c.id)} className="px-3 py-1 bg-red-650/15 border border-red-900/40 rounded text-xs text-red-400 cursor-pointer">Delete</button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+
+            {activeTab === "ContactSubmissions" && (
+              <table className="min-w-full divide-y divide-zinc-800 text-left">
+                <thead>
+                  <tr className="bg-zinc-900/60 text-zinc-400 text-xs font-black uppercase tracking-wider">
+                    <th className="px-6 py-4">Date</th>
+                    <th className="px-6 py-4">Name</th>
+                    <th className="px-6 py-4">Email</th>
+                    <th className="px-6 py-4">Phone</th>
+                    <th className="px-6 py-4">Message</th>
+                    <th className="px-6 py-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-zinc-900">
+                  {contactSubmissionsList.map((s) => (
+                    <tr key={s.id} className="hover:bg-zinc-900/30 transition-colors">
+                      <td className="px-6 py-4"><p className="text-xs text-zinc-400">{new Date(s.created_at || s.id).toLocaleString()}</p></td>
+                      <td className="px-6 py-4"><p className="text-sm font-bold text-white">{s.name}</p></td>
+                      <td className="px-6 py-4"><a href={`mailto:${s.email}`} className="text-xs text-[#F3A61E] hover:underline">{s.email}</a></td>
+                      <td className="px-6 py-4"><p className="text-xs text-zinc-300">{s.phone || "-"}</p></td>
+                      <td className="px-6 py-4"><p className="text-xs text-zinc-400 max-w-sm whitespace-pre-line">{s.message}</p></td>
+                      <td className="px-6 py-4 text-right">
+                        <div className="flex justify-end gap-2">
+                          <button onClick={() => handleDelete(s.id)} className="px-3 py-1 bg-red-650/15 border border-red-900/40 rounded text-xs text-red-400 cursor-pointer">Delete</button>
+                        </div>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -2983,6 +3087,51 @@ export default function AdminPanelPage() {
                     <div>
                       <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-1.5">Short Description</label>
                       <textarea required value={formDesc} onChange={(e) => setFormDesc(e.target.value)} placeholder="Enter a brief description summarizing this success metric/story..." className="w-full h-24 px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white focus:outline-none" />
+                    </div>
+                  </>
+                )}
+
+                {activeTab === "ContactInfo" && (
+                  <>
+                    <div>
+                      <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-1.5">Card Title</label>
+                      <input type="text" required value={formTitle} onChange={(e) => setFormTitle(e.target.value)} placeholder="e.g. Registered Address" className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white focus:outline-none focus:ring-1 focus:ring-emerald-500" />
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-1.5">Type</label>
+                        <select 
+                          value={formStatus} 
+                          onChange={(e) => setFormStatus(e.target.value)} 
+                          className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white focus:outline-none"
+                        >
+                          <option value="address">Address</option>
+                          <option value="email">Email</option>
+                          <option value="whatsapp">WhatsApp</option>
+                          <option value="phone">Phone</option>
+                          <option value="text">General Text</option>
+                        </select>
+                      </div>
+                      
+                      <div>
+                        <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-1.5">Icon Style</label>
+                        <select 
+                          value={formImage} 
+                          onChange={(e) => setFormImage(e.target.value)} 
+                          className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white focus:outline-none"
+                        >
+                          <option value="map-pin">Map Pin</option>
+                          <option value="mail">Mail Envelope</option>
+                          <option value="whatsapp">WhatsApp logo</option>
+                          <option value="phone">Phone handset</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-1.5">Contact Detail Value</label>
+                      <textarea required value={formDesc} onChange={(e) => setFormDesc(e.target.value)} placeholder="e.g. support@kanhafoundation.org or Office Address..." className="w-full h-24 px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white focus:outline-none" />
                     </div>
                   </>
                 )}
