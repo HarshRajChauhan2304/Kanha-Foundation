@@ -7,6 +7,7 @@ import footerJSON from '@/data/footer.json';
 export default function Footer() {
   const [footerData, setFooterData] = useState<any>(footerJSON);
   const router = useRouter();
+  const [whatsappLink, setWhatsappLink] = useState("");
 
   useEffect(() => {
     fetch('/api/footer')
@@ -17,6 +18,18 @@ export default function Footer() {
         }
       })
       .catch(err => console.error('Footer fetch error', err));
+
+    fetch('/api/page-texts')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          const linkItem = data.find((t: any) => t.key === 'whatsapp_community_link');
+          if (linkItem && linkItem.value) {
+            setWhatsappLink(linkItem.value);
+          }
+        }
+      })
+      .catch(err => console.error('Footer page texts fetch error', err));
   }, []);
 
   return (
@@ -117,6 +130,22 @@ export default function Footer() {
                   return null;
                 })}
               </div>
+
+              {whatsappLink && (
+                <div className="pt-3">
+                  <a
+                    href={whatsappLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#25D366] hover:bg-[#20ba59] text-white text-[9px] sm:text-xs font-bold rounded-xl transition-all shadow-md cursor-pointer uppercase tracking-wider"
+                  >
+                    <svg className="h-3.5 w-3.5 sm:h-4.5 sm:w-4.5 fill-current" viewBox="0 0 24 24">
+                      <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.513 2.262 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.717-1.458L0 24zm6.208-3.79c1.666.988 3.32 1.48 4.95 1.483 5.405 0 9.802-4.398 9.805-9.805.002-2.618-1.015-5.082-2.87-6.937C16.29 3.097 13.824 2.08 11.205 2.08c-5.412 0-9.803 4.398-9.806 9.806-.001 1.77.478 3.5 1.388 5.008L1.75 22.25l5.515-1.44z"/>
+                    </svg>
+                    WhatsApp Community
+                  </a>
+                </div>
+              )}
             </div>
           </div>
 
