@@ -3,6 +3,8 @@ import { resilientDelete, resilientPost, resilientPut } from "@/lib/db-fallback"
 import fs from "fs";
 import path from "path";
 
+export const dynamic = 'force-dynamic';
+
 const dataFile = path.join(process.cwd(), "data", "donations.json");
 
 function readData() {
