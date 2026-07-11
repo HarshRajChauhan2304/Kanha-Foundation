@@ -43,5 +43,16 @@
     "avatar": null,
     "gender": "Male",
     "bio": null
+  },
+  {
+    "id": 12,
+    "username": "Test User",
+    "email": "test@example.com",
+    "phone": "+919876543210",
+    "password": "Password123",
+    "created_at": "2026-07-11T11:35:07.085988+00:00",
+    "avatar": null,
+    "gender": "Male",
+    "bio": null
   }
 ]

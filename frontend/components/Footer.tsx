@@ -33,14 +33,14 @@ export default function Footer() {
   }, []);
 
   return (
-    <footer className="bg-[#0e2617] text-white pt-10 pb-10 sm:pb-12 px-3 sm:px-12 relative z-10 border-t border-emerald-900/30 overflow-visible">
+    <footer className="bg-[#0e2617] text-white pt-10 pb-10 sm:pb-12 px-6 sm:px-12 relative z-10 border-t border-emerald-900/30 overflow-visible">
       <div className="mx-auto max-w-7xl">
         
         {/* Main 3-Column Responsive Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left">
           
           {/* Column 1: Company Overview */}
-          <div className="space-y-3 md:pl-8 text-left">
+          <div className="space-y-3 md:pl-8 text-center md:text-left">
             <h3 className="text-[8px] sm:text-[10px] font-black text-[#52c47c] uppercase tracking-widest">
               Company Overview
             </h3>
@@ -52,8 +52,8 @@ export default function Footer() {
           </div>
 
           {/* Column 2: Quick Links */}
-          <div className="space-y-3 flex flex-col items-start md:items-center text-left">
-            <div className="w-fit text-left">
+          <div className="space-y-3 flex flex-col items-center md:items-center">
+            <div className="w-fit text-center md:text-left">
               <h3 className="text-[8px] sm:text-[10px] font-black text-[#52c47c] uppercase tracking-widest">
                 Quick Links
               </h3>
@@ -66,14 +66,14 @@ export default function Footer() {
           </div>
 
           {/* Column 3: Contact Us */}
-          <div className="space-y-3 flex flex-col items-start md:items-end text-left">
-            <div className="w-fit text-left">
-              <div className="space-y-3 text-[9px] sm:text-xs font-bold text-white">
+          <div className="space-y-3 flex flex-col items-center md:items-end">
+            <div className="w-fit flex flex-col items-center md:items-end">
+              <div className="space-y-3 text-[9px] sm:text-xs font-bold text-white flex flex-col items-center md:items-end">
                 <h3 className="text-[8px] sm:text-[10px] font-black text-[#52c47c] uppercase tracking-widest">
                   Contact Us
                 </h3>
                 
-                <div className="leading-relaxed">
+                <div className="leading-relaxed text-center md:text-right">
                   <p className="text-zinc-150 font-medium text-[8px] sm:text-xs">
                     {footerData?.contact?.ctaText || "Need help fast? Fill out our form or email"}
                   </p>
@@ -87,7 +87,7 @@ export default function Footer() {
               </div>
 
               {/* Social Icons horizontal row */}
-              <div className="flex items-center gap-2 sm:gap-5 pt-1.5">
+              <div className="flex items-center justify-center md:justify-end gap-3 sm:gap-5 pt-3">
                 {(footerData?.social || []).map((s: any) => {
                   if (s.platform.toLowerCase() === 'instagram') {
                     return (
@@ -132,12 +132,12 @@ export default function Footer() {
               </div>
 
               {whatsappLink && (
-                <div className="pt-3">
+                <div className="pt-4 w-full flex justify-center md:justify-end">
                   <a
                     href={whatsappLink}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#25D366] hover:bg-[#20ba59] text-white text-[9px] sm:text-xs font-bold rounded-xl transition-all shadow-md cursor-pointer uppercase tracking-wider"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#25D366] hover:bg-[#20ba59] text-white text-[10px] sm:text-xs font-bold rounded-xl transition-all shadow-md cursor-pointer uppercase tracking-wider"
                   >
                     <svg className="h-3.5 w-3.5 sm:h-4.5 sm:w-4.5 fill-current" viewBox="0 0 24 24">
                       <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.513 2.262 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.717-1.458L0 24zm6.208-3.79c1.666.988 3.32 1.48 4.95 1.483 5.405 0 9.802-4.398 9.805-9.805.002-2.618-1.015-5.082-2.87-6.937C16.29 3.097 13.824 2.08 11.205 2.08c-5.412 0-9.803 4.398-9.806 9.806-.001 1.77.478 3.5 1.388 5.008L1.75 22.25l5.515-1.44z"/>

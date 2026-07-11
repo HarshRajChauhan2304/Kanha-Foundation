@@ -99,27 +99,7 @@ export async function POST(request: Request) {
 
       // Enforce email verification token validation
       const cleanEmail = email.trim().toLowerCase();
-      const verifiedPath = path.join(process.cwd(), 'data', 'verified_emails.json');
-      let isVerified = false;
-
-      if (fs.existsSync(verifiedPath)) {
-        try {
-          const verifiedList = JSON.parse(fs.readFileSync(verifiedPath, 'utf-8'));
-          const expiry = verifiedList[cleanEmail];
-          if (expiry && Date.now() < expiry) {
-            isVerified = true;
-            // Clean up verification to prevent replay signup attempts
-            delete verifiedList[cleanEmail];
-            fs.writeFileSync(verifiedPath, JSON.stringify(verifiedList, null, 2), 'utf-8');
-          }
-        } catch (e) {
-          console.error("Error checking verified email tokens:", e);
-        }
-      }
-
-      if (!isVerified) {
-        return NextResponse.json({ success: false, error: "Please verify your email address using OTP first before creating an account." }, { status: 400 });
-      }
+      // Email verification bypassed (OTP removed)
 
       // Check duplicates locally
       const duplicateLocal = localUsers.find((u: any) => u.email?.trim().toLowerCase() === email.trim().toLowerCase());

@@ -98,12 +98,7 @@ export default function BlogCatalogPage() {
                     </p>
                   </div>
                   <div className="mt-6 pt-4 border-t border-gray-100 dark:border-zinc-800/80 flex items-center justify-between">
-                    <span 
-                      onClick={() => {
-                        window.open(`https://wa.me/917488164529?text=I%20want%20to%20read%20blog%20post:%20${encodeURIComponent(post.title)}`, "_blank");
-                      }}
-                      className="text-xs font-black text-[#1E4D2B] dark:text-[#52c47c] hover:underline cursor-pointer flex items-center gap-1"
-                    >
+                    <span className="text-xs font-black text-[#1E4D2B] dark:text-[#52c47c] cursor-default flex items-center gap-1">
                       Read Full Article
                       <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />

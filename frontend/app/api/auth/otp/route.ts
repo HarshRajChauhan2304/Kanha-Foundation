@@ -103,52 +103,7 @@ Body:
       });
     }
 
-    // ==========================================
-    // ACTION: Verify OTP
-    // ==========================================
-    if (action === "verify") {
-      if (!otp) {
-        return NextResponse.json({ success: false, error: "OTP code is required." }, { status: 400 });
-      }
-
-      const otps = readOTPs();
-      const record = otps[cleanEmail];
-
-      if (!record) {
-        return NextResponse.json({ success: false, error: "No verification code requested for this email." }, { status: 404 });
-      }
-
-      if (Date.now() > record.expiresAt) {
-        return NextResponse.json({ success: false, error: "Verification code has expired. Please request a new one." }, { status: 400 });
-      }
-
-      if (record.otp !== otp.trim()) {
-        return NextResponse.json({ success: false, error: "The verification code is incorrect. Please try again." }, { status: 400 });
-      }
-
-      // Remove OTP on successful verification
-      delete otps[cleanEmail];
-      writeOTPs(otps);
-
-      // Save verified email token to files
-      try {
-        const verifiedPath = path.join(process.cwd(), 'data', 'verified_emails.json');
-        let verifiedList: Record<string, number> = {};
-        if (fs.existsSync(verifiedPath)) {
-          try {
-            verifiedList = JSON.parse(fs.readFileSync(verifiedPath, 'utf-8'));
-          } catch(e) {}
-        }
-        verifiedList[cleanEmail] = Date.now() + 15 * 60 * 1000; // valid for 15 minutes
-        fs.writeFileSync(verifiedPath, JSON.stringify(verifiedList, null, 2), 'utf-8');
-      } catch (e) {
-        console.error("Failed to write verified emails token file:", e);
-      }
-
-      return NextResponse.json({ success: true, message: "Email verified successfully!" });
-    }
-
-    return NextResponse.json({ success: false, error: "Invalid action." }, { status: 400 });
+    // OTP verification route removed as email verification is no longer required.
   } catch (error: any) {
     console.error("OTP API error:", error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
