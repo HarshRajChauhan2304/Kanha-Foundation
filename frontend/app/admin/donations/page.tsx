@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import causesDataFallback from "@/data/causes.json";
 
 interface Donation {
   id: number;
@@ -9,6 +10,7 @@ interface Donation {
   amount: string;
   donation_for: string;
   time: string;
+  transaction_date?: string;
 }
 
 interface CustomisationMeta {
@@ -51,6 +53,8 @@ export default function AdminDonations() {
   const [formName, setFormName] = useState("");
   const [formAmount, setFormAmount] = useState("");
   const [formCause, setFormCause] = useState("");
+  const [formTransactionDate, setFormTransactionDate] = useState("");
+  const [causesList, setCausesList] = useState<any[]>(causesDataFallback);
   
   // Customisation form states
   const [formIsAnonymous, setFormIsAnonymous] = useState(false);
@@ -83,8 +87,23 @@ export default function AdminDonations() {
     }
   };
 
+  const fetchCauses = async () => {
+    try {
+      const res = await fetch("/api/causes");
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) {
+          setCausesList(data);
+        }
+      }
+    } catch (err) {
+      console.error("Error fetching causes for donation form:", err);
+    }
+  };
+
   useEffect(() => {
     fetchDonations();
+    fetchCauses();
   }, []);
 
   // Parse transaction info helper
@@ -113,11 +132,22 @@ export default function AdminDonations() {
     }
   };
 
+  const getFormattedDate = () => {
+    return new Date().toLocaleDateString('en-IN', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
   const handleStartEdit = (d: Donation) => {
     setEditing(d);
     setFormName(d.name);
     setFormAmount(d.amount.replace(/[^0-9.]/g, ""));
     setFormCause(d.donation_for);
+    setFormTransactionDate(d.transaction_date || parseTimeField(d.time).readableTime || getFormattedDate());
 
     const { meta } = parseTimeField(d.time);
     if (meta.customisation) {
@@ -162,6 +192,7 @@ export default function AdminDonations() {
     setFormName("");
     setFormAmount("");
     setFormCause("");
+    setFormTransactionDate("");
     setFormIsAnonymous(false);
     setFormPrintedName("");
     setFormDeliveryDate("");
@@ -217,7 +248,8 @@ export default function AdminDonations() {
         name: formName,
         amount: finalAmount,
         donation_for: formCause,
-        time: timePayload
+        time: timePayload,
+        transaction_date: formTransactionDate || getFormattedDate()
       })
     });
 
@@ -286,7 +318,10 @@ export default function AdminDonations() {
           <button
             onClick={() => {
               if (showForm) handleCancelEdit();
-              else setShowForm(true);
+              else {
+                setFormTransactionDate(getFormattedDate());
+                setShowForm(true);
+              }
             }}
             className="px-5 py-2.5 bg-[#1E4D2B] hover:bg-[#15381E] text-white font-bold text-xs rounded-xl shadow-lg transition-colors cursor-pointer self-start"
           >
@@ -328,7 +363,7 @@ export default function AdminDonations() {
                 {editing ? `Edit Transaction ID: ${editing.id}` : "Create New Donation Record"}
               </h2>
 
-              <div className="grid gap-4 sm:grid-cols-3">
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <div>
                   <label className="block text-[10px] font-black text-gray-550 dark:text-gray-400 uppercase tracking-wider mb-2">Donor Name</label>
                   <input
@@ -353,12 +388,45 @@ export default function AdminDonations() {
                 </div>
                 <div>
                   <label className="block text-[10px] font-black text-gray-555 dark:text-gray-400 uppercase tracking-wider mb-2">Donation For / Target Cause</label>
+                  <select
+                    value={causesList.some(c => c.title === formCause) ? formCause : (formCause ? "Custom" : "")}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val === "Custom") {
+                        setFormCause("");
+                      } else {
+                        setFormCause(val);
+                      }
+                    }}
+                    className="w-full px-4 py-3 bg-gray-50 dark:bg-[#0c1510] border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-[#1E4D2B] text-gray-900 dark:text-white"
+                  >
+                    <option value="" disabled>Select a cause...</option>
+                    {causesList.map((cause) => (
+                      <option key={cause.id} value={cause.title}>
+                        {cause.title} ({cause.price})
+                      </option>
+                    ))}
+                    <option value="Custom">Custom / Other...</option>
+                  </select>
+                  {(!causesList.some(c => c.title === formCause) || formCause === "") && (
+                    <input
+                      type="text"
+                      required
+                      value={formCause}
+                      onChange={(e) => setFormCause(e.target.value)}
+                      placeholder="Enter custom cause name..."
+                      className="w-full mt-2 px-4 py-2 bg-gray-50 dark:bg-[#0c1510] border border-gray-200 dark:border-gray-700 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-[#1E4D2B]"
+                    />
+                  )}
+                </div>
+                <div>
+                  <label className="block text-[10px] font-black text-gray-555 dark:text-gray-400 uppercase tracking-wider mb-2">Transaction Date</label>
                   <input
                     type="text"
                     required
-                    value={formCause}
-                    onChange={(e) => setFormCause(e.target.value)}
-                    placeholder="e.g. Clean Water Project"
+                    value={formTransactionDate}
+                    onChange={(e) => setFormTransactionDate(e.target.value)}
+                    placeholder="e.g. 11 July 2026 at 05:33 pm"
                     className="w-full px-4 py-3 bg-gray-50 dark:bg-[#0c1510] border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-[#1E4D2B]"
                   />
                 </div>
@@ -556,6 +624,7 @@ export default function AdminDonations() {
                   <th className="py-4 text-left font-black">Donor Name</th>
                   <th className="py-4 text-left font-black">Cause Support</th>
                   <th className="py-4 text-left font-black">Amount</th>
+                  <th className="py-4 text-left font-black">Date</th>
                   <th className="py-4 text-left font-black">Details</th>
                   <th className="py-4 text-right font-black">Actions</th>
                 </tr>
@@ -578,13 +647,15 @@ export default function AdminDonations() {
                             </span>
                           )}
                         </div>
-                        <span className="block text-[9px] text-gray-400 mt-0.5">{readableTime}</span>
                       </td>
                       <td className="py-4 text-gray-600 dark:text-zinc-400 font-medium max-w-[280px] truncate">
                         {d.donation_for}
                       </td>
                       <td className="py-4 font-black text-[#1E4D2B] dark:text-[#52c47c]">
                         {d.amount}
+                      </td>
+                      <td className="py-4 text-xs text-gray-600 dark:text-zinc-400 font-medium">
+                        {d.transaction_date || readableTime}
                       </td>
                       <td className="py-4 text-xs">
                         {isAnon ? (
@@ -603,8 +674,8 @@ export default function AdminDonations() {
                       </td>
                       <td className="py-4 text-right space-x-3">
                         <button
-                          onClick={() => setExpandedId(isExpanded ? null : d.id)}
-                          className="text-xs font-bold text-gray-400 hover:text-gray-800 dark:hover:text-white transition-colors cursor-pointer"
+                           onClick={() => setExpandedId(isExpanded ? null : d.id)}
+                           className="text-xs font-bold text-gray-400 hover:text-gray-800 dark:hover:text-white transition-colors cursor-pointer"
                         >
                           {isExpanded ? "Hide Details" : "View"}
                         </button>
@@ -624,7 +695,7 @@ export default function AdminDonations() {
 
                       {/* Detail Expansion Subrow */}
                       {isExpanded && (
-                        <td colSpan={5} className="bg-gray-50/50 dark:bg-zinc-950/20 px-6 py-4 rounded-xl border border-gray-150/40 dark:border-zinc-800/80">
+                        <td colSpan={6} className="bg-gray-50/50 dark:bg-zinc-950/20 px-6 py-4 rounded-xl border border-gray-150/40 dark:border-zinc-800/80">
                           <div className="grid gap-6 sm:grid-cols-3 text-left">
                             
                             {/* Acknowledgement / Dedicated To */}

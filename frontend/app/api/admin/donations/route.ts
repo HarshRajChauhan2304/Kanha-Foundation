@@ -29,7 +29,8 @@ export async function POST(request: Request) {
         name: body.name,
         amount: body.amount,
         time: body.time || "Just now",
-        donation_for: body.donation_for || "General Support"
+        donation_for: body.donation_for || "General Support",
+        transaction_date: body.transaction_date || ""
       }
     });
     return NextResponse.json(result.item, { status: 201 });
@@ -50,7 +51,8 @@ export async function PUT(request: Request) {
         name: rest.name,
         amount: rest.amount,
         time: rest.time,
-        donation_for: rest.donation_for
+        donation_for: rest.donation_for,
+        transaction_date: rest.transaction_date || ""
       }
     });
     return NextResponse.json(result.item);
