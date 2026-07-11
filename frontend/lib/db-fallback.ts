@@ -17,8 +17,11 @@ export async function resilientDelete({
   fallbackFile
 }: ResilientOptions) {
   try {
-    // Attempt Supabase deletion
-    await supabaseAdmin.from(table).delete().eq(idField, idOrKey);
+    // Attempt Supabase deletion only if the ID fits in a standard 32-bit signed integer
+    const numericId = typeof idOrKey === 'number' ? idOrKey : parseInt(String(idOrKey), 10);
+    if (!isNaN(numericId) && numericId <= 2147483647) {
+      await supabaseAdmin.from(table).delete().eq(idField, idOrKey);
+    }
   } catch (dbErr) {
     console.warn(`Supabase DB delete failed for ${table}, using local fallback:`, dbErr);
   }

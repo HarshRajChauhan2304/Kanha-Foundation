@@ -38,7 +38,11 @@ export async function GET() {
     }
   }
 
-  return NextResponse.json(donations);
+  return NextResponse.json(donations, {
+    headers: {
+      'Cache-Control': 'no-store, max-age=0, must-revalidate'
+    }
+  });
 }
 
 // POST new donation

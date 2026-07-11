@@ -18,7 +18,11 @@ function readData() {
 
 export async function GET() {
   const donations = readData();
-  return NextResponse.json(donations);
+  return NextResponse.json(donations, {
+    headers: {
+      'Cache-Control': 'no-store, max-age=0, must-revalidate'
+    }
+  });
 }
 
 export async function POST(request: Request) {
