@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import causesDataFallback from '@/data/causes.json';
 
 // Models
 interface Cause {
@@ -43,6 +44,7 @@ interface Donation {
   donation_for?: string;
   honoree?: string;
   wish?: string;
+  transaction_date?: string;
 }
 
 interface HighlightItem {
@@ -220,6 +222,16 @@ export default function AdminPanelPage() {
   const [whatsappCommunityLinkInput, setWhatsappCommunityLinkInput] = useState("");
   const [isSavingWhatsappLink, setIsSavingWhatsappLink] = useState(false);
 
+  const getFormattedDate = () => {
+    return new Date().toLocaleDateString('en-IN', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
   // Task Completion Proof View States for Admin
   const [isViewProofModalOpen, setIsViewProofModalOpen] = useState(false);
   const [viewingTaskProof, setViewingTaskProof] = useState<any | null>(null);
@@ -287,6 +299,8 @@ export default function AdminPanelPage() {
   const [formStatus, setFormStatus] = useState("Pending");
   const [formGender, setFormGender] = useState("");
   const [formProfilePhoto, setFormProfilePhoto] = useState("");
+  const [formTransactionDate, setFormTransactionDate] = useState("");
+  const [causesList, setCausesList] = useState<any[]>(causesDataFallback);
 
   const [alertMsg, setAlertMsg] = useState("");
   const [isUploading, setIsUploading] = useState(false);
@@ -447,6 +461,15 @@ export default function AdminPanelPage() {
         const res = await fetch('/api/donations');
         const data = await res.json();
         setDonations(Array.isArray(data) ? data : []);
+        try {
+          const causesRes = await fetch('/api/causes');
+          const causesData = await causesRes.json();
+          if (Array.isArray(causesData) && causesData.length > 0) {
+            setCausesList(causesData);
+          }
+        } catch (e) {
+          console.error("Failed to load causes for donations:", e);
+        }
       } else if (activeTab === "Highlights") {
         const res = await fetch('/api/about-highlights');
         const data = await res.json();
@@ -813,6 +836,7 @@ export default function AdminPanelPage() {
     
     if (activeTab === "Donations") {
       setFormExcerpt("General Support");
+      setFormTransactionDate(getFormattedDate());
     }
     
     if (activeTab === "DetailedStories") {
@@ -874,6 +898,7 @@ export default function AdminPanelPage() {
       setFormExcerpt(item.donation_for || "General Support");
       setFormHonoree(item.honoree || "");
       setFormWish(item.wish || "");
+      setFormTransactionDate(item.transaction_date || (item.time ? item.time.split('|')[0] : "") || getFormattedDate());
     } else if (activeTab === "StatsCards") {
       setFormTitle(item.title);
       setFormPrice(item.base_value?.toString() || "0");
@@ -1047,7 +1072,8 @@ export default function AdminPanelPage() {
         time: formDesc,
         donation_for: formExcerpt || "General Support",
         honoree: formHonoree,
-        wish: formWish
+        wish: formWish,
+        transaction_date: formTransactionDate || getFormattedDate()
       };
     } else if (activeTab === "StatsCards") {
       if (!formTitle.trim() || !formPrice.trim()) {
@@ -3261,14 +3287,45 @@ export default function AdminPanelPage() {
                         <input type="text" required value={formPrice} onChange={(e) => setFormPrice(e.target.value)} placeholder="e.g. ₹10,000" className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white" />
                       </div>
                       <div>
-                        <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-1.5">Time Label</label>
-                        <input type="text" required value={formDesc} onChange={(e) => setFormDesc(e.target.value)} placeholder="e.g. 2 minutes ago" className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white" />
+                        <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-1.5">Transaction Date</label>
+                        <input type="text" required value={formTransactionDate} onChange={(e) => setFormTransactionDate(e.target.value)} placeholder="e.g. 11 July 2026 at 05:33 pm" className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white focus:outline-none" />
                       </div>
                     </div>
                     <div>
                       <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-1.5">Donated For (Product / Cause)</label>
-                      <input type="text" value={formExcerpt} onChange={(e) => setFormExcerpt(e.target.value)} placeholder="e.g. Sponsor Study Kit for an Underprivileged Child" className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white focus:outline-none" />
+                      <select
+                        value={(causesList.some(c => c.title === formExcerpt) || formExcerpt === "General Support") ? formExcerpt : (formExcerpt ? "Custom" : "")}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (val === "Custom") {
+                            setFormExcerpt("");
+                          } else {
+                            setFormExcerpt(val);
+                          }
+                        }}
+                        className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white focus:outline-none"
+                      >
+                        <option value="" disabled>Select a cause...</option>
+                        {causesList.map((cause) => (
+                          <option key={cause.id} value={cause.title}>
+                            {cause.title} ({cause.price})
+                          </option>
+                        ))}
+                        <option value="General Support">General Support</option>
+                        <option value="Custom">Custom / Other...</option>
+                      </select>
+                      {(!(causesList.some(c => c.title === formExcerpt) || formExcerpt === "General Support") || formExcerpt === "") && (
+                        <input
+                          type="text"
+                          required
+                          value={formExcerpt}
+                          onChange={(e) => setFormExcerpt(e.target.value)}
+                          placeholder="Enter custom cause name..."
+                          className="w-full mt-2 px-4 py-2 bg-zinc-950 border border-zinc-800 rounded-xl text-xs text-white focus:outline-none"
+                        />
+                      )}
                     </div>
+                    <input type="hidden" value={formDesc} />
                   </>
                 )}
 
