@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '@/context/CartContext';
 import { useRouter } from 'next/navigation';
 
-type PaymentMethod = "UPI" | "Card" | "NetBanking" | "Wallet";
+type PaymentMethod = "UPI" | "Card" | "NetBanking" | "Wallet" | "Razorpay";
 
 export default function DonateCheckoutPage() {
   const router = useRouter();
@@ -223,6 +223,191 @@ export default function DonateCheckoutPage() {
     return sum + (parseFloat(numericStr) || 0);
   }, 0);
 
+  const processSuccessfulDonation = (methodUsed: string, transactionId?: string) => {
+    // Save transaction to user donations history in localStorage
+    try {
+      const historyKey = `user_donations_${email.trim().toLowerCase()}`;
+      const existing = localStorage.getItem(historyKey);
+      const history = existing ? JSON.parse(existing) : [];
+      const newDonations = localCart.map(item => ({
+        title: item.title,
+        amount: item.amount,
+        date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }),
+        status: "Completed"
+      }));
+      localStorage.setItem(historyKey, JSON.stringify([...newDonations, ...history]));
+    } catch (err) {
+      console.error("Error saving user donation transaction history:", err);
+    }
+
+    // Calculate category-specific metrics for metadata
+    let birthdayTotal = 0;
+    let foodTotal = 0;
+    let welfareTotal = 0;
+    let studyKitTotal = 0;
+
+    localCart.forEach(item => {
+      const clean = item.amount ? item.amount.replace(/[a-zA-Z]+\.?/g, "").trim() : "0";
+      const numericStr = clean.replace(/[^0-9.]/g, "");
+      const amt = parseFloat(numericStr) || 0;
+      const title = item.title.toLowerCase();
+      const category = (item.category || "").toLowerCase();
+
+      // Match based on category property OR string search on title (fallback)
+      const isBirthday = category.includes("birthday") || category.includes("anniversary") || category.includes("memorial") ||
+                         title.includes("birthday") || title.includes("anniversary") || title.includes("celebration");
+                         
+      const isFood = category.includes("needy") || category.includes("animal") || category.includes("nature") || category.includes("food") ||
+                     title.includes("thali") || title.includes("meals") || title.includes("feed") || title.includes("cows") || title.includes("dogs") || title.includes("chara") || title.includes("fodder");
+                     
+      const isWelfare = category.includes("women") || category.includes("education") || category.includes("care") ||
+                        title.includes("study") || title.includes("kit") || title.includes("notebook") || title.includes("education") || title.includes("menstrual") || title.includes("water") || title.includes("girl") || title.includes("child");
+                        
+      const isStudyKit = category.includes("education") || (title.includes("study") && title.includes("kit"));
+
+      if (isBirthday) {
+        birthdayTotal += amt;
+      }
+      if (isFood) {
+        foodTotal += amt;
+      }
+      if (isWelfare) {
+        welfareTotal += amt;
+      }
+      if (isStudyKit) {
+        studyKitTotal += amt;
+      }
+    });
+
+    const mealsCount = Math.round(foodTotal / 30);
+    const livesCount = Math.round(welfareTotal / 50);
+    const studyKitsCount = Math.round(studyKitTotal / 1200);
+    const metadata = {
+      birthday: birthdayTotal,
+      meals: mealsCount,
+      lives: livesCount,
+      studykit: studyKitsCount,
+      total: totalAmount,
+      marketing: {
+        receiveMarketing,
+        marketingPhone: receiveMarketing ? marketingPhone : "",
+        marketingEmail: receiveMarketing ? (marketingEmail || email) : ""
+      },
+      customisation: totalAmount >= 700 ? {
+        isAnonymous,
+        printedName: isAnonymous ? "" : printedName,
+        deliveryDate: isAnonymous ? "" : deliveryDate,
+        photoUrl: isAnonymous ? "" : customPhotoUrl,
+        videoWish: isAnonymous ? "" : videoWish,
+        instagramId: isAnonymous ? "" : instagramId,
+        isGift: isAnonymous ? false : isGift,
+        giftMessage: isAnonymous ? "" : (isGift ? giftMessage : ""),
+        isOtherRequest: isAnonymous ? false : isOtherRequest,
+        otherRequestText: isAnonymous ? "" : (isOtherRequest ? otherRequestText : "")
+      } : null
+    };
+
+    const timePayload = `Just now|${JSON.stringify(metadata)}`;
+
+    const productTitles = localCart.map(item => item.title).join(", ");
+
+    const randId = Math.floor(100000 + Math.random() * 900000);
+    const generatedReceiptId = transactionId || `KF-2026-${randId}`;
+    const generatedDate = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+    // Sync donation to Supabase database for live feed
+    fetch('/api/donations', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: fullName,
+        email: email,
+        phone: phone,
+        amount: `₹${totalAmount.toLocaleString('en-IN')}`,
+        time: timePayload,
+        donation_for: productTitles,
+        is_anonymous: isAnonymous,
+        printed_name: isAnonymous ? "" : printedName,
+        delivery_date: isAnonymous ? "" : deliveryDate,
+        photo_url: isAnonymous ? "" : customPhotoUrl,
+        video_wish: isAnonymous ? "" : videoWish,
+        instagram_id: isAnonymous ? "" : instagramId,
+        is_gift: isAnonymous ? false : isGift,
+        gift_message: isAnonymous ? "" : (isGift ? giftMessage : ""),
+        is_other_request: isAnonymous ? false : isOtherRequest,
+        other_request_text: isAnonymous ? "" : (isOtherRequest ? otherRequestText : ""),
+        receive_marketing: receiveMarketing,
+        marketing_phone: receiveMarketing ? marketingPhone : "",
+        marketing_email: receiveMarketing ? (marketingEmail || email) : "",
+        is_dedicated: isDedicated,
+        dedicated_to: isDedicated ? dedicatedTo : "",
+        dedication_msg: isDedicated ? dedicationMsg : "",
+        receipt_id: generatedReceiptId,
+        transaction_date: generatedDate,
+        payment_method: methodUsed,
+        payment_status: "SUCCESS"
+      })
+    })
+      .then(res => res.json())
+      .then(data => {
+        setReceiptId(generatedReceiptId);
+        setTransactionDate(generatedDate);
+        setPurchasedItems([...localCart]);
+        setIsProcessing(false);
+        setIsSuccess(true);
+        clearCart();
+      })
+      .catch(err => {
+        console.error("Error saving donation to database:", err);
+        setReceiptId(generatedReceiptId);
+        setTransactionDate(generatedDate);
+        setPurchasedItems([...localCart]);
+        setIsProcessing(false);
+        setIsSuccess(true);
+        clearCart();
+      });
+  };
+
+  const handleRazorpayPayment = () => {
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.async = true;
+    script.onload = () => {
+      const options = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_test_Tz0WJ5M6nO6uVb", // Public test key fallback
+        amount: totalAmount * 100, // in paise
+        currency: "INR",
+        name: "Kanha Foundation",
+        description: "Donation for " + localCart.map(item => item.title).join(", "),
+        image: "/kanha_logo_round.png",
+        prefill: {
+          name: fullName,
+          email: email,
+          contact: phone
+        },
+        theme: {
+          color: "#1E4D2B"
+        },
+        handler: function (response: any) {
+          processSuccessfulDonation("Razorpay", response.razorpay_payment_id);
+        },
+        modal: {
+          ondismiss: function () {
+            setIsProcessing(false);
+          }
+        }
+      };
+
+      const rzp = new (window as any).Razorpay(options);
+      rzp.open();
+    };
+    script.onerror = () => {
+      setIsProcessing(false);
+      setErrorMsg("Failed to load Razorpay SDK. Please check your internet connection.");
+    };
+    document.body.appendChild(script);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg("");
@@ -260,149 +445,13 @@ export default function DonateCheckoutPage() {
     // Trigger loader
     setIsProcessing(true);
 
+    if (paymentMethod === "Razorpay") {
+      handleRazorpayPayment();
+      return;
+    }
+
     setTimeout(() => {
-      // Save transaction to user donations history in localStorage
-      try {
-        const historyKey = `user_donations_${email.trim().toLowerCase()}`;
-        const existing = localStorage.getItem(historyKey);
-        const history = existing ? JSON.parse(existing) : [];
-        const newDonations = localCart.map(item => ({
-          title: item.title,
-          amount: item.amount,
-          date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }),
-          status: "Completed"
-        }));
-        localStorage.setItem(historyKey, JSON.stringify([...newDonations, ...history]));
-      } catch (err) {
-        console.error("Error saving user donation transaction history:", err);
-      }
-
-      // Calculate category-specific metrics for metadata
-      let birthdayTotal = 0;
-      let foodTotal = 0;
-      let welfareTotal = 0;
-      let studyKitTotal = 0;
-
-      localCart.forEach(item => {
-        const clean = item.amount ? item.amount.replace(/[a-zA-Z]+\.?/g, "").trim() : "0";
-        const numericStr = clean.replace(/[^0-9.]/g, "");
-        const amt = parseFloat(numericStr) || 0;
-        const title = item.title.toLowerCase();
-        const category = (item.category || "").toLowerCase();
-
-        // Match based on category property OR string search on title (fallback)
-        const isBirthday = category.includes("birthday") || category.includes("anniversary") || category.includes("memorial") ||
-                           title.includes("birthday") || title.includes("anniversary") || title.includes("celebration");
-                           
-        const isFood = category.includes("needy") || category.includes("animal") || category.includes("nature") || category.includes("food") ||
-                       title.includes("thali") || title.includes("meals") || title.includes("feed") || title.includes("cows") || title.includes("dogs") || title.includes("chara") || title.includes("fodder");
-                       
-        const isWelfare = category.includes("women") || category.includes("education") || category.includes("care") ||
-                          title.includes("study") || title.includes("kit") || title.includes("notebook") || title.includes("education") || title.includes("menstrual") || title.includes("water") || title.includes("girl") || title.includes("child");
-                          
-        const isStudyKit = category.includes("education") || (title.includes("study") && title.includes("kit"));
-
-        if (isBirthday) {
-          birthdayTotal += amt;
-        }
-        if (isFood) {
-          foodTotal += amt;
-        }
-        if (isWelfare) {
-          welfareTotal += amt;
-        }
-        if (isStudyKit) {
-          studyKitTotal += amt;
-        }
-      });
-
-      const mealsCount = Math.round(foodTotal / 30);
-      const livesCount = Math.round(welfareTotal / 50);
-      const studyKitsCount = Math.round(studyKitTotal / 1200);
-      const metadata = {
-        birthday: birthdayTotal,
-        meals: mealsCount,
-        lives: livesCount,
-        studykit: studyKitsCount,
-        total: totalAmount,
-        marketing: {
-          receiveMarketing,
-          marketingPhone: receiveMarketing ? marketingPhone : "",
-          marketingEmail: receiveMarketing ? (marketingEmail || email) : ""
-        },
-        customisation: totalAmount >= 700 ? {
-          isAnonymous,
-          printedName: isAnonymous ? "" : printedName,
-          deliveryDate: isAnonymous ? "" : deliveryDate,
-          photoUrl: isAnonymous ? "" : customPhotoUrl,
-          videoWish: isAnonymous ? "" : videoWish,
-          instagramId: isAnonymous ? "" : instagramId,
-          isGift: isAnonymous ? false : isGift,
-          giftMessage: isAnonymous ? "" : (isGift ? giftMessage : ""),
-          isOtherRequest: isAnonymous ? false : isOtherRequest,
-          otherRequestText: isAnonymous ? "" : (isOtherRequest ? otherRequestText : "")
-        } : null
-      };
-
-      const timePayload = `Just now|${JSON.stringify(metadata)}`;
-
-      const productTitles = localCart.map(item => item.title).join(", ");
-
-      const randId = Math.floor(100000 + Math.random() * 900000);
-      const generatedReceiptId = `KF-2026-${randId}`;
-      const generatedDate = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-
-      // Sync donation to Supabase database for live feed
-      fetch('/api/donations', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: fullName,
-          email: email,
-          phone: phone,
-          amount: `₹${totalAmount.toLocaleString('en-IN')}`,
-          time: timePayload,
-          donation_for: productTitles,
-          is_anonymous: isAnonymous,
-          printed_name: isAnonymous ? "" : printedName,
-          delivery_date: isAnonymous ? "" : deliveryDate,
-          photo_url: isAnonymous ? "" : customPhotoUrl,
-          video_wish: isAnonymous ? "" : videoWish,
-          instagram_id: isAnonymous ? "" : instagramId,
-          is_gift: isAnonymous ? false : isGift,
-          gift_message: isAnonymous ? "" : (isGift ? giftMessage : ""),
-          is_other_request: isAnonymous ? false : isOtherRequest,
-          other_request_text: isAnonymous ? "" : (isOtherRequest ? otherRequestText : ""),
-          receive_marketing: receiveMarketing,
-          marketing_phone: receiveMarketing ? marketingPhone : "",
-          marketing_email: receiveMarketing ? (marketingEmail || email) : "",
-          is_dedicated: isDedicated,
-          dedicated_to: isDedicated ? dedicatedTo : "",
-          dedication_msg: isDedicated ? dedicationMsg : "",
-          receipt_id: generatedReceiptId,
-          transaction_date: generatedDate,
-          payment_method: paymentMethod,
-          payment_status: "SUCCESS"
-        })
-      })
-        .then(res => res.json())
-        .then(data => {
-          setReceiptId(generatedReceiptId);
-          setTransactionDate(generatedDate);
-          setPurchasedItems([...localCart]);
-          setIsProcessing(false);
-          setIsSuccess(true);
-          clearCart();
-        })
-        .catch(err => {
-          console.error("Error saving donation to database:", err);
-          setReceiptId(generatedReceiptId);
-          setTransactionDate(generatedDate);
-          setPurchasedItems([...localCart]);
-          setIsProcessing(false);
-          setIsSuccess(true);
-          clearCart();
-        });
+      processSuccessfulDonation(paymentMethod);
     }, 2500); // 2.5s secure transaction mock loading
   };
 
@@ -1030,8 +1079,8 @@ export default function DonateCheckoutPage() {
                 Select Payment Method
               </h2>
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {(["UPI", "Card", "NetBanking", "Wallet"] as PaymentMethod[]).map((method) => {
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                {(["UPI", "Card", "NetBanking", "Wallet", "Razorpay"] as PaymentMethod[]).map((method) => {
                   const isSelected = paymentMethod === method;
                   return (
                     <button
@@ -1053,6 +1102,17 @@ export default function DonateCheckoutPage() {
               {/* Dynamic Inputs per Method */}
               <div className="bg-gray-50 dark:bg-[#0c1510] p-6 rounded-2xl border border-gray-100 dark:border-zinc-900 mt-4">
                 
+                {paymentMethod === "Razorpay" && (
+                  <div className="space-y-4 text-left">
+                    <p className="text-xs text-gray-700 dark:text-gray-250 font-bold">
+                      Pay securely with Razorpay checkout popup.
+                    </p>
+                    <p className="text-[10px] text-gray-400 font-bold">
+                      Once you click "Proceed to Secure Pay" below, the Razorpay payment window will open. You can pay using UPI, Cards, Net Banking, or Wallets inside Razorpay.
+                    </p>
+                  </div>
+                )}
+
                 {paymentMethod === "UPI" && (
                   <div className="space-y-4">
                     <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-wider">Enter UPI ID</label>
