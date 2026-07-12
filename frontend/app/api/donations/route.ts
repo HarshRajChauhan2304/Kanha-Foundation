@@ -75,7 +75,7 @@ export async function GET() {
         });
 
         // Load existing stats cards
-        const statsFilePath = path.join(process.cwd(), 'data', 'stats_cards.json');
+        const statsFilePath = getFallbackPath('stats_cards.json');
         let existingCards: any[] = [];
         try {
           if (fs.existsSync(statsFilePath)) {

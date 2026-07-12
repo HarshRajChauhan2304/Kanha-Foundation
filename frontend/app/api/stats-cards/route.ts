@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
+import { getFallbackPath } from '@/lib/db-fallback';
 
-const filePath = path.join(process.cwd(), 'data', 'stats_cards.json');
+const filePath = getFallbackPath('stats_cards.json');
 
 const getLocalCards = (): any[] => {
   try {

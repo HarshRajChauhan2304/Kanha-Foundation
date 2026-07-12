@@ -4,8 +4,12 @@ import { supabaseAdmin } from './supabase';
 
 export function getFallbackPath(fallbackFile: string): string {
   const cwd = process.cwd();
-  // Always store fallback JSON files under the frontend/data folder for consistency.
-  const fallbackPath = path.join(cwd, 'frontend', 'data', fallbackFile);
+  // If cwd is already inside the frontend directory, do not append 'frontend' again.
+  let baseDir = cwd;
+  if (path.basename(cwd) !== 'frontend' && fs.existsSync(path.join(cwd, 'frontend'))) {
+    baseDir = path.join(cwd, 'frontend');
+  }
+  const fallbackPath = path.join(baseDir, 'data', fallbackFile);
   // Ensure the directory exists before returning the path.
   if (!fs.existsSync(path.dirname(fallbackPath))) {
     fs.mkdirSync(path.dirname(fallbackPath), { recursive: true });
