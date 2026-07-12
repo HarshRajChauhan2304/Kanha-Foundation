@@ -1853,6 +1853,29 @@ export default function AdminPanelPage() {
 
               return (
                 <div className="space-y-6">
+                  {/* Premium Callout to full Dashboard */}
+                  <div className="bg-gradient-to-r from-emerald-950/30 to-zinc-900/50 border border-emerald-500/20 p-6 rounded-3xl flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-xl">
+                    <div className="space-y-2 text-left">
+                      <div className="flex items-center gap-2">
+                        <span className="flex h-2.5 w-2.5 rounded-full bg-emerald-400 animate-pulse" />
+                        <h4 className="text-sm font-black uppercase tracking-wider text-emerald-400">Live Donations Control Room</h4>
+                      </div>
+                      <h3 className="text-xl font-bold text-white">Looking for the detailed Donations Dashboard?</h3>
+                      <p className="text-xs text-zinc-400 max-w-2xl">
+                        Open the full dashboard to view premium checkout metadata (anonymous donor names, birthday/meal/studykit quantities, dedication messages, photo wishes, video wishes, and transaction history) and manage records.
+                      </p>
+                    </div>
+                    <a
+                      href="/admin/donations"
+                      className="px-6 py-3.5 bg-[#F3A61E] hover:bg-[#d68f12] text-black text-xs font-black uppercase tracking-widest rounded-2xl transition-all cursor-pointer text-center flex items-center justify-center gap-2 shadow-lg hover:shadow-amber-500/10 hover:scale-[1.02]"
+                    >
+                      <svg className="h-4 w-4 shrink-0 stroke-[2.5]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                      </svg>
+                      <span>Open Donations Dashboard</span>
+                    </a>
+                  </div>
+
                   {/* PDF/Print Report Control Panel */}
                     <div className="bg-zinc-900/50 border border-zinc-800/60 p-6 rounded-2xl space-y-5">
                       <h3 className="text-sm font-black uppercase tracking-wider text-[#F3A61E] mb-2 flex items-center gap-2">
