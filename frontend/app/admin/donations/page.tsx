@@ -52,6 +52,7 @@ export default function AdminDonations() {
   // Form states
   const [formName, setFormName] = useState("");
   const [formAmount, setFormAmount] = useState("");
+  const [formAddress, setFormAddress] = useState("");
   const [formCause, setFormCause] = useState("");
   const [formTransactionDate, setFormTransactionDate] = useState("");
   const [causesList, setCausesList] = useState<any[]>(causesDataFallback);
@@ -77,7 +78,7 @@ export default function AdminDonations() {
 
   const fetchDonations = async () => {
     try {
-      const res = await fetch("/api/admin/donations");
+      const res = await fetch("/api/admin/donations", { cache: 'no-store' });
       const data = await res.json();
       if (Array.isArray(data)) {
         setDonations(data);
@@ -148,6 +149,7 @@ export default function AdminDonations() {
     setFormAmount(d.amount.replace(/[^0-9.]/g, ""));
     setFormCause(d.donation_for);
     setFormTransactionDate(d.transaction_date || parseTimeField(d.time).readableTime || getFormattedDate());
+    setFormAddress(d.address || "");
 
     const { meta } = parseTimeField(d.time);
     if (meta.customisation) {
@@ -193,6 +195,7 @@ export default function AdminDonations() {
     setFormAmount("");
     setFormCause("");
     setFormTransactionDate("");
+    setFormAddress("");
     setFormIsAnonymous(false);
     setFormPrintedName("");
     setFormDeliveryDate("");
@@ -246,6 +249,7 @@ export default function AdminDonations() {
       body: JSON.stringify({
         ...(editing ? { id: editing.id } : {}),
         name: formName,
+        address: formAddress,
         amount: finalAmount,
         donation_for: formCause,
         time: timePayload,
@@ -315,18 +319,26 @@ export default function AdminDonations() {
               Overview and configuration of checkout transactions and premium customization fields.
             </p>
           </div>
-          <button
-            onClick={() => {
-              if (showForm) handleCancelEdit();
-              else {
-                setFormTransactionDate(getFormattedDate());
-                setShowForm(true);
-              }
-            }}
-            className="px-5 py-2.5 bg-[#1E4D2B] hover:bg-[#15381E] text-white font-bold text-xs rounded-xl shadow-lg transition-colors cursor-pointer self-start"
-          >
-            {showForm ? "Close Form" : "Add Transaction"}
-          </button>
+          <div className="flex flex-wrap items-center gap-3 self-start">
+            <a
+              href="/admin"
+              className="px-5 py-2.5 bg-gray-200 dark:bg-zinc-800 hover:bg-gray-300 dark:hover:bg-zinc-700 text-gray-800 dark:text-white font-bold text-xs rounded-xl shadow transition-colors cursor-pointer flex items-center gap-1.5"
+            >
+              ← Back to Admin Panel
+            </a>
+            <button
+              onClick={() => {
+                if (showForm) handleCancelEdit();
+                else {
+                  setFormTransactionDate(getFormattedDate());
+                  setShowForm(true);
+                }
+              }}
+              className="px-5 py-2.5 bg-[#1E4D2B] hover:bg-[#15381E] text-white font-bold text-xs rounded-xl shadow-lg transition-colors cursor-pointer"
+            >
+              {showForm ? "Close Form" : "Add Transaction"}
+            </button>
+          </div>
         </div>
 
         {/* Stats Grid */}
@@ -430,6 +442,17 @@ export default function AdminDonations() {
                     className="w-full px-4 py-3 bg-gray-50 dark:bg-[#0c1510] border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-[#1E4D2B]"
                   />
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-black text-gray-550 dark:text-gray-400 uppercase tracking-wider mb-2">Donor Address / Location (Optional)</label>
+                <input
+                  type="text"
+                  value={formAddress}
+                  onChange={(e) => setFormAddress(e.target.value)}
+                  placeholder="e.g. Ranchi, Jharkhand, India"
+                  className="w-full px-4 py-3 bg-gray-50 dark:bg-[#0c1510] border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-[#1E4D2B] text-gray-900 dark:text-white"
+                />
               </div>
 
               {/* Customisation inputs inside form */}
@@ -622,6 +645,7 @@ export default function AdminDonations() {
               <thead>
                 <tr className="border-b border-gray-100 dark:border-zinc-800 text-[10px] font-black text-gray-400 uppercase tracking-widest">
                   <th className="py-4 text-left font-black">Donor Name</th>
+                  <th className="py-4 text-left font-black">Address</th>
                   <th className="py-4 text-left font-black">Cause Support</th>
                   <th className="py-4 text-left font-black">Amount</th>
                   <th className="py-4 text-left font-black">Date</th>
@@ -647,6 +671,9 @@ export default function AdminDonations() {
                             </span>
                           )}
                         </div>
+                      </td>
+                      <td className="py-4 text-gray-600 dark:text-zinc-400 font-medium">
+                        {d.address || "Ranchi, Jharkhand, India"}
                       </td>
                       <td className="py-4 text-gray-600 dark:text-zinc-400 font-medium max-w-[280px] truncate">
                         {d.donation_for}
@@ -695,7 +722,7 @@ export default function AdminDonations() {
 
                       {/* Detail Expansion Subrow */}
                       {isExpanded && (
-                        <td colSpan={6} className="bg-gray-50/50 dark:bg-zinc-950/20 px-6 py-4 rounded-xl border border-gray-150/40 dark:border-zinc-800/80">
+                        <td colSpan={7} className="bg-gray-50/50 dark:bg-zinc-950/20 px-6 py-4 rounded-xl border border-gray-150/40 dark:border-zinc-800/80">
                           <div className="grid gap-6 sm:grid-cols-3 text-left">
                             
                             {/* Acknowledgement / Dedicated To */}

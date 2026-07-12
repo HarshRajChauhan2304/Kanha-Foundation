@@ -2,6 +2,18 @@ import fs from 'fs';
 import path from 'path';
 import { supabaseAdmin } from './supabase';
 
+export function getFallbackPath(fallbackFile: string): string {
+  const cwd = process.cwd();
+  // Always store fallback JSON files under the frontend/data folder for consistency.
+  const fallbackPath = path.join(cwd, 'frontend', 'data', fallbackFile);
+  // Ensure the directory exists before returning the path.
+  if (!fs.existsSync(path.dirname(fallbackPath))) {
+    fs.mkdirSync(path.dirname(fallbackPath), { recursive: true });
+  }
+  return fallbackPath;
+}
+
+
 interface ResilientOptions {
   table: string;
   idOrKey?: any;
@@ -28,7 +40,7 @@ export async function resilientDelete({
 
   // Perform local file fallback sync
   try {
-    const fallbackPath = path.join(process.cwd(), 'data', fallbackFile);
+    const fallbackPath = getFallbackPath(fallbackFile);
     if (fs.existsSync(fallbackPath)) {
       const fileContent = fs.readFileSync(fallbackPath, 'utf-8');
       let data = JSON.parse(fileContent);
@@ -97,7 +109,7 @@ export async function resilientPost({
 
   // Sync to fallback file
   try {
-    const fallbackPath = path.join(process.cwd(), 'data', fallbackFile);
+    const fallbackPath = getFallbackPath(fallbackFile);
     let currentData: any = [];
 
     if (fs.existsSync(fallbackPath)) {
@@ -184,7 +196,7 @@ export async function resilientPut({
 
   // Sync to fallback file
   try {
-    const fallbackPath = path.join(process.cwd(), 'data', fallbackFile);
+    const fallbackPath = getFallbackPath(fallbackFile);
     if (fs.existsSync(fallbackPath)) {
       let currentData = JSON.parse(fs.readFileSync(fallbackPath, 'utf-8'));
 

@@ -20,6 +20,7 @@ export default function DonateCheckoutPage() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [address, setAddress] = useState("");
 
   useEffect(() => {
     const auth = localStorage.getItem('auth');
@@ -321,6 +322,7 @@ export default function DonateCheckoutPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         name: fullName,
+        address: address,
         email: email,
         phone: phone,
         amount: `₹${totalAmount.toLocaleString('en-IN')}`,
@@ -759,6 +761,17 @@ export default function DonateCheckoutPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@example.com"
+                  className="w-full px-4 py-3 bg-gray-50 dark:bg-[#0c1510] border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#1E4D2B]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Residential Address / Location (Optional)</label>
+                <input
+                  type="text"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  placeholder="e.g. Ranchi, Jharkhand, India"
                   className="w-full px-4 py-3 bg-gray-50 dark:bg-[#0c1510] border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#1E4D2B]"
                 />
               </div>

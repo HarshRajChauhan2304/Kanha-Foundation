@@ -54,5 +54,16 @@
     "avatar": null,
     "gender": "Male",
     "bio": null
+  },
+  {
+    "id": 1783805232939,
+    "username": "Harsh Raj Chauhan",
+    "email": "harshraj9419@gmail.com",
+    "phone": "7488164529",
+    "gender": "Male",
+    "password": "Harsh@123",
+    "created_at": "2026-07-11T21:27:12.939Z",
+    "avatar": "https://cwpfhfcxpeqiihiqxqtu.supabase.co/storage/v1/object/public/uploads/1783805267466_logo1_removebg_preview.png",
+    "bio": ""
   }
 ]

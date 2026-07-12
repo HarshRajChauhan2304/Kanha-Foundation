@@ -2,6 +2,7 @@
 -- Run this in your Supabase Dashboard SQL Editor (https://supabase.com)
 
 ALTER TABLE public.donations 
+ADD COLUMN IF NOT EXISTS address TEXT,
 ADD COLUMN IF NOT EXISTS email TEXT,
 ADD COLUMN IF NOT EXISTS phone TEXT,
 ADD COLUMN IF NOT EXISTS donation_for TEXT,

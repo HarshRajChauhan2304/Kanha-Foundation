@@ -15,6 +15,9 @@ const navItems = [
 
 const getDonorAddress = (d: any) => {
   if (!d) return "Ranchi, Jharkhand, India";
+  if (d.address && d.address.trim()) {
+    return d.address.trim();
+  }
   const name = d.name || "Anonymous";
   const email = d.email || "";
   if (email) {

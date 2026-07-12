@@ -416,23 +416,10 @@ export default function Home() {
         <div className="mx-auto max-w-6xl">
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2.5 md:gap-3">
             
-            {statsCards.map((card) => {
+            {statsCards.filter(card => ['raised','donors','birthday','lives','meals','studykit'].includes(card.category)).map((card) => {
               const base = parseFloat(card.base_value) || 0;
-              const cat = card.category;
-              let target = base;
-              if (cat === "raised") {
-                target = base + extraData.extraAmount;
-              } else if (cat === "donors") {
-                target = base + extraData.uniqueDonors;
-              } else if (cat === "birthday") {
-                target = base + extraData.extraBirthday;
-              } else if (cat === "lives") {
-                target = base + extraData.extraLives;
-              } else if (cat === "meals") {
-                target = base + extraData.extraMeals;
-              } else if (cat === "studykit") {
-                target = base + extraData.extraStudykit;
-              }
+              // Use the static base_value from the card (already aggregated on backend)
+              const target = base;
 
               return (
                 <div key={card.id} className="bg-white/10 border border-white/5 backdrop-blur-md rounded-2xl p-2.5 md:p-3 text-center shadow-sm flex flex-col justify-between items-center transition-all hover:scale-102">

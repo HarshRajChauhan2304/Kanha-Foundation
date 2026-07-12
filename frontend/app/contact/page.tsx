@@ -248,7 +248,7 @@ export default function ContactPage() {
         {/* Map Section */}
         <div className="rounded-[2.5rem] overflow-hidden shadow-lg border border-gray-150/45 dark:border-zinc-800/80 aspect-[21/9] min-h-[300px]">
           <iframe
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d14652.887260533555!2d85.30956209587422!3d23.344099499999997!2m3!1f0!2f0!3f0!4f13.1!3m3!1m2!1s0x39f4e104aa5db7dd%3A0xdc09d43168d6f51!2sRanchi%2C%20Jharkhand!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin"
+            src="https://www.google.com/maps/embed?pb=YOUR_EMBED_PB_PARAMETER"
             width="100%"
             height="100%"
             className="border-0 w-full h-full"

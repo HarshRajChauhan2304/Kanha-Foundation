@@ -275,6 +275,7 @@ export default function AdminPanelPage() {
   // Reviews/Donations/Highlights/Applications/Texts fields
   const [formDesc, setFormDesc] = useState("");
   const [formAuthor, setFormAuthor] = useState("");
+  const [formAddress, setFormAddress] = useState("");
 
   // Star Volunteers fields
   const [formEmail, setFormEmail] = useState("");
@@ -458,7 +459,7 @@ export default function AdminPanelPage() {
         const data = await res.json();
         setSuccessStories(Array.isArray(data) ? data : []);
       } else if (activeTab === "Donations") {
-        const res = await fetch('/api/donations');
+        const res = await fetch('/api/donations', { cache: 'no-store' });
         const data = await res.json();
         setDonations(Array.isArray(data) ? data : []);
         try {
@@ -534,7 +535,7 @@ export default function AdminPanelPage() {
 
         // Also fetch donations to calculate live stats
         try {
-          const donRes = await fetch('/api/donations');
+          const donRes = await fetch('/api/donations', { cache: 'no-store' });
           const donData = await donRes.json();
           if (Array.isArray(donData)) {
             let extraAmount = 0;
@@ -837,6 +838,7 @@ export default function AdminPanelPage() {
     if (activeTab === "Donations") {
       setFormExcerpt("General Support");
       setFormTransactionDate(getFormattedDate());
+      setFormAddress("");
     }
     
     if (activeTab === "DetailedStories") {
@@ -899,6 +901,7 @@ export default function AdminPanelPage() {
       setFormHonoree(item.honoree || "");
       setFormWish(item.wish || "");
       setFormTransactionDate(item.transaction_date || (item.time ? item.time.split('|')[0] : "") || getFormattedDate());
+      setFormAddress(item.address || "");
     } else if (activeTab === "StatsCards") {
       setFormTitle(item.title);
       setFormPrice(item.base_value?.toString() || "0");
@@ -1061,7 +1064,7 @@ export default function AdminPanelPage() {
         image: formImage 
       };
     } else if (activeTab === "Donations") {
-      if (!formTitle.trim() || !formPrice.trim() || !formDesc.trim()) {
+      if (!formTitle.trim() || !formPrice.trim()) {
         triggerAlert("Please fill all required fields.");
         return;
       }
@@ -1069,11 +1072,12 @@ export default function AdminPanelPage() {
         ...bodyPayload, 
         name: formTitle, 
         amount: formPrice, 
-        time: formDesc,
+        time: formDesc || "Just now",
         donation_for: formExcerpt || "General Support",
         honoree: formHonoree,
         wish: formWish,
-        transaction_date: formTransactionDate || getFormattedDate()
+        transaction_date: formTransactionDate || getFormattedDate(),
+        address: formAddress || ""
       };
     } else if (activeTab === "StatsCards") {
       if (!formTitle.trim() || !formPrice.trim()) {
@@ -1850,97 +1854,107 @@ export default function AdminPanelPage() {
               return (
                 <div className="space-y-6">
                   {/* PDF/Print Report Control Panel */}
-                  <div className="bg-zinc-900/50 border border-zinc-800/60 p-6 rounded-2xl">
-                    <h3 className="text-sm font-black uppercase tracking-wider text-[#F3A61E] mb-4 flex items-center gap-2">
-                      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 17v-2a4 4 0 00-4-4H5m14 0h-3a4 4 0 00-4 4v2m21 2h-1a2 2 0 01-2-2V5a2 2 0 00-2-2H9a2 2 0 00-2 2v12a2 2 0 01-2 2H3" />
-                      </svg>
-                      Donation Report Generator (Print / PDF)
-                    </h3>
+                    <div className="bg-zinc-900/50 border border-zinc-800/60 p-6 rounded-2xl space-y-5">
+                      <h3 className="text-sm font-black uppercase tracking-wider text-[#F3A61E] mb-2 flex items-center gap-2">
+                        <svg className="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 17v-2a4 4 0 00-4-4H5m14 0h-3a4 4 0 00-4 4v2m21 2h-1a2 2 0 01-2-2V5a2 2 0 00-2-2H9a2 2 0 00-2 2v12a2 2 0 01-2 2H3" />
+                        </svg>
+                        Donation Report Generator (Print / PDF)
+                      </h3>
 
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end col-auto">
-                      <div>
-                        <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-2">Filter Type</label>
-                        <select 
-                          value={reportFilterType} 
-                          onChange={(e) => setReportFilterType(e.target.value as "date" | "month")}
-                          className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white focus:outline-none"
-                        >
-                          <option value="date">Date Range</option>
-                          <option value="month">Month-wise</option>
-                        </select>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
+                        <div>
+                          <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-2">Filter Type</label>
+                          <select 
+                            value={reportFilterType} 
+                            onChange={(e) => setReportFilterType(e.target.value as "date" | "month")}
+                            className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white focus:outline-none"
+                          >
+                            <option value="date">Date Range</option>
+                            <option value="month">Month-wise</option>
+                          </select>
+                        </div>
+
+                        {reportFilterType === "date" ? (
+                          <>
+                            <div>
+                              <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-2">From Date</label>
+                              <input 
+                                type="date" 
+                                value={reportStartDate} 
+                                onChange={(e) => setReportStartDate(e.target.value)}
+                                className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white focus:outline-none text-zinc-300"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-2">To Date</label>
+                              <input 
+                                type="date" 
+                                value={reportEndDate} 
+                                onChange={(e) => setReportEndDate(e.target.value)}
+                                className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white focus:outline-none text-zinc-300"
+                              />
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <div>
+                              <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-2">Select Month</label>
+                              <select 
+                                value={reportMonth} 
+                                onChange={(e) => setReportMonth(e.target.value)}
+                                className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white focus:outline-none"
+                              >
+                                {Array.from({ length: 12 }, (_, i) => i + 1).map(m => (
+                                  <option key={m} value={m}>
+                                    {new Date(2020, m - 1).toLocaleString('default', { month: 'long' })}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-2">Select Year</label>
+                              <select 
+                                value={reportYear} 
+                                onChange={(e) => setReportYear(e.target.value)}
+                                className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white focus:outline-none"
+                              >
+                                {["2025", "2026", "2027"].map(y => (
+                                  <option key={y} value={y}>{y}</option>
+                                ))}
+                              </select>
+                            </div>
+                          </>
+                        )}
                       </div>
 
-                      {reportFilterType === "date" ? (
-                        <>
-                          <div>
-                            <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-2">From Date</label>
-                            <input 
-                              type="date" 
-                              value={reportStartDate} 
-                              onChange={(e) => setReportStartDate(e.target.value)}
-                              className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white focus:outline-none text-zinc-300"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-2">To Date</label>
-                            <input 
-                              type="date" 
-                              value={reportEndDate} 
-                              onChange={(e) => setReportEndDate(e.target.value)}
-                              className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white focus:outline-none text-zinc-300"
-                            />
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                          <div>
-                            <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-2">Select Month</label>
-                            <select 
-                              value={reportMonth} 
-                              onChange={(e) => setReportMonth(e.target.value)}
-                              className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white focus:outline-none"
-                            >
-                              {Array.from({ length: 12 }, (_, i) => i + 1).map(m => (
-                                <option key={m} value={m}>
-                                  {new Date(2020, m - 1).toLocaleString('default', { month: 'long' })}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-                          <div>
-                            <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-2">Select Year</label>
-                            <select 
-                              value={reportYear} 
-                              onChange={(e) => setReportYear(e.target.value)}
-                              className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white focus:outline-none"
-                            >
-                              {["2025", "2026", "2027"].map(y => (
-                                <option key={y} value={y}>{y}</option>
-                              ))}
-                            </select>
-                          </div>
-                        </>
-                      )}
-
-                      <div className="flex gap-2">
+                      <div className="flex flex-col sm:flex-row gap-3 pt-2">
                         <button 
                           onClick={() => setIsReportOpen(true)}
-                          className="flex-1 py-2.5 bg-[#1E4D2B] hover:bg-[#15381E] text-white text-xs font-black uppercase tracking-wider rounded-xl transition-all cursor-pointer border border-emerald-800/40 text-center flex justify-center items-center gap-1.5"
+                          className="flex-1 py-3 px-4 bg-[#1E4D2B] hover:bg-[#15381E] text-white text-xs font-black uppercase tracking-wider rounded-xl transition-all cursor-pointer border border-emerald-800/40 text-center flex justify-center items-center gap-2 shadow-sm"
                         >
-                          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                          <svg className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                           </svg>
-                          Print PDF / Report
+                          <span>Print PDF / Report</span>
                         </button>
+                        <a 
+                          href="/admin/donations"
+                          className="flex-1 py-3 px-4 bg-[#F3A61E] hover:bg-[#d68f12] text-black text-xs font-black uppercase tracking-wider rounded-xl transition-all cursor-pointer text-center flex justify-center items-center gap-2 shadow-sm"
+                        >
+                          <svg className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                          <span>Manage Donations Dashboard ↗</span>
+                        </a>
                       </div>
                     </div>
-                  </div>
 
                   <table className="min-w-full divide-y divide-zinc-800 text-left">
                     <thead>
                       <tr className="bg-zinc-900/60 text-zinc-400 text-xs font-black uppercase tracking-wider">
                         <th className="px-6 py-4">Donor Name</th>
+                        <th className="px-6 py-4">Address</th>
                         <th className="px-6 py-4">Amount</th>
                         <th className="px-6 py-4">Time Label</th>
                         <th className="px-6 py-4">Donated For</th>
@@ -1952,6 +1966,7 @@ export default function AdminPanelPage() {
                       {filteredReportDonations.map((d) => (
                         <tr key={d.id} className="hover:bg-zinc-900/30 transition-colors">
                           <td className="px-6 py-4 whitespace-nowrap"><p className="text-sm font-bold text-white">{d.name}</p></td>
+                          <td className="px-6 py-4 whitespace-nowrap"><p className="text-xs text-zinc-400">{d.address || "Ranchi, Jharkhand, India"}</p></td>
                           <td className="px-6 py-4 whitespace-nowrap"><p className="text-sm font-extrabold text-[#F3A61E]">{d.amount}</p></td>
                           <td className="px-6 py-4 whitespace-nowrap"><p className="text-xs text-zinc-400">{d.time ? d.time.split('|')[0] : ""}</p></td>
                           <td className="px-6 py-4">
@@ -3280,6 +3295,10 @@ export default function AdminPanelPage() {
                     <div>
                       <label className="block text-xs font-bold text-[#F3A61E] uppercase tracking-wider mb-1.5">Donor Name</label>
                       <input type="text" required value={formTitle} onChange={(e) => setFormTitle(e.target.value)} placeholder="e.g. Vikram Singh" className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-1.5">Donor Address / Location (Optional)</label>
+                      <input type="text" value={formAddress} onChange={(e) => setFormAddress(e.target.value)} placeholder="e.g. Ranchi, Jharkhand, India" className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white" />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
