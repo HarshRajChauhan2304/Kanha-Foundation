@@ -164,6 +164,7 @@ const CATEGORIES = [
 export default function AdminPanelPage() {
   // Authentication states
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const [authMode, setAuthMode] = useState<AuthMode>("signin");
   
   // Auth Form Inputs
@@ -408,6 +409,7 @@ export default function AdminPanelPage() {
     setAdminEmail(storedEmail);
     setAdminAvatar(storedAvatar);
     setAdminPhone(storedPhone);
+    setIsMounted(true);
   }, []);
 
   // Fetch Helper
@@ -1347,6 +1349,18 @@ export default function AdminPanelPage() {
       triggerAlert("Failed to delete record.");
     }
   };
+
+  // Pre-hydration loading state to prevent flash of login page or hydration mismatches
+  if (!isMounted) {
+    return (
+      <div className="bg-zinc-950 text-white min-h-screen flex items-center justify-center font-sans px-4">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-[#F3A61E] mx-auto mb-4"></div>
+          <p className="text-xs text-zinc-400">Loading Admin Portal...</p>
+        </div>
+      </div>
+    );
+  }
 
   // Auth Portal Render Flow
   if (!isLoggedIn) {
