@@ -220,8 +220,24 @@ export default function AdminDonations() {
     const numericAmount = parseFloat(formAmount) || 0;
     const finalAmount = `₹${numericAmount.toLocaleString("en-IN")}`;
 
+    // Package metrics
+    const causeTitle = formCause.toLowerCase();
+    const isBirthday = causeTitle.includes("birthday") || causeTitle.includes("celebration") || causeTitle.includes("anniversary") || causeTitle.includes("memorial");
+    const isFood = causeTitle.includes("thali") || causeTitle.includes("meals") || causeTitle.includes("feed") || causeTitle.includes("cows") || causeTitle.includes("dogs") || causeTitle.includes("chara") || causeTitle.includes("fodder") || causeTitle.includes("food") || causeTitle.includes("packet");
+    const isWelfare = causeTitle.includes("women") || causeTitle.includes("hygiene") || causeTitle.includes("menstrual") || causeTitle.includes("pad") || causeTitle.includes("girl") || causeTitle.includes("child") || causeTitle.includes("care") || causeTitle.includes("water");
+    const isStudyKit = causeTitle.includes("study") || causeTitle.includes("notebook") || (causeTitle.includes("kit") && (causeTitle.includes("study") || causeTitle.includes("school") || causeTitle.includes("education")));
+
+    const birthdayTotal = isBirthday ? numericAmount : 0;
+    const mealsCount = isFood ? Math.round(numericAmount / 30) : 0;
+    const livesCount = isWelfare ? Math.round(numericAmount / 50) : 0;
+    const studyKitsCount = isStudyKit ? Math.round(numericAmount / 150) : 0;
+
     // Package metadata
     const metadata = {
+      birthday: birthdayTotal,
+      meals: mealsCount,
+      lives: livesCount,
+      studykit: studyKitsCount,
       total: numericAmount,
       customisation: {
         isAnonymous: formIsAnonymous,

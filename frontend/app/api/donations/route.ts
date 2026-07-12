@@ -58,21 +58,67 @@ export async function GET() {
           // donor name
           if (d.name) donorSet.add(d.name.trim().toLowerCase());
 
-          // metadata
+          // Parse metadata if available
+          let parsedBirthday = 0;
+          let parsedMeals = 0;
+          let parsedLives = 0;
+          let parsedStudykit = 0;
+          let hasMetaMetrics = false;
+
           if (d.time && d.time.includes('|')) {
             try {
               const meta = JSON.parse(d.time.split('|')[1]);
               if (meta) {
-                if (meta.birthday) totalBirthday += meta.birthday;
-                if (meta.meals) totalMeals += meta.meals;
-                if (meta.lives) totalLives += meta.lives;
-                if (meta.studykit) totalStudykit += meta.studykit;
+                // If the metadata contains at least one metric key, use it
+                if (meta.meals !== undefined || meta.lives !== undefined || meta.studykit !== undefined || meta.birthday !== undefined) {
+                  parsedBirthday = meta.birthday || 0;
+                  parsedMeals = meta.meals || 0;
+                  parsedLives = meta.lives || 0;
+                  parsedStudykit = meta.studykit || 0;
+                  hasMetaMetrics = true;
+                }
               }
-              // Compute impacted lives after each donation
-              totalImpacted = totalLives + totalBirthday + totalMeals + totalStudykit;
             } catch (_) {}
           }
+
+          // Fallback parsing if metadata metrics are missing (e.g. for direct database inserts or manual admin inserts)
+          if (!hasMetaMetrics) {
+            const donationFor = (d.donation_for || "").toLowerCase();
+            
+            // 1. Birthday Campaign
+            if (donationFor.includes("birthday") || donationFor.includes("celebration") || donationFor.includes("anniversary")) {
+              parsedBirthday = amt;
+            }
+            
+            // 2. Meals Served
+            if (donationFor.includes("thali") || donationFor.includes("meals") || donationFor.includes("feed") || 
+                donationFor.includes("cows") || donationFor.includes("dogs") || donationFor.includes("chara") || 
+                donationFor.includes("fodder") || donationFor.includes("food")) {
+              parsedMeals = Math.round(amt / 30);
+            }
+            
+            // 3. Study Kits
+            if (donationFor.includes("study") || donationFor.includes("notebook") || 
+                (donationFor.includes("kit") && (donationFor.includes("study") || donationFor.includes("school") || donationFor.includes("education")))) {
+              parsedStudykit = Math.round(amt / 150);
+            }
+            
+            // 4. Lives Impacted (General Welfare)
+            if (donationFor.includes("women") || donationFor.includes("hygiene") || donationFor.includes("menstrual") || 
+                donationFor.includes("pad") || donationFor.includes("girl") || donationFor.includes("child") || 
+                donationFor.includes("care") || donationFor.includes("water")) {
+              parsedLives = Math.round(amt / 50);
+            }
+          }
+
+          totalBirthday += parsedBirthday;
+          totalMeals += parsedMeals;
+          totalLives += parsedLives;
+          totalStudykit += parsedStudykit;
         });
+
+        // Compute impacted lives
+        totalImpacted = totalLives + totalBirthday + totalMeals + totalStudykit;
 
         // Load existing stats cards
         const statsFilePath = getFallbackPath('stats_cards.json');
