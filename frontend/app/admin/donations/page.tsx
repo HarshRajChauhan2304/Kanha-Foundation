@@ -11,6 +11,7 @@ interface Donation {
   donation_for: string;
   time: string;
   transaction_date?: string;
+  address?: string;
 }
 
 interface CustomisationMeta {

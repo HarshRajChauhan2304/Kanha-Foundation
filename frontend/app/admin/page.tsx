@@ -45,6 +45,7 @@ interface Donation {
   honoree?: string;
   wish?: string;
   transaction_date?: string;
+  address?: string;
 }
 
 interface HighlightItem {
