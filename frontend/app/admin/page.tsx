@@ -302,6 +302,7 @@ export default function AdminPanelPage() {
   const [formGender, setFormGender] = useState("");
   const [formProfilePhoto, setFormProfilePhoto] = useState("");
   const [formTransactionDate, setFormTransactionDate] = useState("");
+  const [formPassword, setFormPassword] = useState("");
   const [causesList, setCausesList] = useState<any[]>(causesDataFallback);
 
   const [alertMsg, setAlertMsg] = useState("");
@@ -830,6 +831,7 @@ export default function AdminPanelPage() {
     setFormWeekLabel("");
     setFormTasksCompleted("0");
     setFormVolunteerId("");
+    setFormPassword("");
     
     if (activeTab === "StatsCards") {
       setFormImage("rupee");
@@ -925,6 +927,11 @@ export default function AdminPanelPage() {
       setFormStatus(item.status || "Pending");
       setFormGender(item.gender || "");
       setFormProfilePhoto(item.profile_photo || "");
+    } else if (activeTab === "RoleManagement") {
+      setFormTitle(item.name || "");
+      setFormEmail(item.email || "");
+      setFormPhone(item.phone || "");
+      setFormPassword(item.password || "");
     } else if (activeTab === "Tasks") {
       setTaskFormVolunteerId(item.volunteer_id?.toString() || "");
       setTaskFormTitle(item.task_title);
@@ -997,10 +1004,8 @@ export default function AdminPanelPage() {
       ? "/api/stories/detailed"
       : activeTab === "SuccessStories"
       ? "/api/success-stories"
-      : activeTab === "ContactInfo"
-      ? "/api/contact-info"
-      : activeTab === "ContactSubmissions"
-      ? "/api/contact"
+      : activeTab === "RoleManagement"
+      ? "/api/admin/users"
       : `/api/${activeTab.toLowerCase()}`;
     
     // Build payload based on Tab
@@ -1183,6 +1188,18 @@ export default function AdminPanelPage() {
         tasks_completed: parseInt(formTasksCompleted, 10) || 0,
         volunteer_id: formVolunteerId ? parseInt(formVolunteerId, 10) : null
       };
+    } else if (activeTab === "RoleManagement") {
+      if (!formTitle.trim() || !formEmail.trim() || !formPassword.trim()) {
+        triggerAlert("Username, email, and password are required.");
+        return;
+      }
+      bodyPayload = {
+        ...bodyPayload,
+        username: formTitle,
+        email: formEmail,
+        phone: formPhone,
+        password: formPassword
+      };
     }
 
     try {
@@ -1278,6 +1295,8 @@ export default function AdminPanelPage() {
       ? highlightSubTab.substring(0, highlightSubTab.length - 1) 
       : activeTab === "Categories"
       ? "Category"
+      : activeTab === "RoleManagement"
+      ? "User Account"
       : isApp ? "Volunteer Application" : isMedia ? "Media Section Banner" : isTexts ? "Text Setting" : isTasks ? "Volunteer Task" : isStar ? "Star Volunteer" : isDetStories ? "Detailed Story" : isSuccessStories ? "Success Story" : isContactInfo ? "Contact Info Card" : isContactSub ? "Contact Message" : activeTab.substring(0, activeTab.length - 1);
       
     if (!window.confirm(`Are you sure you want to delete this ${confirmName}?`)) return;
@@ -1514,7 +1533,7 @@ export default function AdminPanelPage() {
                 {adminUsername}
               </span>
             </div>
-            {activeTab !== "Applications" && activeTab !== "ContactSubmissions" && activeTab !== "RoleManagement" && activeTab !== "Navbar" && activeTab !== "Footer" && activeTab !== "AdminProfile" && (
+            {activeTab !== "Applications" && activeTab !== "ContactSubmissions" && activeTab !== "Navbar" && activeTab !== "Footer" && activeTab !== "AdminProfile" && (
               <button
                 onClick={openAddModal}
                 className="px-5 py-2.5 bg-[#1E4D2B] hover:bg-[#15381E] text-white text-xs font-black uppercase tracking-wider rounded-full transition-all cursor-pointer flex items-center gap-2 border border-emerald-800/40"
@@ -1522,7 +1541,7 @@ export default function AdminPanelPage() {
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
                 </svg>
-                Add {activeTab === "Blogs" ? "Blog" : activeTab === "Highlights" ? (highlightSubTab === "directors" ? "Director" : "Volunteer") : activeTab === "Tasks" ? "Volunteer Task" : activeTab === "StarVolunteers" ? "Star Volunteer" : activeTab === "PageMedia" ? "Banner/Media Setting" : activeTab === "PageTexts" ? "Text Setting" : activeTab === "Categories" ? "Category" : activeTab === "ContactInfo" ? "Contact Card" : activeTab.substring(0, activeTab.length - 1)}
+                Add {activeTab === "Blogs" ? "Blog" : activeTab === "Highlights" ? (highlightSubTab === "directors" ? "Director" : "Volunteer") : activeTab === "Tasks" ? "Volunteer Task" : activeTab === "StarVolunteers" ? "Star Volunteer" : activeTab === "PageMedia" ? "Banner/Media Setting" : activeTab === "PageTexts" ? "Text Setting" : activeTab === "Categories" ? "Category" : activeTab === "ContactInfo" ? "Contact Card" : activeTab === "RoleManagement" ? "User Account" : activeTab.substring(0, activeTab.length - 1)}
               </button>
             )}
             <button
@@ -2390,7 +2409,9 @@ export default function AdminPanelPage() {
                           <th className="px-6 py-4">Name / Username</th>
                           <th className="px-6 py-4">Email Address</th>
                           <th className="px-6 py-4">Phone</th>
+                          <th className="px-6 py-4">Password</th>
                           <th className="px-6 py-4">Role Designation</th>
+                          <th className="px-6 py-4 text-right">Actions</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-zinc-900">
@@ -2406,6 +2427,9 @@ export default function AdminPanelPage() {
                               <p className="text-xs text-zinc-400">{user.phone || "N/A"}</p>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
+                              <p className="text-xs text-zinc-400">{user.password || "••••••••"}</p>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
                               <select
                                 value={user.role}
                                 onChange={(e) => handlePromote(e.target.value as any, user.email)}
@@ -2416,11 +2440,37 @@ export default function AdminPanelPage() {
                                 <option value="admin">Admin</option>
                               </select>
                             </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                              {user.role === "user" ? (
+                                <div className="flex justify-end gap-2">
+                                  <button
+                                    onClick={() => openEditModal(user)}
+                                    className="p-2 hover:bg-zinc-800 text-zinc-300 hover:text-white rounded-xl transition-all cursor-pointer"
+                                    title="Edit User Info"
+                                  >
+                                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                                      <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                    </svg>
+                                  </button>
+                                  <button
+                                    onClick={() => handleDelete(user.id)}
+                                    className="p-2 hover:bg-red-950/30 text-red-400 hover:text-red-500 rounded-xl transition-all cursor-pointer"
+                                    title="Delete User"
+                                  >
+                                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                  </button>
+                                </div>
+                              ) : (
+                                <span className="text-zinc-500 italic text-xs">Role lock</span>
+                              )}
+                            </td>
                           </tr>
                         ))}
                         {usersList.length === 0 && (
                           <tr>
-                            <td colSpan={4} className="py-8 text-center text-xs text-zinc-500 italic">No user accounts found.</td>
+                            <td colSpan={6} className="py-8 text-center text-xs text-zinc-500 italic">No user accounts found.</td>
                           </tr>
                         )}
                       </tbody>
@@ -4015,6 +4065,31 @@ export default function AdminPanelPage() {
                     <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-1.5">Category Name</label>
                     <input type="text" required value={formTitle} onChange={(e) => setFormTitle(e.target.value)} placeholder="e.g. Health Care" className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white focus:outline-none focus:ring-1 focus:ring-emerald-500" />
                   </div>
+                )}
+
+                {activeTab === "RoleManagement" && (
+                  <>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-1.5">Username / Name</label>
+                        <input type="text" required value={formTitle} onChange={(e) => setFormTitle(e.target.value)} placeholder="e.g. Aman Kumar" className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white focus:outline-none focus:ring-1 focus:ring-emerald-500" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-1.5">Email Address</label>
+                        <input type="email" required value={formEmail} onChange={(e) => setFormEmail(e.target.value)} placeholder="user@gmail.com" className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white focus:outline-none" />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-1.5">Phone (WhatsApp)</label>
+                        <input type="text" value={formPhone} onChange={(e) => setFormPhone(e.target.value)} placeholder="e.g. +917488164529" className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white focus:outline-none" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-1.5">Account Password</label>
+                        <input type="text" required value={formPassword} onChange={(e) => setFormPassword(e.target.value)} placeholder="Enter password (plain text)" className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white focus:outline-none" />
+                      </div>
+                    </div>
+                  </>
                 )}
 
                 {/* Unified Save / Cancel button */}

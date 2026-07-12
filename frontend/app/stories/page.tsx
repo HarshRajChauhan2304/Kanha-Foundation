@@ -54,14 +54,6 @@ export default function StoriesPage() {
     { id: 5, title: "Meals Served", base_value: 3500000, prefix: "", suffix: "+", icon: "meals", category: "meals" }
   ]);
 
-  const [extraData, setExtraData] = useState({
-    extraAmount: 0,
-    uniqueDonors: 0,
-    extraBirthday: 0,
-    extraMeals: 0,
-    extraLives: 0,
-    extraStudykit: 0
-  });
 
   useEffect(() => {
     fetch('/api/stories/detailed')
@@ -87,57 +79,6 @@ export default function StoriesPage() {
         }
       })
       .catch(err => console.error("Error fetching stats cards configuration:", err));
-
-    // Fetch and aggregate dynamic donations statistics
-    fetch('/api/donations')
-      .then(res => res.json())
-      .then((data: any[]) => {
-        if (!Array.isArray(data)) return;
-
-        let extraAmount = 0;
-        let extraBirthday = 0;
-        let extraMeals = 0;
-        let extraLives = 0;
-        let extraStudykit = 0;
-        const uniqueNames = new Set<string>();
-
-        data.forEach(d => {
-          // Parse amount, e.g. "₹10,000" -> 10000
-          const clean = d.amount ? d.amount.replace(/[^\d.]/g, "") : "0";
-          const amt = parseFloat(clean) || 0;
-          extraAmount += amt;
-
-          if (d.name) {
-            uniqueNames.add(d.name.trim().toLowerCase());
-          }
-
-          // Parse metadata in time field: "time_string|metadata_json"
-          if (d.time && d.time.includes('|')) {
-            try {
-              const metaStr = d.time.split('|')[1];
-              const meta = JSON.parse(metaStr);
-              if (meta) {
-                if (meta.birthday) extraBirthday += meta.birthday;
-                if (meta.meals) extraMeals += meta.meals;
-                if (meta.lives) extraLives += meta.lives;
-                if (meta.studykit) extraStudykit += meta.studykit;
-              }
-            } catch (e) {
-              console.error("Failed to parse donation metadata:", e);
-            }
-          }
-        });
-
-        setExtraData({
-          extraAmount,
-          uniqueDonors: uniqueNames.size,
-          extraBirthday,
-          extraMeals,
-          extraLives,
-          extraStudykit
-        });
-      })
-      .catch(err => console.error("Error loading dynamic donations metrics:", err));
   }, []);
 
   const filteredStories = selectedCategory === "All" 
@@ -196,21 +137,7 @@ export default function StoriesPage() {
         <div className="grid gap-6 grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
           {statsCards.map((card, idx) => {
             const base = parseFloat(card.base_value) || 0;
-            const cat = card.category;
-            let target = base;
-            if (cat === "raised") {
-              target = base + extraData.extraAmount;
-            } else if (cat === "donors") {
-              target = base + extraData.uniqueDonors;
-            } else if (cat === "birthday") {
-              target = base + extraData.extraBirthday;
-            } else if (cat === "lives") {
-              target = base + extraData.extraLives;
-            } else if (cat === "meals") {
-              target = base + extraData.extraMeals;
-            } else if (cat === "studykit") {
-              target = base + extraData.extraStudykit;
-            }
+            const target = base;
 
             return (
               <motion.div
