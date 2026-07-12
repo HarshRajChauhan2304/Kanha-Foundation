@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { supabase, supabaseAdmin } from '@/lib/supabase';
 import fs from 'fs';
 import path from 'path';
 import { resilientDelete, resilientPost, resilientPut, getFallbackPath } from '@/lib/db-fallback';
@@ -13,7 +13,7 @@ export async function GET() {
   let useFallback = false;
 
   try {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('donations')
       .select('*')
       .order('id', { ascending: true });
