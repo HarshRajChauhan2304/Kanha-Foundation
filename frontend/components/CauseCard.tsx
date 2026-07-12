@@ -67,10 +67,19 @@ export default function CauseCard({ cause }: CauseCardProps) {
           )}
         </button>
 
-        {/* Live Green Badge (Top-Right matching screenshot) */}
-        <div className="absolute top-2 right-2 sm:top-3.5 sm:right-3.5 z-10 flex h-5.5 w-5.5 sm:h-7 sm:w-7 items-center justify-center rounded-full bg-emerald-500 border-2 border-white dark:border-[#101412] shadow-md animate-pulse">
-          <div className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-white" />
-        </div>
+        {/* Live Green Badge (Top-Right matching screenshot) - Linked to WhatsApp */}
+        <a
+          href={`https://wa.me/917488164529?text=Hello,%20I%20want%20to%20know%20more%20about%20the%20cause:%20${encodeURIComponent(cause.title)}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={(e) => e.stopPropagation()}
+          className="absolute top-2 right-2 sm:top-3.5 sm:right-3.5 z-20 flex h-7.5 w-7.5 sm:h-9 sm:w-9 items-center justify-center rounded-full bg-emerald-500 border-2 border-white dark:border-[#101412] shadow-md hover:bg-emerald-600 active:scale-95 transition-all cursor-pointer"
+          title="Inquire on WhatsApp"
+        >
+          <svg className="h-4 w-4 sm:h-5 sm:w-5 text-white fill-current" viewBox="0 0 24 24">
+            <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.73-1.455L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.42 9.863-9.864.001-2.636-1.023-5.115-2.885-6.978C16.584 1.9 14.113.876 11.48.876c-5.437 0-9.861 4.421-9.864 9.865-.001 1.748.46 3.454 1.336 4.975L1.87 20.354l4.777-1.2zm11.375-7.628s-.363-.18-1.222-.61c-.859-.43-.88-.41-.98-.26c-.1.15-.38.48-.46.58-.08.1-.17.11-.34.02-.34-.17-1.12-.42-1.95-1.16-.64-.57-1.08-1.28-1.2-1.49-.12-.22-.01-.33.1-.42.1-.09.22-.26.33-.39.11-.13.15-.22.22-.37.07-.15.03-.28-.02-.39-.05-.1-.46-1.1-.63-1.51-.17-.41-.35-.35-.48-.35h-.41c-.14 0-.36.05-.55.26-.19.21-.73.71-.73 1.74s.75 2.02.86 2.16c.11.14 1.48 2.26 3.58 3.17.5.22.89.35 1.2.45.5.16.96.14 1.32.09.4-.06 1.22-.5 1.39-.98.17-.48.17-.89.12-.98-.05-.09-.18-.14-.36-.23z"/>
+          </svg>
+        </a>
       </div>
 
       {/* Cause Title & Pricing Details */}
