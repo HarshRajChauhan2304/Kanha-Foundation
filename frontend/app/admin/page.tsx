@@ -303,6 +303,7 @@ export default function AdminPanelPage() {
   const [formProfilePhoto, setFormProfilePhoto] = useState("");
   const [formTransactionDate, setFormTransactionDate] = useState("");
   const [formPassword, setFormPassword] = useState("");
+  const [formRole, setFormRole] = useState("user");
   const [causesList, setCausesList] = useState<any[]>(causesDataFallback);
 
   const [alertMsg, setAlertMsg] = useState("");
@@ -832,6 +833,7 @@ export default function AdminPanelPage() {
     setFormTasksCompleted("0");
     setFormVolunteerId("");
     setFormPassword("");
+    setFormRole("user");
     
     if (activeTab === "StatsCards") {
       setFormImage("rupee");
@@ -932,6 +934,7 @@ export default function AdminPanelPage() {
       setFormEmail(item.email || "");
       setFormPhone(item.phone || "");
       setFormPassword(item.password || "");
+      setFormRole(item.role || "user");
     } else if (activeTab === "Tasks") {
       setTaskFormVolunteerId(item.volunteer_id?.toString() || "");
       setTaskFormTitle(item.task_title);
@@ -1198,7 +1201,8 @@ export default function AdminPanelPage() {
         username: formTitle,
         email: formEmail,
         phone: formPhone,
-        password: formPassword
+        password: formPassword,
+        role: formRole
       };
     }
 
@@ -2441,30 +2445,26 @@ export default function AdminPanelPage() {
                               </select>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                              {user.role === "user" ? (
-                                <div className="flex justify-end gap-2">
-                                  <button
-                                    onClick={() => openEditModal(user)}
-                                    className="p-2 hover:bg-zinc-800 text-zinc-300 hover:text-white rounded-xl transition-all cursor-pointer"
-                                    title="Edit User Info"
-                                  >
-                                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                                      <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                    </svg>
-                                  </button>
-                                  <button
-                                    onClick={() => handleDelete(user.id)}
-                                    className="p-2 hover:bg-red-950/30 text-red-400 hover:text-red-500 rounded-xl transition-all cursor-pointer"
-                                    title="Delete User"
-                                  >
-                                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                    </svg>
-                                  </button>
-                                </div>
-                              ) : (
-                                <span className="text-zinc-500 italic text-xs">Role lock</span>
-                              )}
+                              <div className="flex justify-end gap-2">
+                                <button
+                                  onClick={() => openEditModal(user)}
+                                  className="p-2 hover:bg-zinc-800 text-zinc-300 hover:text-white rounded-xl transition-all cursor-pointer"
+                                  title="Edit User Info"
+                                >
+                                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                  </svg>
+                                </button>
+                                <button
+                                  onClick={() => handleDelete(user.id)}
+                                  className="p-2 hover:bg-red-950/30 text-red-400 hover:text-red-500 rounded-xl transition-all cursor-pointer"
+                                  title="Delete User"
+                                >
+                                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                  </svg>
+                                </button>
+                              </div>
                             </td>
                           </tr>
                         ))}
@@ -4085,9 +4085,17 @@ export default function AdminPanelPage() {
                         <input type="text" value={formPhone} onChange={(e) => setFormPhone(e.target.value)} placeholder="e.g. +917488164529" className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white focus:outline-none" />
                       </div>
                       <div>
-                        <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-1.5">Account Password</label>
-                        <input type="text" required value={formPassword} onChange={(e) => setFormPassword(e.target.value)} placeholder="Enter password (plain text)" className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white focus:outline-none" />
+                        <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-1.5">Account Role</label>
+                        <select value={formRole} onChange={(e) => setFormRole(e.target.value)} className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white focus:outline-none">
+                          <option value="user">User</option>
+                          <option value="volunteer">Volunteer</option>
+                          <option value="admin">Admin</option>
+                        </select>
                       </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-1.5">Account Password</label>
+                      <input type="text" required value={formPassword} onChange={(e) => setFormPassword(e.target.value)} placeholder="Enter password (plain text)" className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white focus:outline-none" />
                     </div>
                   </>
                 )}

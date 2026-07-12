@@ -108,7 +108,7 @@ export async function GET() {
           email: v.email,
           phone: v.phone || "",
           role: "volunteer",
-          password: ""
+          password: v.password || ""
         });
       }
     });
@@ -140,78 +140,88 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { username, email, phone, password } = body;
+    const { username, email, phone, password, role } = body;
 
-    if (!username || !email || !password) {
-      return NextResponse.json({ success: false, error: "Username, email, and password are required." }, { status: 400 });
+    if (!username || !email || !password || !role) {
+      return NextResponse.json({ success: false, error: "Username, email, password, and role are required." }, { status: 400 });
     }
 
     const cleanEmail = email.trim().toLowerCase();
+    const targetRole = role.trim().toLowerCase();
 
-    // 1. Check if email already exists in Supabase
-    let dbSuccess = false;
-    let newUser = null;
-
+    // 1. Delete from all tables first to avoid duplicates
     try {
-      const { data: existingUser } = await supabaseAdmin
-        .from('users')
-        .select('id')
-        .eq('email', cleanEmail)
-        .maybeSingle();
-
-      if (existingUser) {
-        return NextResponse.json({ success: false, error: "User with this email already exists." }, { status: 400 });
-      }
-
-      const { data, error } = await supabaseAdmin
-        .from('users')
-        .insert([{
-          username,
-          email: cleanEmail,
-          phone: phone || "",
-          password
-        }])
-        .select()
-        .single();
-
-      if (!error && data) {
-        dbSuccess = true;
-        newUser = data;
-      } else if (error) {
-        console.warn("Supabase user insert failed:", error);
-      }
+      await supabaseAdmin.from('admin_users').delete().eq('email', cleanEmail);
+      await supabaseAdmin.from('volunteer_applications').delete().eq('email', cleanEmail);
+      await supabaseAdmin.from('users').delete().eq('email', cleanEmail);
     } catch (e) {
-      console.warn("DB user insert exception:", e);
+      console.warn("DB deletes failed/bypassed in POST:", e);
     }
 
-    // 2. Local Fallback Sync
-    const localUsers = readLocalJSON('users.json');
-    if (localUsers.some((u: any) => u.email?.trim().toLowerCase() === cleanEmail)) {
-      return NextResponse.json({ success: false, error: "User with this email already exists." }, { status: 400 });
-    }
+    let localAdmins = readLocalJSON('admin_users.json').filter(a => a.email?.trim().toLowerCase() !== cleanEmail);
+    let localVols = readLocalJSON('volunteer_applications.json').filter(v => v.email?.trim().toLowerCase() !== cleanEmail);
+    let localUsers = readLocalJSON('users.json').filter(u => u.email?.trim().toLowerCase() !== cleanEmail);
 
-    if (!dbSuccess) {
-      const id = Date.now();
-      newUser = {
-        id,
-        username,
+    let dbSuccess = false;
+    let newId: any = Date.now();
+
+    // 2. Insert into the target role
+    if (targetRole === "admin") {
+      const payload = { username, email: cleanEmail, phone: phone || "", password };
+      try {
+        const { data, error } = await supabaseAdmin.from('admin_users').insert([payload]).select().single();
+        if (!error && data) {
+          dbSuccess = true;
+          newId = data.id;
+        }
+      } catch (e) {
+        console.warn("DB Admin insert failed:", e);
+      }
+      localAdmins.push({ id: newId, ...payload });
+      writeLocalJSON('admin_users.json', localAdmins);
+    } else if (targetRole === "volunteer") {
+      const payload = {
+        name: username,
         email: cleanEmail,
         phone: phone || "",
-        password,
-        created_at: new Date().toISOString()
+        city: "Ranchi",
+        motivation: "Created/Approved by Admin",
+        skills: ["Food Distribution & Relief Work"],
+        status: "Approved",
+        password
       };
+      try {
+        const { data, error } = await supabaseAdmin.from('volunteer_applications').insert([payload]).select().single();
+        if (!error && data) {
+          dbSuccess = true;
+          newId = data.id;
+        }
+      } catch (e) {
+        console.warn("DB Volunteer insert failed:", e);
+      }
+      localVols.push({ id: newId, ...payload });
+      writeLocalJSON('volunteer_applications.json', localVols);
+    } else {
+      const payload = { username, email: cleanEmail, phone: phone || "", password };
+      try {
+        const { data, error } = await supabaseAdmin.from('users').insert([payload]).select().single();
+        if (!error && data) {
+          dbSuccess = true;
+          newId = data.id;
+        }
+      } catch (e) {
+        console.warn("DB User insert failed:", e);
+      }
+      localUsers.push({ id: newId, ...payload });
+      writeLocalJSON('users.json', localUsers);
     }
 
-    localUsers.push({
-      id: newUser.id,
-      username: newUser.username,
-      email: newUser.email,
-      phone: newUser.phone,
-      password: newUser.password
-    });
+    // Write back other lists to keep them clean
+    writeLocalJSON('admin_users.json', localAdmins);
+    writeLocalJSON('volunteer_applications.json', localVols);
     writeLocalJSON('users.json', localUsers);
 
-    return NextResponse.json({ success: true, user: newUser });
+    return NextResponse.json({ success: true, id: `${targetRole}-${newId}` });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
@@ -220,57 +230,116 @@ export async function POST(request: Request) {
 export async function PUT(request: Request) {
   try {
     const body = await request.json();
-    const { id, username, email, phone, password } = body;
+    const { id, username, email, phone, password, role } = body;
 
-    if (!id || !username || !email || !password) {
-      return NextResponse.json({ success: false, error: "ID, username, email, and password are required." }, { status: 400 });
+    if (!id || !username || !email || !password || !role) {
+      return NextResponse.json({ success: false, error: "ID, username, email, password, and role are required." }, { status: 400 });
     }
 
     const cleanEmail = email.trim().toLowerCase();
-    const cleanId = String(id).replace("user-", "");
+    const targetRole = role.trim().toLowerCase();
 
-    // 1. Supabase Update
-    let dbSuccess = false;
-    try {
-      const { error } = await supabaseAdmin
-        .from('users')
-        .update({
-          username,
-          email: cleanEmail,
-          phone: phone || "",
-          password
-        })
-        .eq('id', cleanId);
-
-      if (!error) {
-        dbSuccess = true;
-      } else {
-        console.warn("Supabase user update failed:", error);
-      }
-    } catch (e) {
-      console.warn("DB user update exception:", e);
+    // Determine old role and clean ID
+    let oldRole = "user";
+    let cleanId = String(id);
+    if (String(id).startsWith("user-")) {
+      oldRole = "user";
+      cleanId = String(id).replace("user-", "");
+    } else if (String(id).startsWith("volunteer-")) {
+      oldRole = "volunteer";
+      cleanId = String(id).replace("volunteer-", "");
+    } else if (String(id).startsWith("admin-")) {
+      oldRole = "admin";
+      cleanId = String(id).replace("admin-", "");
     }
 
-    // 2. Local Fallback Sync
-    let localUsers = readLocalJSON('users.json');
-    let found = false;
+    // 1. If role changed: perform migrate (delete from old, insert into new)
+    if (oldRole !== targetRole) {
+      // Delete from DB
+      try {
+        if (oldRole === "admin") await supabaseAdmin.from('admin_users').delete().eq('id', cleanId);
+        else if (oldRole === "volunteer") await supabaseAdmin.from('volunteer_applications').delete().eq('id', cleanId);
+        else await supabaseAdmin.from('users').delete().eq('id', cleanId);
+      } catch (e) {
+        console.warn("DB delete old role failed:", e);
+      }
 
-    localUsers = localUsers.map((u: any) => {
-      if (String(u.id) === cleanId || u.email?.trim().toLowerCase() === cleanEmail) {
-        found = true;
-        return {
-          ...u,
-          username,
+      // Delete from JSON
+      if (oldRole === "admin") {
+        const local = readLocalJSON('admin_users.json').filter(a => String(a.id) !== cleanId && a.email?.trim().toLowerCase() !== cleanEmail);
+        writeLocalJSON('admin_users.json', local);
+      } else if (oldRole === "volunteer") {
+        const local = readLocalJSON('volunteer_applications.json').filter(v => String(v.id) !== cleanId && v.email?.trim().toLowerCase() !== cleanEmail);
+        writeLocalJSON('volunteer_applications.json', local);
+      } else {
+        const local = readLocalJSON('users.json').filter(u => String(u.id) !== cleanId && u.email?.trim().toLowerCase() !== cleanEmail);
+        writeLocalJSON('users.json', local);
+      }
+
+      // Insert into new table
+      let dbSuccess = false;
+      let newId: any = Date.now();
+      if (targetRole === "admin") {
+        const payload = { username, email: cleanEmail, phone: phone || "", password };
+        try {
+          const { data } = await supabaseAdmin.from('admin_users').insert([payload]).select().single();
+          if (data) { dbSuccess = true; newId = data.id; }
+        } catch (e) {}
+        const local = readLocalJSON('admin_users.json');
+        local.push({ id: newId, ...payload });
+        writeLocalJSON('admin_users.json', local);
+      } else if (targetRole === "volunteer") {
+        const payload = {
+          name: username,
           email: cleanEmail,
           phone: phone || "",
+          city: "Ranchi",
+          motivation: "Role updated by Admin",
+          skills: ["Food Distribution & Relief Work"],
+          status: "Approved",
           password
         };
+        try {
+          const { data } = await supabaseAdmin.from('volunteer_applications').insert([payload]).select().single();
+          if (data) { dbSuccess = true; newId = data.id; }
+        } catch (e) {}
+        const local = readLocalJSON('volunteer_applications.json');
+        local.push({ id: newId, ...payload });
+        writeLocalJSON('volunteer_applications.json', local);
+      } else {
+        const payload = { username, email: cleanEmail, phone: phone || "", password };
+        try {
+          const { data } = await supabaseAdmin.from('users').insert([payload]).select().single();
+          if (data) { dbSuccess = true; newId = data.id; }
+        } catch (e) {}
+        const local = readLocalJSON('users.json');
+        local.push({ id: newId, ...payload });
+        writeLocalJSON('users.json', local);
       }
-      return u;
-    });
-
-    if (found || !dbSuccess) {
-      writeLocalJSON('users.json', localUsers);
+    } else {
+      // 2. Same role: update corresponding record
+      if (targetRole === "admin") {
+        try {
+          await supabaseAdmin.from('admin_users').update({ username, email: cleanEmail, phone: phone || "", password }).eq('id', cleanId);
+        } catch (e) {}
+        let local = readLocalJSON('admin_users.json');
+        local = local.map(a => String(a.id) === cleanId ? { ...a, username, email: cleanEmail, phone: phone || "", password } : a);
+        writeLocalJSON('admin_users.json', local);
+      } else if (targetRole === "volunteer") {
+        try {
+          await supabaseAdmin.from('volunteer_applications').update({ name: username, email: cleanEmail, phone: phone || "", password }).eq('id', cleanId);
+        } catch (e) {}
+        let local = readLocalJSON('volunteer_applications.json');
+        local = local.map(v => String(v.id) === cleanId ? { ...v, name: username, email: cleanEmail, phone: phone || "", password } : v);
+        writeLocalJSON('volunteer_applications.json', local);
+      } else {
+        try {
+          await supabaseAdmin.from('users').update({ username, email: cleanEmail, phone: phone || "", password }).eq('id', cleanId);
+        } catch (e) {}
+        let local = readLocalJSON('users.json');
+        local = local.map(u => String(u.id) === cleanId ? { ...u, username, email: cleanEmail, phone: phone || "", password } : u);
+        writeLocalJSON('users.json', local);
+      }
     }
 
     return NextResponse.json({ success: true });
@@ -288,32 +357,42 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ success: false, error: "ID is required." }, { status: 400 });
     }
 
-    const cleanId = String(id).replace("user-", "");
-
-    // 1. Supabase Delete
-    let dbSuccess = false;
-    try {
-      const { error } = await supabaseAdmin
-        .from('users')
-        .delete()
-        .eq('id', cleanId);
-
-      if (!error) {
-        dbSuccess = true;
-      } else {
-        console.warn("Supabase user delete failed:", error);
-      }
-    } catch (e) {
-      console.warn("DB user delete exception:", e);
+    let cleanId = String(id);
+    let targetRole = "user";
+    if (String(id).startsWith("user-")) {
+      targetRole = "user";
+      cleanId = String(id).replace("user-", "");
+    } else if (String(id).startsWith("volunteer-")) {
+      targetRole = "volunteer";
+      cleanId = String(id).replace("volunteer-", "");
+    } else if (String(id).startsWith("admin-")) {
+      targetRole = "admin";
+      cleanId = String(id).replace("admin-", "");
     }
 
-    // 2. Local Fallback Sync
-    let localUsers = readLocalJSON('users.json');
-    const originalLength = localUsers.length;
-    localUsers = localUsers.filter((u: any) => String(u.id) !== cleanId);
+    // Supabase delete
+    try {
+      if (targetRole === "admin") {
+        await supabaseAdmin.from('admin_users').delete().eq('id', cleanId);
+      } else if (targetRole === "volunteer") {
+        await supabaseAdmin.from('volunteer_applications').delete().eq('id', cleanId);
+      } else {
+        await supabaseAdmin.from('users').delete().eq('id', cleanId);
+      }
+    } catch (e) {
+      console.warn("DB user delete failed:", e);
+    }
 
-    if (localUsers.length < originalLength || !dbSuccess) {
-      writeLocalJSON('users.json', localUsers);
+    // Local JSON delete
+    if (targetRole === "admin") {
+      const local = readLocalJSON('admin_users.json').filter(u => String(u.id) !== cleanId);
+      writeLocalJSON('admin_users.json', local);
+    } else if (targetRole === "volunteer") {
+      const local = readLocalJSON('volunteer_applications.json').filter(u => String(u.id) !== cleanId);
+      writeLocalJSON('volunteer_applications.json', local);
+    } else {
+      const local = readLocalJSON('users.json').filter(u => String(u.id) !== cleanId);
+      writeLocalJSON('users.json', local);
     }
 
     return NextResponse.json({ success: true });
