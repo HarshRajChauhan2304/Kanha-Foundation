@@ -53,7 +53,6 @@ export async function POST(request: Request) {
     checkError(await supabaseAdmin.from('blogs').delete().neq('id', 0), "Clear Blogs");
     checkError(await supabaseAdmin.from('reviews').delete().neq('id', 0), "Clear Reviews");
     checkError(await supabaseAdmin.from('stories').delete().neq('id', 0), "Clear Stories");
-    checkError(await supabaseAdmin.from('donations').delete().neq('id', 0), "Clear Donations");
     checkError(await supabaseAdmin.from('directors').delete().neq('id', 0), "Clear Directors");
     checkError(await supabaseAdmin.from('volunteers').delete().neq('id', 0), "Clear Volunteers");
     try {
@@ -139,17 +138,7 @@ export async function POST(request: Request) {
       checkError(await supabaseAdmin.from('stories').insert(payload), "Insert Stories");
     }
 
-    // 7. Seed Donations
-    if (donations && donations.length > 0) {
-      const payload = donations.map((d: any, idx: number) => ({
-        id: idx + 1,
-        name: d.name,
-        amount: d.amount,
-        time: d.time,
-        donation_for: d.donation_for || null
-      }));
-      checkError(await supabaseAdmin.from('donations').insert(payload), "Insert Donations");
-    }
+    // Donations seeding removed to prevent overwriting transaction data
 
     // Seed Star Volunteers
     if (starVolunteers && starVolunteers.length > 0) {
