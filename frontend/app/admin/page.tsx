@@ -1327,6 +1327,8 @@ export default function AdminPanelPage() {
       ? `/api/stories/detailed?id=${idOrKey}`
       : activeTab === "SuccessStories"
       ? `/api/success-stories?id=${idOrKey}`
+      : activeTab === "RoleManagement"
+      ? `/api/admin/users?id=${idOrKey}`
       : `/api/${activeTab.toLowerCase()}?id=${idOrKey}`;
 
     try {
@@ -1337,6 +1339,8 @@ export default function AdminPanelPage() {
       if (result.success) {
         triggerAlert("Record deleted successfully!");
         fetchData();
+      } else {
+        triggerAlert(result.error || "Failed to delete record.");
       }
     } catch (error) {
       console.error("Delete error:", error);
