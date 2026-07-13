@@ -480,7 +480,7 @@ export default function Home() {
 
       {/* Featured Causes Section */}
         <section id="featured-causes" className="w-full py-16 relative overflow-visible">
-        <div className="relative flex justify-center items-center mb-8 w-full">
+        <div className="relative flex flex-col justify-center items-center mb-8 w-full">
           <div className="text-center">
             <h2 className="text-3xl font-extrabold tracking-tight text-[#1E4D2B] sm:text-4xl dark:text-[#52c47c]">
               Featured Causes
@@ -491,7 +491,7 @@ export default function Home() {
           </div>
           <a
             href="/causes"
-            className="absolute right-0 text-sm font-bold text-[#1E4D2B] hover:text-[#15381E] dark:text-[#52c47c] dark:hover:text-[#6ae095] hover:underline transition-colors hidden sm:inline-flex items-center gap-1"
+            className="mt-4 sm:mt-0 sm:absolute sm:right-0 sm:top-1/2 sm:-translate-y-1/2 text-sm font-bold text-[#1E4D2B] hover:text-[#15381E] dark:text-[#52c47c] dark:hover:text-[#6ae095] hover:underline transition-colors flex items-center gap-1"
           >
             View All Projects &rarr;
           </a>
