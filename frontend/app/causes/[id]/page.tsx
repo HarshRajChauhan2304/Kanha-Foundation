@@ -72,8 +72,30 @@ export default function CauseDetailPage({ params }: { params: Promise<{ id: stri
 
   const getDonationTime = (donor: any) => {
     if (!donor) return "";
-    if (!donor.time) return "Recently";
-    return donor.time.split('|')[0];
+    const createdAtStr = donor.created_at;
+    const transactionDateStr = donor.transaction_date;
+    if (!createdAtStr) return transactionDateStr || "Just now";
+    try {
+      const date = new Date(createdAtStr);
+      if (isNaN(date.getTime())) {
+        return transactionDateStr || "Just now";
+      }
+      let hours = date.getHours();
+      const minutes = date.getMinutes();
+      const ampm = hours >= 12 ? 'pm' : 'am';
+      hours = hours % 12;
+      hours = hours ? hours : 12;
+      const minutesStr = minutes < 10 ? '0' + minutes : minutes;
+      
+      const day = date.getDate();
+      const months = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"];
+      const month = months[date.getMonth()];
+      const year = date.getFullYear();
+      
+      return `${hours}:${minutesStr} ${ampm}, date ${day} ${month} ${year}`;
+    } catch (e) {
+      return transactionDateStr || "Just now";
+    }
   };
 
   const getDonationAmount = (donor: any) => {

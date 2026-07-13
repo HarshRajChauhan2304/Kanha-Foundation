@@ -50,6 +50,31 @@ export default function LiveDonationsToast() {
       </div>
     );
   }
+  const formatDonationTime = (createdAtStr: string, transactionDateStr?: string) => {
+    if (!createdAtStr) return transactionDateStr || "Just now";
+    try {
+      const date = new Date(createdAtStr);
+      if (isNaN(date.getTime())) {
+        return transactionDateStr || "Just now";
+      }
+      let hours = date.getHours();
+      const minutes = date.getMinutes();
+      const ampm = hours >= 12 ? 'pm' : 'am';
+      hours = hours % 12;
+      hours = hours ? hours : 12;
+      const minutesStr = minutes < 10 ? '0' + minutes : minutes;
+      
+      const day = date.getDate();
+      const months = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"];
+      const month = months[date.getMonth()];
+      const year = date.getFullYear();
+      
+      return `${hours}:${minutesStr} ${ampm}, date ${day} ${month} ${year}`;
+    } catch (e) {
+      return transactionDateStr || "Just now";
+    }
+  };
+
   const current = displayDonations[index];
 
   return (
@@ -76,7 +101,7 @@ export default function LiveDonationsToast() {
                 {current.name} donated <span className="text-[#F3A61E]">{current.amount}</span>
               </p>
               <p className="text-[10px] sm:text-xs text-gray-400 font-bold mt-0.5">
-                {current.time ? current.time.split('|')[0] : ""}
+                {formatDonationTime(current.created_at, current.transaction_date)}
               </p>
             </div>
 
