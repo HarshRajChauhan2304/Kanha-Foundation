@@ -65,11 +65,11 @@ export default function LiveDonationsToast() {
       const minutesStr = minutes < 10 ? '0' + minutes : minutes;
       
       const day = date.getDate();
-      const months = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"];
+      const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
       const month = months[date.getMonth()];
       const year = date.getFullYear();
       
-      return `${hours}:${minutesStr} ${ampm}, date ${day} ${month} ${year}`;
+      return `${day} ${month} ${year} ${hours}:${minutesStr}${ampm}`;
     } catch (e) {
       return transactionDateStr || "Just now";
     }
