@@ -92,7 +92,7 @@ export default function CauseDetailPage({ params }: { params: Promise<{ id: stri
       const month = months[date.getMonth()];
       const year = date.getFullYear();
       
-      return `${day} ${month} ${year} ${hours}:${minutesStr}${ampm}`;
+      return `${day} ${month} ${year} ${hours}:${minutesStr} ${ampm}`;
     } catch (e) {
       return transactionDateStr || "Just now";
     }
