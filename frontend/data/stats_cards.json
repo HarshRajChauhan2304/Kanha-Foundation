@@ -29,7 +29,7 @@
   {
     "id": 4,
     "title": "Lives Impacted",
-    "base_value": 177,
+    "base_value": 194,
     "prefix": "",
     "suffix": "+",
     "icon": "heart",
@@ -47,7 +47,7 @@
   {
     "id": 1783188136129,
     "title": "Providing Education",
-    "base_value": 4,
+    "base_value": 21,
     "prefix": "",
     "suffix": "+",
     "icon": "child-studykit",
