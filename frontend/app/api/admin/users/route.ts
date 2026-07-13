@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { supabase, supabaseAdmin } from '@/lib/supabase';
 import fs from 'fs';
 import path from 'path';
+import { syncVolunteerToHighlights } from '@/lib/db-fallback';
 
 // Helper to read local JSON files
 const readLocalJSON = (filename: string): any[] => {
@@ -306,6 +307,18 @@ export async function PUT(request: Request) {
         const local = readLocalJSON('volunteer_applications.json');
         local.push({ id: newId, ...payload });
         writeLocalJSON('volunteer_applications.json', local);
+
+        // Sync created volunteer to about highlights page
+        try {
+          await syncVolunteerToHighlights({
+            name: payload.name,
+            motivation: payload.motivation,
+            profile_photo: "",
+            gender: ""
+          });
+        } catch (e) {
+          console.warn("Sync to highlights failed in admin users POST route:", e);
+        }
       } else {
         const payload = { username, email: cleanEmail, phone: phone || "", password };
         try {
@@ -332,6 +345,21 @@ export async function PUT(request: Request) {
         let local = readLocalJSON('volunteer_applications.json');
         local = local.map(v => String(v.id) === cleanId ? { ...v, name: username, email: cleanEmail, phone: phone || "", password } : v);
         writeLocalJSON('volunteer_applications.json', local);
+
+        // Sync updated volunteer to about highlights page
+        try {
+          const volData = local.find(v => String(v.id) === cleanId);
+          if (volData) {
+            await syncVolunteerToHighlights({
+              name: volData.name,
+              motivation: volData.motivation,
+              profile_photo: volData.profile_photo,
+              gender: volData.gender
+            });
+          }
+        } catch (e) {
+          console.warn("Sync to highlights failed in admin users PUT route:", e);
+        }
       } else {
         try {
           await supabaseAdmin.from('users').update({ username, email: cleanEmail, phone: phone || "", password }).eq('id', cleanId);

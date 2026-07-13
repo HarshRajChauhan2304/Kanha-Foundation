@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { supabase, supabaseAdmin } from '@/lib/supabase';
 import fs from 'fs';
 import path from 'path';
+import { syncVolunteerToHighlights } from '@/lib/db-fallback';
 
 // Helper to read local JSON files
 const readLocalJSON = (filename: string): any[] => {
@@ -161,6 +162,18 @@ export async function POST(request: Request) {
         console.warn("DB Volunteer insert failed/bypassed:", e);
       }
       localVols.push({ id: Date.now(), ...payload });
+
+      // Sync promoted volunteer to about highlights page
+      try {
+        await syncVolunteerToHighlights({
+          name: payload.name,
+          motivation: payload.motivation,
+          profile_photo: "",
+          gender: ""
+        });
+      } catch (e) {
+        console.warn("Sync to highlights failed in promote route:", e);
+      }
     } else if (newRole === "user") {
       const payload = { username: name, email: cleanEmail, phone, password };
       try {

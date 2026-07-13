@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import fs from 'fs';
 import path from 'path';
+import { syncVolunteerToHighlights } from '@/lib/db-fallback';
 
 export async function POST(request: Request) {
   try {
@@ -105,6 +106,18 @@ export async function POST(request: Request) {
       }
     } catch (e) {
       console.warn("Local JSON update failed in approve route:", e);
+    }
+
+    // Sync approved volunteer to about highlights page
+    try {
+      await syncVolunteerToHighlights({
+        name: app.name,
+        motivation: app.motivation,
+        profile_photo: app.profile_photo,
+        gender: app.gender
+      });
+    } catch (e) {
+      console.warn("Sync to highlights failed in approve route:", e);
     }
 
     // 3. Simulate SMTP Email dispatching by logging to server console

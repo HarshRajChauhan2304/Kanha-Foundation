@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import fs from 'fs';
 import path from 'path';
-import { resilientDelete, resilientPost, resilientPut } from '@/lib/db-fallback';
+import { resilientDelete, resilientPost, resilientPut, syncVolunteerToHighlights } from '@/lib/db-fallback';
 
 // GET all volunteer registrations (for admin review)
 export async function GET() {
@@ -132,6 +132,18 @@ export async function PUT(request: Request) {
     });
 
     if (result.success && result.item) {
+      if (result.item.status === 'Approved') {
+        try {
+          await syncVolunteerToHighlights({
+            name: result.item.name,
+            motivation: result.item.motivation,
+            profile_photo: result.item.profile_photo,
+            gender: result.item.gender
+          });
+        } catch (e) {
+          console.warn("Sync to highlights failed in volunteer update route:", e);
+        }
+      }
       return NextResponse.json({ success: true, application: result.item });
     }
 

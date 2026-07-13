@@ -230,3 +230,88 @@ export async function resilientPut({
 
   return { success: dbSucceeded, item: dbResult };
 }
+
+export async function syncVolunteerToHighlights(app: {
+  name: string;
+  motivation?: string;
+  profile_photo?: string;
+  gender?: string;
+}) {
+  const defaultAvatar = "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80";
+  const name = app.name;
+  const role = "Volunteer"; // Default designation
+  const image = app.profile_photo || defaultAvatar;
+  const quote = app.motivation || "Proud to be a volunteer at Kanha Foundation!";
+
+  // 1. Supabase insert/update
+  let dbResult: any = null;
+  let dbSucceeded = false;
+  try {
+    const { data: existing, error: findError } = await supabaseAdmin
+      .from('volunteers')
+      .select('*')
+      .eq('name', name)
+      .maybeSingle();
+
+    if (!findError && existing) {
+      // Update
+      const { data, error } = await supabaseAdmin
+        .from('volunteers')
+        .update({ role, image, quote })
+        .eq('id', existing.id)
+        .select()
+        .single();
+      if (!error && data) {
+        dbResult = data;
+        dbSucceeded = true;
+      }
+    } else {
+      // Insert
+      const { data, error } = await supabaseAdmin
+        .from('volunteers')
+        .insert([{ name, role, image, quote }])
+        .select()
+        .single();
+      if (!error && data) {
+        dbResult = data;
+        dbSucceeded = true;
+      }
+    }
+  } catch (dbErr) {
+    console.warn("Failed to sync approved volunteer to Supabase highlights:", dbErr);
+  }
+
+  // 2. Local JSON sync
+  try {
+    const fallbackPath = getFallbackPath('about_highlights.json');
+    let currentData: any = { directors: [], volunteers: [] };
+    if (fs.existsSync(fallbackPath)) {
+      currentData = JSON.parse(fs.readFileSync(fallbackPath, 'utf-8'));
+    }
+
+    if (!currentData.volunteers) {
+      currentData.volunteers = [];
+    }
+
+    const newRecord = {
+      id: dbSucceeded && dbResult ? dbResult.id : (Math.floor(Math.random() * 2000000000) + 1),
+      name,
+      role,
+      image,
+      quote
+    };
+
+    const idx = currentData.volunteers.findIndex((item: any) => item.name === name);
+    if (idx !== -1) {
+      currentData.volunteers[idx] = { ...currentData.volunteers[idx], ...newRecord };
+    } else {
+      currentData.volunteers.push(newRecord);
+    }
+
+    fs.mkdirSync(path.dirname(fallbackPath), { recursive: true });
+    fs.writeFileSync(fallbackPath, JSON.stringify(currentData, null, 2), 'utf-8');
+  } catch (err) {
+    console.error("Failed to sync approved volunteer to local highlights:", err);
+  }
+}
+
