@@ -72,14 +72,6 @@ export default function AboutPage() {
   const [stats, setStats] = useState<any[]>(BASE_STATS);
   const [directorsList, setDirectorsList] = useState<any[]>([]);
   const [volunteersList, setVolunteersList] = useState<any[]>([]);
-const [extraData, setExtraData] = useState({
-  extraAmount: 0,
-  uniqueDonors: 0,
-  extraBirthday: 0,
-  extraMeals: 0,
-  extraLives: 0,
-  extraStudykit: 0,
-});
   // Page Media CMS settings
   const [mediaSettings, setMediaSettings] = useState<Record<string, string>>({
     about_header: getFallbackMedia("about_header", "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=1600&auto=format&fit=crop&q=80"),
@@ -158,50 +150,6 @@ const [extraData, setExtraData] = useState({
           }
         })
         .catch(err => console.error("Error fetching stats cards configuration:", err));
-
-      // 5. Fetch and aggregate dynamic donations statistics
-      fetch('/api/donations')
-        .then(res => res.json())
-        .then((data: any[]) => {
-          if (!Array.isArray(data)) return;
-          let extraAmount = 0;
-          let extraBirthday = 0;
-          let extraMeals = 0;
-          let extraLives = 0;
-          let extraStudykit = 0;
-          const uniqueNames = new Set<string>();
-          data.forEach(d => {
-            const clean = d.amount ? d.amount.replace(/[^\d.]/g, "") : "0";
-            const amt = parseFloat(clean) || 0;
-            extraAmount += amt;
-            if (d.name) {
-              uniqueNames.add(d.name.trim().toLowerCase());
-            }
-            if (d.time && d.time.includes("|")) {
-              try {
-                const metaStr = d.time.split("|")[1];
-                const meta = JSON.parse(metaStr);
-                if (meta) {
-                  if (meta.birthday) extraBirthday += meta.birthday;
-                  if (meta.meals) extraMeals += meta.meals;
-                  if (meta.lives) extraLives += meta.lives;
-                  if (meta.studykit) extraStudykit += meta.studykit;
-                }
-              } catch (e) {
-                console.error("Failed to parse donation metadata:", e);
-              }
-            }
-          });
-          setExtraData({
-            extraAmount,
-            uniqueDonors: uniqueNames.size,
-            extraBirthday,
-            extraMeals,
-            extraLives,
-            extraStudykit,
-          });
-        })
-        .catch(err => console.error("Error loading dynamic donations metrics:", err));
     };
 
     fetchStatsAndDonations();
@@ -239,21 +187,7 @@ const [extraData, setExtraData] = useState({
         <div className="mx-auto max-w-7xl grid grid-cols-3 md:grid-cols-6 gap-y-3.5 gap-x-2 md:gap-8 text-center">
           {stats.map((card, idx) => {
             const base = parseFloat(card.base_value) || 0;
-            const cat = card.category;
-            let target = base;
-            if (cat === "raised") {
-              target = base + extraData.extraAmount;
-            } else if (cat === "donors") {
-              target = base + extraData.uniqueDonors;
-            } else if (cat === "birthday") {
-              target = base + extraData.extraBirthday;
-            } else if (cat === "lives") {
-              target = base + extraData.extraLives;
-            } else if (cat === "meals") {
-              target = base + extraData.extraMeals;
-            } else if (cat === "studykit") {
-              target = base + extraData.extraStudykit;
-            }
+            const target = base;
 
             return (
               <div key={idx} className="flex flex-col items-center gap-1">

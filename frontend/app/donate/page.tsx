@@ -1,20 +1,17 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '@/context/CartContext';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
-type PaymentMethod = "UPI" | "Card" | "NetBanking" | "Wallet" | "Razorpay";
+type PaymentMethod = "Cashfree";
 
-export default function DonateCheckoutPage() {
+function DonateCheckoutPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const cfOrderId = searchParams ? searchParams.get('cf_order_id') : null;
   const { cartItems, clearCart } = useCart();
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("UPI");
-
-  // Purchased items info for invoice PDF
-  const [purchasedItems, setPurchasedItems] = useState<any[]>([]);
-  const [receiptId, setReceiptId] = useState("");
-  const [transactionDate, setTransactionDate] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("Cashfree");
 
   // Form states
   const [fullName, setFullName] = useState("");
@@ -100,6 +97,13 @@ export default function DonateCheckoutPage() {
     const dd = String(tomorrow.getDate()).padStart(2, '0');
     setDeliveryDate(`${yyyy}-${mm}-${dd}`);
   }, []);
+
+  // Redirect to receipt page if cfOrderId is present in query parameters
+  useEffect(() => {
+    if (cfOrderId) {
+      router.replace(`/donate/receipt?order_id=${cfOrderId}`);
+    }
+  }, [cfOrderId, router]);
 
   const handleCauseChange = (id: string) => {
     setSelectedCauseId(id);
@@ -200,21 +204,8 @@ export default function DonateCheckoutPage() {
     }
   };
 
-  // UPI fields
-  const [upiId, setUpiId] = useState("");
-
-  // Card fields
-  const [cardNumber, setCardNumber] = useState("");
-  const [cardExpiry, setCardExpiry] = useState("");
-  const [cardCvv, setCardCvv] = useState("");
-  const [cardName, setCardName] = useState("");
-
-  // Net banking fields
-  const [selectedBank, setSelectedBank] = useState("SBI");
-
   // Flow states
   const [isProcessing, setIsProcessing] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
   // Sum calculations based on chosen local selection
@@ -224,190 +215,85 @@ export default function DonateCheckoutPage() {
     return sum + (parseFloat(numericStr) || 0);
   }, 0);
 
-  const processSuccessfulDonation = (methodUsed: string, transactionId?: string) => {
-    // Save transaction to user donations history in localStorage
+  const handleCashfreePayment = async () => {
     try {
-      const historyKey = `user_donations_${email.trim().toLowerCase()}`;
-      const existing = localStorage.getItem(historyKey);
-      const history = existing ? JSON.parse(existing) : [];
-      const newDonations = localCart.map(item => ({
-        title: item.title,
-        amount: item.amount,
-        date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }),
-        status: "Completed"
-      }));
-      localStorage.setItem(historyKey, JSON.stringify([...newDonations, ...history]));
-    } catch (err) {
-      console.error("Error saving user donation transaction history:", err);
-    }
+      setIsProcessing(true);
+      setErrorMsg("");
 
-    // Calculate category-specific metrics for metadata
-    let birthdayTotal = 0;
-    let foodTotal = 0;
-    let welfareTotal = 0;
-    let studyKitTotal = 0;
-
-    localCart.forEach(item => {
-      const clean = item.amount ? item.amount.replace(/[a-zA-Z]+\.?/g, "").trim() : "0";
-      const numericStr = clean.replace(/[^0-9.]/g, "");
-      const amt = parseFloat(numericStr) || 0;
-      const title = item.title.toLowerCase();
-      const category = (item.category || "").toLowerCase();
-
-      // Match based on category property OR string search on title (fallback)
-      const isBirthday = category.includes("birthday") || category.includes("anniversary") || category.includes("memorial") ||
-                         title.includes("birthday") || title.includes("anniversary") || title.includes("celebration");
-                         
-      const isFood = category.includes("needy") || category.includes("animal") || category.includes("nature") || category.includes("food") ||
-                     title.includes("thali") || title.includes("meals") || title.includes("feed") || title.includes("cows") || title.includes("dogs") || title.includes("chara") || title.includes("fodder");
-                     
-      const isWelfare = category.includes("women") || category.includes("education") || category.includes("care") ||
-                        title.includes("study") || title.includes("kit") || title.includes("notebook") || title.includes("education") || title.includes("menstrual") || title.includes("water") || title.includes("girl") || title.includes("child");
-                        
-      const isStudyKit = category.includes("education") || (title.includes("study") && title.includes("kit"));
-
-      if (isBirthday) {
-        birthdayTotal += amt;
-      }
-      if (isFood) {
-        foodTotal += amt;
-      }
-      if (isWelfare) {
-        welfareTotal += amt;
-      }
-      if (isStudyKit) {
-        studyKitTotal += amt;
-      }
-    });
-
-    const mealsCount = Math.round(foodTotal / 30);
-    const livesCount = Math.round(welfareTotal / 50);
-    const studyKitsCount = Math.round(studyKitTotal / 1200);
-    const metadata = {
-      birthday: birthdayTotal,
-      meals: mealsCount,
-      lives: livesCount,
-      studykit: studyKitsCount,
-      total: totalAmount,
-      marketing: {
-        receiveMarketing,
-        marketingPhone: receiveMarketing ? marketingPhone : "",
-        marketingEmail: receiveMarketing ? (marketingEmail || email) : ""
-      },
-      customisation: totalAmount >= 700 ? {
-        isAnonymous,
-        printedName: isAnonymous ? "" : printedName,
-        deliveryDate: isAnonymous ? "" : deliveryDate,
-        photoUrl: isAnonymous ? "" : customPhotoUrl,
-        videoWish: isAnonymous ? "" : videoWish,
-        instagramId: isAnonymous ? "" : instagramId,
-        isGift: isAnonymous ? false : isGift,
-        giftMessage: isAnonymous ? "" : (isGift ? giftMessage : ""),
-        isOtherRequest: isAnonymous ? false : isOtherRequest,
-        otherRequestText: isAnonymous ? "" : (isOtherRequest ? otherRequestText : "")
-      } : null
-    };
-
-    const timePayload = `Just now|${JSON.stringify(metadata)}`;
-
-    const productTitles = localCart.map(item => item.title).join(", ");
-
-    const randId = Math.floor(100000 + Math.random() * 900000);
-    const generatedReceiptId = transactionId || `KF-2026-${randId}`;
-    const generatedDate = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-
-    // Sync donation to Supabase database for live feed
-    fetch('/api/donations', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name: fullName,
-        address: address,
-        email: email,
-        phone: phone,
-        amount: `₹${totalAmount.toLocaleString('en-IN')}`,
-        time: timePayload,
-        donation_for: productTitles,
-        is_anonymous: isAnonymous,
-        printed_name: isAnonymous ? "" : printedName,
-        delivery_date: isAnonymous ? "" : deliveryDate,
-        photo_url: isAnonymous ? "" : customPhotoUrl,
-        video_wish: isAnonymous ? "" : videoWish,
-        instagram_id: isAnonymous ? "" : instagramId,
-        is_gift: isAnonymous ? false : isGift,
-        gift_message: isAnonymous ? "" : (isGift ? giftMessage : ""),
-        is_other_request: isAnonymous ? false : isOtherRequest,
-        other_request_text: isAnonymous ? "" : (isOtherRequest ? otherRequestText : ""),
-        receive_marketing: receiveMarketing,
-        marketing_phone: receiveMarketing ? marketingPhone : "",
-        marketing_email: receiveMarketing ? (marketingEmail || email) : "",
-        is_dedicated: isDedicated,
-        dedicated_to: isDedicated ? dedicatedTo : "",
-        dedication_msg: isDedicated ? dedicationMsg : "",
-        receipt_id: generatedReceiptId,
-        transaction_date: generatedDate,
-        payment_method: methodUsed,
-        payment_status: "SUCCESS"
-      })
-    })
-      .then(res => res.json())
-      .then(data => {
-        setReceiptId(generatedReceiptId);
-        setTransactionDate(generatedDate);
-        setPurchasedItems([...localCart]);
-        setIsProcessing(false);
-        setIsSuccess(true);
-        clearCart();
-      })
-      .catch(err => {
-        console.error("Error saving donation to database:", err);
-        setReceiptId(generatedReceiptId);
-        setTransactionDate(generatedDate);
-        setPurchasedItems([...localCart]);
-        setIsProcessing(false);
-        setIsSuccess(true);
-        clearCart();
-      });
-  };
-
-  const handleRazorpayPayment = () => {
-    const script = document.createElement("script");
-    script.src = "https://checkout.razorpay.com/v1/checkout.js";
-    script.async = true;
-    script.onload = () => {
-      const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_test_Tz0WJ5M6nO6uVb", // Public test key fallback
-        amount: totalAmount * 100, // in paise
-        currency: "INR",
-        name: "Kanha Foundation",
-        description: "Donation for " + localCart.map(item => item.title).join(", "),
-        image: "/kanha_logo_round.png",
-        prefill: {
+      // 1. Create order on the backend
+      const res = await fetch("/api/payment/create-order", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          amount: totalAmount,
           name: fullName,
           email: email,
-          contact: phone
-        },
-        theme: {
-          color: "#1E4D2B"
-        },
-        handler: function (response: any) {
-          processSuccessfulDonation("Razorpay", response.razorpay_payment_id);
-        },
-        modal: {
-          ondismiss: function () {
-            setIsProcessing(false);
-          }
+          phone: phone,
+          address: address,
+          localCart: localCart,
+          receiveMarketing,
+          marketingPhone,
+          marketingEmail,
+          isAnonymous,
+          printedName,
+          deliveryDate,
+          customPhotoUrl,
+          videoWish,
+          instagramId,
+          isGift,
+          giftMessage,
+          isOtherRequest,
+          otherRequestText,
+          isDedicated,
+          dedicatedTo,
+          dedicationMsg
+        })
+      });
+
+      const data = await res.json();
+      if (!data.success) {
+        throw new Error(data.error || "Failed to create payment order.");
+      }
+
+      // 2. Load Cashfree SDK dynamically and open checkout
+      const script = document.createElement("script");
+      script.src = "https://sdk.cashfree.com/js/v3/cashfree.js";
+      script.async = true;
+      script.onload = () => {
+        try {
+          const cashfree = (window as any).Cashfree({
+            mode: data.environment // sandbox or production from server
+          });
+          
+          cashfree.checkout({
+            paymentSessionId: data.payment_session_id,
+            redirectTarget: "_self"
+          }).then((result: any) => {
+            if (result && result.error) {
+              console.error("Cashfree checkout error:", result.error);
+              setErrorMsg(result.error.message || "Payment initiation failed.");
+              setIsProcessing(false);
+            }
+          });
+        } catch (sdkErr: any) {
+          console.error("Cashfree SDK Initialization failed:", sdkErr);
+          setErrorMsg("Failed to initialize payment gateway. Please try again.");
+          setIsProcessing(false);
         }
       };
+      script.onerror = () => {
+        setIsProcessing(false);
+        setErrorMsg("Failed to load Cashfree SDK. Please check your internet connection.");
+      };
+      document.body.appendChild(script);
 
-      const rzp = new (window as any).Razorpay(options);
-      rzp.open();
-    };
-    script.onerror = () => {
+    } catch (err: any) {
+      console.error("Error starting Cashfree payment:", err);
+      setErrorMsg(err.message || "An unexpected error occurred while processing your payment.");
       setIsProcessing(false);
-      setErrorMsg("Failed to load Razorpay SDK. Please check your internet connection.");
-    };
-    document.body.appendChild(script);
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -424,11 +310,6 @@ export default function DonateCheckoutPage() {
       return;
     }
 
-    if (paymentMethod === "UPI" && !upiId.trim()) {
-      setErrorMsg("Please enter a valid UPI ID.");
-      return;
-    }
-
     if (!isAnonymous && totalAmount >= 700 && (!printedName.trim() || !deliveryDate.trim())) {
       setErrorMsg("Please fill in the printed name and preferred delivery date for customization, or choose anonymous donation.");
       return;
@@ -439,231 +320,10 @@ export default function DonateCheckoutPage() {
       return;
     }
 
-    if (paymentMethod === "Card" && (!cardNumber || !cardExpiry || !cardCvv || !cardName)) {
-      setErrorMsg("Please enter complete card payment details.");
-      return;
-    }
-
     // Trigger loader
     setIsProcessing(true);
-
-    if (paymentMethod === "Razorpay") {
-      handleRazorpayPayment();
-      return;
-    }
-
-    setTimeout(() => {
-      processSuccessfulDonation(paymentMethod);
-    }, 2500); // 2.5s secure transaction mock loading
+    handleCashfreePayment();
   };
-
-  if (isSuccess) {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-[#07100b] flex items-center justify-center font-sans py-12 px-4 print:bg-white print:py-0">
-        <style dangerouslySetInnerHTML={{ __html: `
-  @media print {
-    @page {
-      size: A4;
-      margin: 20mm;
-    }
-    body {
-      background: white !important;
-      color: black !important;
-    }
-    body * {
-      visibility: hidden;
-    }
-    #print-area, #print-area * {
-      visibility: visible;
-    }
-    #print-area {
-      position: absolute;
-      left: 0;
-      top: 0;
-      width: 100%;
-      max-width: 800px;
-      margin: 0 auto;
-      border: none !important;
-      box-shadow: none !important;
-      padding: 10mm;
-      background: white !important;
-      color: black !important;
-      page-break-inside: avoid;
-    }
-    #print-area p, #print-area h2, #print-area span, #print-area td, #print-area th {
-      color: black !important;
-      font-size: 9pt;
-    }
-    .no-print {
-      display: none !important;
-    }
-  }
-`}} />
-
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="w-full max-w-xl bg-white dark:bg-[#101412] p-8 sm:p-10 rounded-[2.5rem] shadow-2xl border border-gray-150 dark:border-zinc-800 text-center"
-        >
-          {/* Animated success green circle tick */}
-          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-950/20 text-emerald-500 shadow-inner mb-6">
-            <svg className="h-10 w-10 stroke-current" fill="none" viewBox="0 0 24 24" strokeWidth="2.5">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
-
-          <h1 className="text-3xl font-black text-[#1E4D2B] dark:text-[#52c47c] tracking-tight">
-            Thank you, {fullName}!
-          </h1>
-          <p className="mt-2 text-sm text-[#F3A61E] font-black uppercase tracking-wider">
-            Donation Successful
-          </p>
-
-          <p className="mt-4 text-xs text-gray-550 dark:text-gray-450 leading-relaxed max-w-md mx-auto">
-            Your generous contribution has been securely processed. A tax donation receipt (80G) and a WhatsApp proof of execution will be sent shortly.
-          </p>
-
-          {/* Invoice Receipt Preview (Shown on screen, and isolates on print) */}
-          <div id="print-area" className="mt-6 text-left bg-gray-50/50 dark:bg-zinc-950/30 p-6 rounded-2xl border border-gray-100 dark:border-zinc-900 shadow-inner">
-            {/* Invoice Header */}
-            <div className="border-b border-gray-200 dark:border-zinc-800/80 pb-3.5 mb-3.5">
-              <div className="text-center">
-                <h2 className="text-sm font-black text-gray-900 dark:text-white tracking-tight uppercase">Kanha Foundation</h2>
-                <p className="text-[9px] text-gray-500 font-bold mt-0.5">Ranchi, Jharkhand, India</p>
-
-                <div className="flex justify-between mt-2">
-                  <div className="text-left">
-                    <span className="px-2 py-0.5 bg-emerald-50 dark:bg-emerald-950/20 text-[#1E4D2B] dark:text-[#52c47c] border border-emerald-900/10 rounded text-[9px] font-black uppercase tracking-wider">
-                      80G Receipt
-                    </span>
-                    <p className="text-[9px] text-gray-500 font-mono mt-1.5">{receiptId}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-[9px] text-gray-500 font-mono">+91 7488164529</p>
-                    <p className="text-[9px] text-gray-500 font-mono">contact@kanhafoundation.org</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Donor & Transaction Info */}
-            <div className="grid grid-cols-2 gap-3 text-[10px] mb-4 pb-3.5 border-b border-gray-200 dark:border-zinc-800/80">
-              <div>
-                <span className="block text-[8px] font-black text-gray-400 uppercase tracking-wider">Donor Details</span>
-                <p className="font-bold text-gray-800 dark:text-zinc-200 mt-0.5">{fullName}</p>
-                <p className="text-[9px] text-gray-500">{email}</p>
-                <p className="text-[9px] text-gray-500">{phone}</p>
-              </div>
-              <div className="text-right">
-                <span className="block text-[8px] font-black text-gray-400 uppercase tracking-wider">Transaction Details</span>
-                <p className="font-semibold text-gray-850 dark:text-zinc-250 mt-0.5">Date: {transactionDate}</p>
-                <p className="text-[9px] text-gray-500">Mode: {paymentMethod}</p>
-                <p className="text-[9px] text-emerald-500 font-black">Status: SUCCESS ✅</p>
-              </div>
-            </div>
-
-            {/* Honoree / Dedication */}
-            {dedicatedTo && (
-              <div className="mt-4 text-[9px] text-gray-800 dark:text-gray-200 border-t pt-2">
-                <p className="font-black uppercase">Honoree: {dedicatedTo}</p>
-                {dedicationMsg && <p className="italic">“{dedicationMsg}”</p>}
-              </div>
-            )}
-
-            {!isAnonymous && (printedName || deliveryDate || customPhotoUrl || videoWish || instagramId || isGift || isOtherRequest) && (
-              <div className="mt-4 text-[9px] text-gray-850 dark:text-gray-200 border-t pt-2 space-y-1.5 text-left col-span-2">
-                <p className="font-black uppercase text-[8px] tracking-wider text-gray-400">Acknowledgement & Customisation</p>
-                {printedName && <p>Name to be printed: <span className="font-bold text-gray-800 dark:text-gray-200">{printedName}</span></p>}
-                {deliveryDate && <p>Preferred date: <span className="font-bold text-gray-800 dark:text-gray-200">{deliveryDate}</span></p>}
-                {customPhotoUrl && (
-                  <div className="flex items-center gap-2 mt-1">
-                    <span>Uploaded Photo:</span>
-                    <img src={customPhotoUrl} alt="Receipt Preview" className="h-10 w-10 object-cover rounded-lg border border-zinc-200 dark:border-zinc-800" />
-                  </div>
-                )}
-                {videoWish && <p>Video wish line: <span className="italic font-medium text-gray-700 dark:text-gray-300">“{videoWish}”</span></p>}
-                {instagramId && <p>Beneficiary Instagram: <span className="font-bold text-gray-800 dark:text-gray-200">{instagramId}</span></p>}
-                {isGift && giftMessage && <p>Gift Details: <span className="font-bold text-gray-800 dark:text-gray-200">{giftMessage}</span></p>}
-                {isOtherRequest && otherRequestText && <p>Special Request: <span className="font-bold text-gray-800 dark:text-gray-200">{otherRequestText}</span></p>}
-              </div>
-            )}
-
-            {isAnonymous && (
-              <div className="mt-4 text-[9px] text-gray-550 dark:text-zinc-555 border-t pt-2 text-left col-span-2">
-                <p className="italic font-bold text-amber-500">Anonymous Donation (acknowledged privately)</p>
-              </div>
-            )}
-
-            {/* Contributions List */}
-            <table className="w-full text-left text-[10px] mb-4">
-              <thead>
-                <tr className="border-b border-gray-200 dark:border-zinc-850 text-gray-400 font-black uppercase tracking-wider text-[8px]">
-                  <th className="pb-1.5">Sponsored Cause</th>
-                  <th className="pb-1.5 text-right">Amount</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100 dark:divide-zinc-900">
-                {purchasedItems.map((item, idx) => (
-                  <tr key={idx}>
-                    <td className="py-2 font-bold text-gray-800 dark:text-zinc-300">{item.title}</td>
-                    <td className="py-2 text-right font-black text-gray-900 dark:text-white">{item.amount}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-
-            {/* Receipt Summary */}
-            <div className="border-t border-gray-250 dark:border-zinc-800/80 pt-3 flex justify-between items-center text-[10px]">
-              <div>
-                <p className="text-[8px] text-gray-400 leading-relaxed max-w-[200px]">
-                  * This is a computer generated tax receipt eligible for tax exemption computations.
-                </p>
-              </div>
-              <div className="text-right">
-                <span className="block text-[8px] font-black text-gray-400 uppercase tracking-wider">Total Contribution</span>
-                <p className="text-sm font-black text-[#F3A61E]">₹{totalAmount.toLocaleString('en-IN')}</p>
-              </div>
-            </div>
-
-            {/* Signature Area (Only for print) */}
-            <div className="hidden print:flex justify-between items-center mt-10 pt-6 border-t border-dashed border-gray-300 text-[9px] text-gray-500">
-              <p>Verified Online Document • No signature required</p>
-              <div className="text-right">
-                <div className="border-b border-gray-400 h-6 w-24 mb-1"></div>
-                <p className="font-bold text-gray-800 uppercase tracking-wider text-[7px]">Authorized Signatory</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-8 flex flex-col gap-3 justify-center">
-            <button
-              onClick={() => window.print()}
-              className="w-full py-3 bg-[#1E4D2B] hover:bg-[#15381E] text-white font-extrabold text-xs rounded-full transition-all duration-300 shadow-md cursor-pointer flex justify-center items-center gap-1.5 border border-emerald-800/40"
-            >
-              <svg className="h-4 w-4 text-emerald-450" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-              </svg>
-              Download Invoice / Receipt (PDF)
-            </button>
-            <div className="flex gap-2">
-              <button
-                onClick={() => window.location.href = "/"}
-                className="flex-1 py-3 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-gray-600 dark:text-zinc-300 font-extrabold text-xs rounded-full border border-gray-200 dark:border-zinc-800 cursor-pointer"
-              >
-                Back to Home
-              </button>
-              <button
-                onClick={() => window.location.href = "/causes"}
-                className="flex-1 py-3 bg-[#F3A61E] hover:bg-[#e0981b] text-black font-extrabold text-xs rounded-full transition-all duration-300 shadow-md cursor-pointer"
-              >
-                Support More
-              </button>
-            </div>
-          </div>
-        </motion.div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-[#07100b] font-sans py-16 px-4 md:px-8">
@@ -1085,136 +745,34 @@ export default function DonateCheckoutPage() {
               )}
             </div>
 
-            {/* Step 3: Choose Payment Method */}
+            {/* Step 3: Secure Payment */}
             <div className="border-t border-gray-100 dark:border-zinc-800/80 pt-6 space-y-4">
               <h2 className="text-lg font-black text-gray-900 dark:text-white flex items-center gap-2">
                 <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#1E4D2B] text-white text-xs font-black">3</span>
-                Select Payment Method
+                Payment Method
               </h2>
 
-              <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-                {(["UPI", "Card", "NetBanking", "Wallet", "Razorpay"] as PaymentMethod[]).map((method) => {
-                  const isSelected = paymentMethod === method;
-                  return (
-                    <button
-                      key={method}
-                      type="button"
-                      onClick={() => setPaymentMethod(method)}
-                      className={`py-3 px-4 rounded-xl border text-xs font-black uppercase tracking-wider transition-all duration-200 cursor-pointer ${
-                        isSelected
-                          ? 'bg-[#F3A61E]/10 border-[#F3A61E] text-black dark:text-white'
-                          : 'bg-gray-50 dark:bg-zinc-900 border-gray-200 dark:border-zinc-800 text-gray-500 dark:text-gray-400 hover:bg-gray-100'
-                      }`}
-                    >
-                      {method}
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Dynamic Inputs per Method */}
-              <div className="bg-gray-50 dark:bg-[#0c1510] p-6 rounded-2xl border border-gray-100 dark:border-zinc-900 mt-4">
+              <div className="bg-emerald-950/10 border border-emerald-900/20 p-6 rounded-2xl text-left space-y-4">
+                <div className="flex items-center justify-between flex-wrap gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 bg-emerald-900/20 rounded-xl text-emerald-500">
+                      <svg className="h-6 w-6 stroke-current" fill="none" viewBox="0 0 24 24" strokeWidth="2">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-extrabold text-white">Cashfree Secure Checkout</h4>
+                      <p className="text-[10px] text-zinc-400">Supports UPI, Cards, NetBanking, and Wallets</p>
+                    </div>
+                  </div>
+                  <span className="px-3 py-1 bg-emerald-500/10 text-emerald-450 border border-emerald-500/20 rounded-full text-[10px] font-black uppercase tracking-wider">
+                    Official Gateway
+                  </span>
+                </div>
                 
-                {paymentMethod === "Razorpay" && (
-                  <div className="space-y-4 text-left">
-                    <p className="text-xs text-gray-700 dark:text-gray-250 font-bold">
-                      Pay securely with Razorpay checkout popup.
-                    </p>
-                    <p className="text-[10px] text-gray-400 font-bold">
-                      Once you click "Proceed to Secure Pay" below, the Razorpay payment window will open. You can pay using UPI, Cards, Net Banking, or Wallets inside Razorpay.
-                    </p>
-                  </div>
-                )}
-
-                {paymentMethod === "UPI" && (
-                  <div className="space-y-4">
-                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-wider">Enter UPI ID</label>
-                    <input
-                      type="text"
-                      value={upiId}
-                      onChange={(e) => setUpiId(e.target.value)}
-                      placeholder="e.g. vikram@okhdfcbank"
-                      className="w-full px-4 py-3 bg-white dark:bg-[#101412] border border-gray-200 dark:border-gray-800 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-[#1E4D2B]"
-                    />
-                    <p className="text-[10px] text-gray-400 font-bold">Pay securely using Google Pay, PhonePe, Paytm, or BHIM.</p>
-                  </div>
-                )}
-
-                {paymentMethod === "Card" && (
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Cardholder Name</label>
-                      <input
-                        type="text"
-                        value={cardName}
-                        onChange={(e) => setCardName(e.target.value)}
-                        placeholder="e.g. Vikram Singh"
-                        className="w-full px-4 py-3 bg-white dark:bg-[#101412] border border-gray-200 dark:border-gray-800 rounded-xl text-sm focus:outline-none"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Card Number</label>
-                      <input
-                        type="text"
-                        value={cardNumber}
-                        onChange={(e) => setCardNumber(e.target.value)}
-                        placeholder="4532 •••• •••• ••••"
-                        className="w-full px-4 py-3 bg-white dark:bg-[#101412] border border-gray-200 dark:border-gray-800 rounded-xl text-sm focus:outline-none"
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Expiry Date</label>
-                        <input
-                          type="text"
-                          value={cardExpiry}
-                          onChange={(e) => setCardExpiry(e.target.value)}
-                          placeholder="MM/YY"
-                          className="w-full px-4 py-3 bg-white dark:bg-[#101412] border border-gray-200 dark:border-gray-800 rounded-xl text-sm focus:outline-none"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">CVV</label>
-                        <input
-                          type="password"
-                          maxLength={3}
-                          value={cardCvv}
-                          onChange={(e) => setCardCvv(e.target.value)}
-                          placeholder="•••"
-                          className="w-full px-4 py-3 bg-white dark:bg-[#101412] border border-gray-200 dark:border-gray-800 rounded-xl text-sm focus:outline-none"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {paymentMethod === "NetBanking" && (
-                  <div className="space-y-4">
-                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Select Your Bank</label>
-                    <select
-                      value={selectedBank}
-                      onChange={(e) => setSelectedBank(e.target.value)}
-                      className="w-full px-4 py-3 bg-white dark:bg-[#101412] border border-gray-200 dark:border-gray-800 rounded-xl text-sm text-gray-700 dark:text-white"
-                    >
-                      <option value="SBI">State Bank of India (SBI)</option>
-                      <option value="HDFC">HDFC Bank</option>
-                      <option value="ICICI">ICICI Bank</option>
-                      <option value="AXIS">Axis Bank</option>
-                      <option value="KOTAK">Kotak Mahindra Bank</option>
-                    </select>
-                  </div>
-                )}
-
-                {paymentMethod === "Wallet" && (
-                  <div className="space-y-2">
-                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Choose Wallet Provider</label>
-                    <div className="grid grid-cols-2 gap-3">
-                      <button type="button" className="py-3 px-4 rounded-xl border border-gray-200 dark:border-gray-800 text-xs font-bold text-center bg-white dark:bg-[#101412]">Paytm Wallet</button>
-                      <button type="button" className="py-3 px-4 rounded-xl border border-gray-200 dark:border-gray-800 text-xs font-bold text-center bg-white dark:bg-[#101412]">Amazon Pay</button>
-                    </div>
-                  </div>
-                )}
-
+                <p className="text-xs text-zinc-300 leading-relaxed font-sans">
+                  Your transaction is secure and processed using Cashfree Payments. You can pay via Google Pay, PhonePe, Paytm, credit/debit cards, net banking, or major digital wallets.
+                </p>
               </div>
             </div>
 
@@ -1369,5 +927,17 @@ export default function DonateCheckoutPage() {
       </div>
 
     </div>
+  );
+}
+
+export default function DonateCheckoutPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 dark:bg-[#07100b] flex items-center justify-center font-sans">
+        <p className="text-emerald-500 font-bold uppercase tracking-wider text-xs">Loading donation checkout...</p>
+      </div>
+    }>
+      <DonateCheckoutPageContent />
+    </Suspense>
   );
 }
