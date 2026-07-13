@@ -4,6 +4,9 @@ import fs from 'fs';
 import path from 'path';
 import { resilientDelete, resilientPost, resilientPut } from '@/lib/db-fallback';
 
+export const dynamic = 'force-dynamic';
+
+
 // GET all directors and volunteers highlights
 export async function GET() {
   let directors: any[] = [];

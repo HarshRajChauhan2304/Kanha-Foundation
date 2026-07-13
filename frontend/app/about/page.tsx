@@ -103,7 +103,7 @@ export default function AboutPage() {
 
   useEffect(() => {
     // 1. Fetch Dynamic Leadership/Volunteers
-    fetch('/api/about-highlights')
+    fetch('/api/about-highlights', { cache: 'no-store' })
       .then(res => res.json())
       .then(data => {
         if (data) {

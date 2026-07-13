@@ -240,8 +240,27 @@ export async function syncVolunteerToHighlights(app: {
   const defaultAvatar = "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80";
   const name = app.name;
   const role = "Volunteer"; // Default designation
-  const image = app.profile_photo || defaultAvatar;
-  const quote = app.motivation || "Proud to be a volunteer at Kanha Foundation!";
+  
+  let cleanQuote = app.motivation || "Proud to be a volunteer at Kanha Foundation!";
+  let cleanImage = app.profile_photo || defaultAvatar;
+
+  // If motivation is a JSON string, extract the text and profile_photo
+  if (app.motivation && app.motivation.trim().startsWith('{')) {
+    try {
+      const parsed = JSON.parse(app.motivation);
+      if (parsed.text) {
+        cleanQuote = parsed.text;
+      }
+      if (parsed.profile_photo) {
+        cleanImage = parsed.profile_photo;
+      }
+    } catch (e) {
+      console.warn("Failed to parse motivation JSON inside syncVolunteerToHighlights:", e);
+    }
+  }
+
+  const image = cleanImage;
+  const quote = cleanQuote;
 
   // 1. Supabase insert/update
   let dbResult: any = null;
@@ -280,6 +299,7 @@ export async function syncVolunteerToHighlights(app: {
   } catch (dbErr) {
     console.warn("Failed to sync approved volunteer to Supabase highlights:", dbErr);
   }
+
 
   // 2. Local JSON sync
   try {
