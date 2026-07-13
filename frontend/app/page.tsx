@@ -493,7 +493,7 @@ export default function Home() {
             href="/causes"
             className="mt-4 sm:mt-0 sm:absolute sm:right-0 sm:top-1/2 sm:-translate-y-1/2 text-sm font-bold text-[#1E4D2B] hover:text-[#15381E] dark:text-[#52c47c] dark:hover:text-[#6ae095] hover:underline transition-colors flex items-center gap-1"
           >
-            View All Projects &rarr;
+            View All Causes &rarr;
           </a>
         </div>
         <FeaturesCauses />
