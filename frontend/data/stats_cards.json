@@ -2,7 +2,7 @@
   {
     "id": 1,
     "title": "Donations Raised",
-    "base_value": 48000,
+    "base_value": 4100,
     "prefix": "₹",
     "suffix": "+",
     "icon": "rupee",
@@ -11,7 +11,7 @@
   {
     "id": 2,
     "title": "Active Donors",
-    "base_value": 8,
+    "base_value": 7,
     "prefix": "",
     "suffix": "+",
     "icon": "users",
@@ -20,7 +20,7 @@
   {
     "id": 3,
     "title": "Birthday Giving",
-    "base_value": 1200,
+    "base_value": 0,
     "prefix": "",
     "suffix": "+",
     "icon": "cake",
@@ -29,7 +29,7 @@
   {
     "id": 4,
     "title": "Lives Impacted",
-    "base_value": 3552,
+    "base_value": 91,
     "prefix": "",
     "suffix": "+",
     "icon": "heart",
@@ -38,7 +38,7 @@
   {
     "id": 5,
     "title": "Meals Served",
-    "base_value": 1412,
+    "base_value": 5,
     "prefix": "",
     "suffix": "+",
     "icon": "meals",
