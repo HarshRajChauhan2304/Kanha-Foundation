@@ -701,7 +701,7 @@ export default function Navbar() {
                     <tr className="border-b border-gray-300 dark:border-zinc-800 text-gray-500 dark:text-zinc-400 font-black uppercase tracking-wider text-[10px]">
                       <th className="py-3 px-2">S.No.</th>
                       <th className="py-3 px-2">Donor Name</th>
-                      <th className="py-3 px-2">Donor Address / Contact</th>
+                      <th className="py-3 px-2">Donor Address</th>
                       <th className="py-3 px-2 text-right">Donated Amount</th>
                       <th className="py-3 px-2 text-right">Donated For</th>
                     </tr>
@@ -722,7 +722,6 @@ export default function Navbar() {
                             <td className="py-3.5 px-2 font-bold text-gray-900 dark:text-white">{d.name || 'Anonymous Donor'}</td>
                             <td className="py-3.5 px-2 text-zinc-500 dark:text-zinc-400 font-medium">
                               {getDonorAddress(d)}
-                              <span className="block text-[9px] text-zinc-400 font-mono mt-0.5">{d.email || d.phone || ''}</span>
                             </td>
                             <td className="py-3.5 px-2 text-right font-black text-emerald-650 dark:text-emerald-500">
                               ₹{numericAmt.toLocaleString('en-IN')}

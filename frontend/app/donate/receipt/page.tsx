@@ -201,7 +201,8 @@ function ReceiptPageContent() {
             <div>
               <span className="block text-[8px] font-black text-gray-400 uppercase tracking-wider">Donor Details</span>
               <p className="font-bold text-gray-800 dark:text-zinc-200 mt-0.5">{donation.name}</p>
-              <p className="text-[9px] text-gray-500">{donation.address || "Ranchi, Jharkhand, India"}</p>
+              <p className="text-[9px] text-gray-500">{donation.email}</p>
+              <p className="text-[9px] text-gray-500">{donation.phone}</p>
             </div>
             <div className="text-right">
               <span className="block text-[8px] font-black text-gray-400 uppercase tracking-wider">Transaction Details</span>
