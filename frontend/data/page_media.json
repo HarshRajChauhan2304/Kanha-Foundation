@@ -1,7 +1,7 @@
 [
   {
     "key": "home_hero_video",
-    "url": "/uploads/1783497840023_CREATE_VIDEO_USING_THIS_PIC_AN.mp4",
+    "url": "https://cwpfhfcxpeqiihiqxqtu.supabase.co/storage/v1/object/public/uploads/1784014825483_CREATE_VIDEO_USING_THIS_PIC_AN.mp4",
     "title": "Home Page - Hero Background Video",
     "type": "video"
   },
@@ -25,7 +25,7 @@
   },
   {
     "key": "about_tutorial_video",
-    "url": "/uploads/1783507902634_CREATE_VIDEO_USING_THIS_PIC_AN.mp4",
+    "url": "https://cwpfhfcxpeqiihiqxqtu.supabase.co/storage/v1/object/public/uploads/1784014851445_make_professional_video_using.mp4",
     "title": "About Page - How to Donate Tutorial Video",
     "type": "video"
   },
@@ -68,7 +68,7 @@
   {
     "key": "home_volunteer_banner",
     "url": "/uploads/1783629633435_team.png",
-    "title": "Home Page - Volunteer Onboarding Banner",
+    "title": "Home Page - Volunteer Onboarding Banner Edited",
     "type": "image"
   },
   {
