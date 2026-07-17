@@ -187,7 +187,12 @@ export default function Navbar() {
     router.push('/signin');
   };
 
-  if (pathname?.startsWith("/admin") || pathname?.startsWith("/volunteer")) {
+  const activeNavItems = [
+    ...navItems,
+    ...(isVolunteerLoggedIn ? [{ label: "Beneficiaries", href: "/admin/beneficiaries" }] : [])
+  ];
+
+  if (pathname?.startsWith("/admin")) {
     return null;
   }
 
@@ -209,76 +214,70 @@ export default function Navbar() {
           {/* Left section: Hamburger & Logo */}
           <div className="flex items-center space-x-2">
             {/* Hamburger menu for mobile */}
-            {!isVolunteerLoggedIn && (
-              <button
-                onClick={() => setIsMobileMenuOpen(true)}
-                className="inline-flex items-center justify-center rounded-md p-1.5 text-white hover:bg-white/10 focus:outline-none transition-colors md:hidden cursor-pointer"
-                aria-label="Open main menu"
+            <button
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="inline-flex items-center justify-center rounded-md p-1.5 text-white hover:bg-white/10 focus:outline-none transition-colors md:hidden cursor-pointer"
+              aria-label="Open main menu"
+            >
+              <svg
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
               >
-                <svg
-                  className="h-6 w-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
-                </svg>
-              </button>
-            )}
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
+              </svg>
+            </button>
 
             {/* Kanha Foundation Logo */}
-            {!isVolunteerLoggedIn && (
-              <a href="/" className="flex items-center space-x-2 group">
-                  <img
-                    src={navbarData.logo}
-                    alt={`${navbarData.name} Logo`}
-                    className="navbar-logo w-auto object-contain drop-shadow-sm -mt-0.5"
-                    style={{ 
-                      backgroundColor: "transparent",
-                      "--logo-size": navbarData.logoSize ? `${navbarData.logoSize * 0.75}px` : "78px"
-                    } as React.CSSProperties}
-                    onError={(e)=>{(e.target as HTMLImageElement).src="/kanha_logo_round.png"}}
-                  />
-                  <span 
-                    className="text-white font-semibold uppercase tracking-wider hidden sm:inline"
-                    style={{
-                      fontFamily: navbarData.fontFamily,
-                      fontSize: `${navbarData.fontSize}px`
-                    }}
-                  >
-                    {navbarData.name}
-                  </span>
-              </a>
-            )}
+            <a href="/" className="flex items-center space-x-2 group">
+                <img
+                  src={navbarData.logo}
+                  alt={`${navbarData.name} Logo`}
+                  className="navbar-logo w-auto object-contain drop-shadow-sm -mt-0.5"
+                  style={{ 
+                    backgroundColor: "transparent",
+                    "--logo-size": navbarData.logoSize ? `${navbarData.logoSize * 0.75}px` : "78px"
+                  } as React.CSSProperties}
+                  onError={(e)=>{(e.target as HTMLImageElement).src="/kanha_logo_round.png"}}
+                />
+                <span 
+                  className="text-white font-semibold uppercase tracking-wider hidden sm:inline"
+                  style={{
+                    fontFamily: navbarData.fontFamily,
+                    fontSize: `${navbarData.fontSize}px`
+                  }}
+                >
+                  {navbarData.name}
+                </span>
+            </a>
           </div>
 
           {/* Center section: Desktop navigation links (centered tabs) */}
-          {!isVolunteerLoggedIn && (
-            <div className="hidden flex-1 justify-center px-8 md:flex">
-              <div className="flex space-x-1">
-                {navItems.map((item, idx) => (
-                  <a
-                    key={idx}
-                    href={item.href}
-                    className="rounded-lg px-4 py-2 bg-transparent text-white text-sm font-medium transition-all hover:bg-white/10 hover:text-white"
-                  >
-                    {item.label}
-                  </a>
-                ))}
-                <button
-                  onClick={openReportModal}
-                  className="rounded-lg px-4 py-2 bg-transparent text-white text-sm font-medium transition-all hover:bg-white/10 hover:text-white cursor-pointer"
+          <div className="hidden flex-1 justify-center px-8 md:flex">
+            <div className="flex space-x-1">
+              {activeNavItems.map((item, idx) => (
+                <a
+                  key={idx}
+                  href={item.href}
+                  className="rounded-lg px-4 py-2 bg-transparent text-white text-sm font-medium transition-all hover:bg-white/10 hover:text-white"
                 >
-                  📊 Donors Report
-                </button>
-              </div>
+                  {item.label}
+                </a>
+              ))}
+              <button
+                onClick={openReportModal}
+                className="rounded-lg px-4 py-2 bg-transparent text-white text-sm font-medium transition-all hover:bg-white/10 hover:text-white cursor-pointer"
+              >
+                📊 Donors Report
+              </button>
             </div>
-          )}
+          </div>
 
           {/* Far Right section: Profile & Cart */}
           <div className="flex items-center space-x-3 ml-auto">
@@ -377,35 +376,33 @@ export default function Navbar() {
             </div>
 
             {/* Cart Icon (with badge) */}
-            {!isVolunteerLoggedIn && (
-              <div className="relative">
-                <button
-                  onClick={() => setIsCartOpen(true)}
-                  className="relative flex rounded-full p-2 text-white hover:bg-white/10 focus:outline-none transition-colors"
-                  aria-label="Shopping cart"
+            <div className="relative">
+              <button
+                onClick={() => setIsCartOpen(true)}
+                className="relative flex rounded-full p-2 text-white hover:bg-white/10 focus:outline-none transition-colors"
+                aria-label="Shopping cart"
+              >
+                <svg
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
                 >
-                  <svg
-                    className="h-6 w-6"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100-4 2 2 0 000 4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
-                    />
-                  </svg>
-                  {/* Cart Badge */}
-                  {cartItems.length > 0 && (
-                    <span className="absolute -top-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-[#F3A61E] text-[10px] font-bold text-white ring-2 ring-[#2A854A] animate-pulse">
-                      {cartItems.length}
-                    </span>
-                  )}
-                </button>
-              </div>
-            )}
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100-4 2 2 0 000 4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+                  />
+                </svg>
+                {/* Cart Badge */}
+                {cartItems.length > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-[#F3A61E] text-[10px] font-bold text-white ring-2 ring-[#2A854A] animate-pulse">
+                    {cartItems.length}
+                  </span>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </nav>
@@ -458,7 +455,7 @@ export default function Navbar() {
 
               {/* Drawer Links (Full width block links) */}
               <div className="flex-1 bg-white pt-2 overflow-y-auto">
-                {navItems.map((item, idx) => {
+                {activeNavItems.map((item, idx) => {
                   const isActive = item.label === activeItem;
                   return (
                     <a

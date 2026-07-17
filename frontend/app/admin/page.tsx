@@ -68,6 +68,12 @@ interface VolunteerApplication {
   status?: string;
   profile_photo?: string;
   gender?: string;
+  aadhar_number?: string;
+  aadhar_upload_url?: string;
+  internship_duration?: string;
+  certificate_url?: string;
+  certificate_issue_date?: string;
+  internship_start_date?: string;
 }
 
 interface PageMediaConfig {
@@ -99,7 +105,7 @@ interface VolunteerTask {
   feedback?: string;
 }
 
-type TabType = "Causes" | "Reviews" | "Blogs" | "Stories" | "DetailedStories" | "SuccessStories" | "Donations" | "Highlights" | "Applications" | "Tasks" | "PageMedia" | "PageTexts" | "StatsCards" | "Categories" | "RoleManagement" | "Navbar" | "Footer" | "AdminProfile" | "StarVolunteers" | "ContactInfo" | "ContactSubmissions" | "WhatsAppCommunity";
+type TabType = "Causes" | "Reviews" | "Blogs" | "Stories" | "DetailedStories" | "SuccessStories" | "Donations" | "Beneficiaries" | "Highlights" | "Applications" | "Tasks" | "PageMedia" | "PageTexts" | "StatsCards" | "Categories" | "RoleManagement" | "Navbar" | "Footer" | "AdminProfile" | "StarVolunteers" | "ContactInfo" | "ContactSubmissions" | "WhatsAppCommunity";
 type AuthMode = "signin" | "signup" | "forgot";
 
 const KEY_MAP: Record<string, { title: string; type: string }> = {
@@ -305,11 +311,27 @@ export default function AdminPanelPage() {
   const [formTransactionDate, setFormTransactionDate] = useState("");
   const [formPassword, setFormPassword] = useState("");
   const [formRole, setFormRole] = useState("user");
+  const [formAadharNumber, setFormAadharNumber] = useState("");
+  const [formAadharUploadUrl, setFormAadharUploadUrl] = useState("");
+  const [formInternshipDuration, setFormInternshipDuration] = useState("1 Month");
+  const [formCertificateUrl, setFormCertificateUrl] = useState("");
+  const [formCertificateIssueDate, setFormCertificateIssueDate] = useState("");
+  const [formStartDate, setFormStartDate] = useState("");
   const [causesList, setCausesList] = useState<any[]>(causesDataFallback);
 
   const [alertMsg, setAlertMsg] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const [isSeeding, setIsSeeding] = useState(false);
+
+  // Certificate Modal states
+  const [isCertModalOpen, setIsCertModalOpen] = useState(false);
+  const [certVol, setCertVol] = useState<VolunteerApplication | null>(null);
+  const [certDate, setCertDate] = useState("");
+  const [certStartDate, setCertStartDate] = useState("");
+  const [certUrl, setCertUrl] = useState("");
+  const [isCertSaving, setIsCertSaving] = useState(false);
+  const [isViewCertModalOpen, setIsViewCertModalOpen] = useState(false);
+  const [viewingCertVol, setViewingCertVol] = useState<VolunteerApplication | null>(null);
 
   const handleSeedDB = async () => {
     if (!window.confirm("WARNING: This will clear existing Supabase tables and sync them fresh with your local JSON data files. Continue?")) return;
@@ -931,6 +953,12 @@ export default function AdminPanelPage() {
       setFormStatus(item.status || "Pending");
       setFormGender(item.gender || "");
       setFormProfilePhoto(item.profile_photo || "");
+      setFormAadharNumber(item.aadhar_number || "");
+      setFormAadharUploadUrl(item.aadhar_upload_url || "");
+      setFormInternshipDuration(item.internship_duration || "1 Month");
+      setFormCertificateUrl(item.certificate_url || "");
+      setFormCertificateIssueDate(item.certificate_issue_date || "");
+      setFormStartDate(item.internship_start_date || "");
     } else if (activeTab === "RoleManagement") {
       setFormTitle(item.name || "");
       setFormEmail(item.email || "");
@@ -1125,7 +1153,13 @@ export default function AdminPanelPage() {
         skills: formSkills, 
         status: formStatus,
         gender: formGender,
-        profile_photo: formProfilePhoto
+        profile_photo: formProfilePhoto,
+        aadhar_number: formAadharNumber,
+        aadhar_upload_url: formAadharUploadUrl,
+        internship_duration: formInternshipDuration,
+        certificate_url: formCertificateUrl,
+        certificate_issue_date: formCertificateIssueDate,
+        internship_start_date: formStartDate
       };
     } else if (activeTab === "Tasks") {
       if (!taskFormVolunteerId || !taskFormTitle.trim() || !taskFormDate.trim() || !taskFormTime.trim()) {
@@ -1285,6 +1319,46 @@ export default function AdminPanelPage() {
     setTaskFormStatus("Pending");
     setActiveTab("Tasks");
     setIsModalOpen(true);
+  };
+
+  const handleOpenCertificateModal = (app: VolunteerApplication) => {
+    setCertVol(app);
+    setCertDate(app.certificate_issue_date || getFormattedDate());
+    setCertStartDate(app.internship_start_date || getFormattedDate());
+    setCertUrl(app.certificate_url || "");
+    setIsCertModalOpen(true);
+  };
+
+  const handleSaveCertificate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!certVol) return;
+
+    setIsCertSaving(true);
+    try {
+      const res = await fetch('/api/volunteer', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...certVol,
+          certificate_url: certUrl,
+          certificate_issue_date: certDate,
+          internship_start_date: certStartDate
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        triggerAlert("Certificate updated successfully!");
+        fetchData();
+        setIsCertModalOpen(false);
+      } else {
+        triggerAlert(data.error || "Failed to update certificate.");
+      }
+    } catch (err) {
+      console.error("Error saving certificate:", err);
+      triggerAlert("Error saving certificate.");
+    } finally {
+      setIsCertSaving(false);
+    }
   };
 
   const handleDelete = async (idOrKey: any) => {
@@ -1600,7 +1674,7 @@ export default function AdminPanelPage() {
 
         {/* Tab Selection Row */}
         <div className="flex border-b border-zinc-900 gap-1.5 mb-10 overflow-x-auto pb-2 scrollbar-none">
-          {(["Causes", "Reviews", "Blogs", "Stories", "DetailedStories", "SuccessStories", "Donations", "Highlights", "Applications", "Tasks", "StarVolunteers", "ContactInfo", "ContactSubmissions", "PageMedia", "PageTexts", "StatsCards", "Categories", "RoleManagement", "Navbar", "Footer", "WhatsAppCommunity", "AdminProfile"] as TabType[]).map((tab) => {
+          {(["Causes", "Reviews", "Blogs", "Stories", "DetailedStories", "SuccessStories", "Donations", "Beneficiaries", "Highlights", "Applications", "Tasks", "StarVolunteers", "ContactInfo", "ContactSubmissions", "PageMedia", "PageTexts", "StatsCards", "Categories", "RoleManagement", "Navbar", "Footer", "WhatsAppCommunity", "AdminProfile"] as TabType[]).map((tab) => {
             const isTabActive = activeTab === tab;
             const pendingCount = tab === "Applications" ? volApps.filter(a => a.status === "Pending" || !a.status).length : 0;
             return (
@@ -1614,7 +1688,7 @@ export default function AdminPanelPage() {
                 }`}
               >
                 <span>
-                  {tab === "StarVolunteers" ? "Star Volunteers" : tab === "Applications" ? "Volunteer Apps" : tab === "PageMedia" ? "Page Banners & Media" : tab === "PageTexts" ? "Page Layout Texts" : tab === "StatsCards" ? "Stats Ribbon" : tab === "RoleManagement" ? "Role Manager" : tab === "Navbar" ? "Navbar Config" : tab === "Footer" ? "Footer Config" : tab === "AdminProfile" ? "My Profile" : tab === "DetailedStories" ? "Detailed Stories" : tab === "SuccessStories" ? "Success Stories" : tab === "ContactInfo" ? "Contact Info Cards" : tab === "ContactSubmissions" ? "Contact Messages" : tab === "WhatsAppCommunity" ? "WhatsApp Community" : tab}
+                  {tab === "StarVolunteers" ? "Star Volunteers" : tab === "Applications" ? "Volunteer Apps" : tab === "PageMedia" ? "Page Banners & Media" : tab === "PageTexts" ? "Page Layout Texts" : tab === "StatsCards" ? "Stats Ribbon" : tab === "RoleManagement" ? "Role Manager" : tab === "Navbar" ? "Navbar Config" : tab === "Footer" ? "Footer Config" : tab === "AdminProfile" ? "My Profile" : tab === "DetailedStories" ? "Detailed Stories" : tab === "SuccessStories" ? "Success Stories" : tab === "ContactInfo" ? "Contact Info Cards" : tab === "ContactSubmissions" ? "Contact Messages" : tab === "WhatsAppCommunity" ? "WhatsApp Community" : tab === "Beneficiaries" ? "Beneficiaries (Underprivileged)" : tab}
                 </span>
                 {pendingCount > 0 && (
                   <span className="px-2 py-0.5 bg-red-650 text-white text-[9px] font-black rounded-full shadow-sm animate-bounce">
@@ -2065,6 +2139,32 @@ export default function AdminPanelPage() {
               );
             })()}
 
+            {activeTab === "Beneficiaries" && (
+              <div className="bg-zinc-900/50 border border-zinc-800/60 p-8 rounded-3xl text-left space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+                  <div className="space-y-2 max-w-2xl">
+                    <div className="flex items-center gap-2">
+                      <span className="flex h-2.5 w-2.5 rounded-full bg-emerald-400 animate-pulse" />
+                      <h4 className="text-sm font-black uppercase tracking-wider text-emerald-400">Underprivileged Beneficiaries Control Room</h4>
+                    </div>
+                    <h3 className="text-xl font-bold text-white">Looking for the Underprivileged Beneficiaries Registry?</h3>
+                    <p className="text-xs text-zinc-400 leading-relaxed">
+                      Open the full registry to record new beneficiary profiles, children information, dates of birth, track and upload their Aadhaar identity cards, assign the causes they benefitted from, and document donation distributions with verification images.
+                    </p>
+                  </div>
+                  <a
+                    href="/admin/beneficiaries"
+                    className="px-6 py-3.5 bg-[#F3A61E] hover:bg-[#d68f12] text-black text-xs font-black uppercase tracking-widest rounded-2xl transition-all cursor-pointer text-center flex items-center justify-center gap-2 shadow-lg hover:shadow-amber-500/10 hover:scale-[1.02] shrink-0"
+                  >
+                    <svg className="h-4 w-4 shrink-0 stroke-[2.5]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                    <span>Open Beneficiaries Room</span>
+                  </a>
+                </div>
+              </div>
+            )}
+
             {activeTab === "Highlights" && (
               <table className="min-w-full divide-y divide-zinc-800 text-left">
                 <thead>
@@ -2121,9 +2221,26 @@ export default function AdminPanelPage() {
                         <div>
                           <p className="text-sm font-bold text-white">{app.name}</p>
                           <p className="text-[10px] text-zinc-400 font-bold mt-0.5">{app.email}</p>
-                          <p className="text-[10px] text-emerald-450 font-black mt-0.5 cursor-pointer" onClick={() => window.open(`https://wa.me/${app.phone.replace(/[^0-9]/g, "")}`, "_blank")}>
-                            📞 {app.phone}
-                          </p>
+                          <div className="flex flex-col gap-0.5 mt-0.5">
+                            <p className="text-[10px] text-emerald-450 font-black cursor-pointer inline-flex items-center gap-1" onClick={() => window.open(`https://wa.me/${app.phone.replace(/[^0-9]/g, "")}`, "_blank")}>
+                              📞 {app.phone}
+                            </p>
+                            {app.aadhar_number && (
+                              <p className="text-[9px] text-zinc-500 font-bold">
+                                🪪 Aadhaar: {app.aadhar_number}
+                              </p>
+                            )}
+                            {app.aadhar_upload_url && (
+                              <a
+                                href={app.aadhar_upload_url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-[9px] text-amber-500 hover:underline font-bold block"
+                              >
+                                View Aadhaar Doc ↗
+                              </a>
+                            )}
+                          </div>
                         </div>
                       </td>
                       <td className="px-6 py-4">
@@ -2161,6 +2278,32 @@ export default function AdminPanelPage() {
                               >
                                 Assign Task
                               </button>
+                              {app.certificate_url ? (
+                                <div className="flex gap-1.5">
+                                  <button 
+                                    onClick={() => {
+                                      setViewingCertVol(app);
+                                      setIsViewCertModalOpen(true);
+                                    }}
+                                    className="px-2.5 py-1 bg-emerald-650 hover:bg-emerald-700 text-white font-black uppercase rounded text-[10px] cursor-pointer shadow-md"
+                                  >
+                                    View Cert
+                                  </button>
+                                  <button 
+                                    onClick={() => handleOpenCertificateModal(app)} 
+                                    className="px-2.5 py-1 bg-blue-550 hover:bg-blue-650 text-white font-black uppercase rounded text-[10px] cursor-pointer shadow-md"
+                                  >
+                                    Edit Cert
+                                  </button>
+                                </div>
+                              ) : (
+                                <button 
+                                  onClick={() => handleOpenCertificateModal(app)} 
+                                  className="px-2.5 py-1 bg-zinc-700 hover:bg-zinc-650 text-white font-black uppercase rounded text-[10px] cursor-pointer shadow-md"
+                                >
+                                  Create Cert
+                                </button>
+                              )}
                             </div>
                           ) : (
                             <button 
@@ -3527,6 +3670,62 @@ export default function AdminPanelPage() {
                       </div>
                     </div>
 
+                    {/* Aadhaar Card Edit Section inside Applications */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-1.5">Aadhaar Card Number</label>
+                        <input 
+                          type="text" 
+                          value={formAadharNumber} 
+                          onChange={(e) => setFormAadharNumber(e.target.value)} 
+                          placeholder="12-digit number" 
+                          maxLength={12}
+                          className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white focus:outline-none" 
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-1.5">Aadhaar Card Document</label>
+                        <div className="flex gap-2">
+                          <input 
+                            type="text" 
+                            value={formAadharUploadUrl} 
+                            onChange={(e) => setFormAadharUploadUrl(e.target.value)} 
+                            placeholder="Aadhaar URL or upload" 
+                            className="flex-1 px-4 py-2 bg-zinc-955 border border-zinc-800 rounded-xl text-xs text-white focus:outline-none" 
+                          />
+                          <input type="file" id="admin-aadhar-file-input" accept="image/*,application/pdf" onChange={(e) => handleFileUpload(e, setFormAadharUploadUrl)} className="hidden" />
+                          <button type="button" onClick={() => document.getElementById('admin-aadhar-file-input')?.click()} className="px-4 bg-zinc-850 hover:bg-zinc-800 border border-zinc-800 text-xs font-bold rounded-xl text-zinc-300 transition-all cursor-pointer">
+                            Upload
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Internship Duration Section inside Applications */}
+                    <div className="grid grid-cols-2 gap-4 mb-4">
+                      <div>
+                        <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-1.5">Internship Duration</label>
+                        <select value={formInternshipDuration} onChange={(e) => setFormInternshipDuration(e.target.value)} className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white">
+                          <option value="1 Month">1 Month</option>
+                          <option value="2 Months">2 Months</option>
+                          <option value="3 Months">3 Months</option>
+                          <option value="4 Months">4 Months</option>
+                          <option value="5 Months">5 Months</option>
+                          <option value="6 Months">6 Months</option>
+                          <option value="12 Months">12 Months</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-1.5">Internship Start Date</label>
+                        <input
+                          type="date"
+                          value={formStartDate}
+                          onChange={(e) => setFormStartDate(e.target.value)}
+                          className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white focus:outline-none"
+                        />
+                      </div>
+                    </div>
+
                     <div>
                       <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">Areas of Interest / Skills (Select options)</label>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 bg-zinc-950/40 p-4 rounded-xl border border-zinc-800/65">
@@ -4404,6 +4603,329 @@ export default function AdminPanelPage() {
                 </button>
               </div>
             </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Manage Certificate Modal Overlay */}
+      <AnimatePresence>
+        {isCertModalOpen && certVol && (
+          <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="fixed inset-0" onClick={() => setIsCertModalOpen(false)} />
+            
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-zinc-905 border border-zinc-800 text-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl relative text-left z-10"
+              style={{ backgroundColor: "#141916" }}
+            >
+              <button
+                onClick={() => setIsCertModalOpen(false)}
+                className="absolute top-5 right-5 text-zinc-400 hover:text-white p-1 rounded-full cursor-pointer"
+              >
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+
+              <h3 className="text-lg font-black text-white border-b border-zinc-800 pb-3 mb-5">
+                Manage Internship Certificate
+              </h3>
+
+              <p className="text-xs text-zinc-400 mb-4">
+                Issue or upload an internship completion certificate for <span className="font-extrabold text-white">{certVol.name}</span> (Internship Duration: {certVol.internship_duration || "1 Month"}).
+              </p>
+
+              <form onSubmit={handleSaveCertificate} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-1.5">Internship Start Date</label>
+                    <input 
+                      type="date" 
+                      required 
+                      value={certStartDate} 
+                      onChange={(e) => setCertStartDate(e.target.value)} 
+                      className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white focus:outline-none" 
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-1.5">Completion/Issue Date</label>
+                    <input 
+                      type="date" 
+                      required 
+                      value={certDate} 
+                      onChange={(e) => setCertDate(e.target.value)} 
+                      className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white focus:outline-none" 
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-2">Certificate Method</label>
+                  <div className="grid grid-cols-2 gap-2 mb-3">
+                    <button
+                      type="button"
+                      onClick={() => setCertUrl("auto")}
+                      className={`py-2 px-3 rounded-xl border text-xs font-bold transition-all cursor-pointer text-center ${
+                        certUrl === "auto" 
+                          ? "bg-emerald-650 border-emerald-650 text-white shadow-lg" 
+                          : "bg-zinc-950 border-zinc-800 text-zinc-400 hover:text-white"
+                      }`}
+                    >
+                      Auto-Generate
+                    </button>
+                    <div className="relative">
+                      <input 
+                        type="file" 
+                        id="admin-cert-upload-input" 
+                        accept="image/*,application/pdf" 
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          const formData = new FormData();
+                          formData.append("file", file);
+                          try {
+                            const res = await fetch('/api/upload', { method: 'POST', body: formData });
+                            const data = await res.json();
+                            if (data.success) {
+                              setCertUrl(data.url);
+                            } else {
+                              alert(data.error || "Upload failed");
+                            }
+                          } catch (err) {
+                            console.error("Upload error:", err);
+                          }
+                        }} 
+                        className="hidden" 
+                      />
+                      <button
+                        type="button"
+                        onClick={() => document.getElementById('admin-cert-upload-input')?.click()}
+                        className={`w-full py-2 px-3 rounded-xl border text-xs font-bold transition-all cursor-pointer text-center ${
+                          certUrl !== "auto" && certUrl !== "" 
+                            ? "bg-emerald-650 border-emerald-650 text-white shadow-lg" 
+                            : "bg-zinc-950 border-zinc-800 text-zinc-400 hover:text-white"
+                        }`}
+                      >
+                        Upload File
+                      </button>
+                    </div>
+                  </div>
+
+                  {certUrl && (
+                    <div className="bg-zinc-950/60 p-3 rounded-xl border border-zinc-800 text-[10px] text-zinc-400 break-all flex flex-col gap-2">
+                      <div>
+                        <span className="font-extrabold text-white block mb-0.5">Active Certificate:</span>
+                        {certUrl === "auto" ? "✓ Dynamically auto-generated template" : certUrl}
+                      </div>
+                      <div className="flex gap-2">
+                        {certUrl === "auto" ? (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setViewingCertVol(certVol);
+                              setIsViewCertModalOpen(true);
+                            }}
+                            className="w-full py-1 bg-amber-500 hover:bg-amber-600 text-black font-bold text-[9px] uppercase tracking-wider rounded-lg transition-all"
+                          >
+                            Preview Certificate 👁
+                          </button>
+                        ) : (
+                          <a
+                            href={certUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="w-full py-1 bg-amber-500 hover:bg-amber-600 text-black font-bold text-[9px] uppercase tracking-wider rounded-lg text-center transition-all"
+                          >
+                            View Uploaded File ↗
+                          </a>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (window.confirm("Are you sure you want to revoke/clear this certificate?")) {
+                              setCertUrl("");
+                              setCertDate("");
+                            }
+                          }}
+                          className="w-24 py-1 bg-red-650 hover:bg-red-750 text-white font-bold text-[9px] uppercase tracking-wider rounded-lg transition-all"
+                        >
+                          Revoke
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex justify-end gap-2 pt-3 border-t border-zinc-800">
+                  <button
+                    type="button"
+                    onClick={() => setIsCertModalOpen(false)}
+                    className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-bold rounded-xl cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isCertSaving}
+                    className="px-5 py-2 bg-[#1E4D2B] hover:bg-[#15381E] text-white text-xs font-bold rounded-xl cursor-pointer disabled:opacity-50"
+                  >
+                    {isCertSaving ? "Saving..." : "Save Certificate"}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Dynamic premium certificate print modal for Admin View */}
+      <AnimatePresence>
+        {isViewCertModalOpen && viewingCertVol && (
+          <div className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-sm flex flex-col items-center justify-center p-4">
+            <style>{`
+              @media print {
+                body * {
+                  visibility: hidden;
+                }
+                #premium-certificate-print-area, #premium-certificate-print-area * {
+                  visibility: visible;
+                }
+                #premium-certificate-print-area {
+                  position: fixed;
+                  left: 0;
+                  top: 0;
+                  width: 297mm;
+                  height: 210mm;
+                  margin: 0 !important;
+                  padding: 2.5rem !important;
+                  box-sizing: border-box;
+                  background-color: white !important;
+                  background-image: none !important;
+                  color: #121212 !important;
+                  border: 15px double #1E4D2B !important;
+                  box-shadow: none !important;
+                  z-index: 99999;
+                  display: flex !important;
+                  flex-direction: column !important;
+                  justify-content: space-between !important;
+                }
+                .no-print {
+                  display: none !important;
+                }
+              }
+              @page {
+                size: A4 landscape;
+                margin: 0;
+              }
+            `}</style>
+
+            <div className="no-print flex justify-end w-full max-w-4xl mb-4 gap-3">
+              <button
+                onClick={() => window.print()}
+                className="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-black font-extrabold uppercase tracking-wider rounded-xl text-xs cursor-pointer shadow-lg transition-all"
+              >
+                Print / Save PDF
+              </button>
+              <button
+                onClick={() => setIsViewCertModalOpen(false)}
+                className="px-5 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-extrabold uppercase tracking-wider rounded-xl text-xs cursor-pointer transition-all"
+              >
+                Close Preview
+              </button>
+            </div>
+
+            <div
+              id="premium-certificate-print-area"
+              className="relative w-full max-w-4xl aspect-[1.414/1] bg-white border-[16px] border-double border-[#1E4D2B] p-8 sm:p-12 text-center text-[#0e1711] shadow-2xl flex flex-col justify-between rounded-xl select-none"
+              style={{
+                fontFamily: "'Outfit', 'Inter', sans-serif",
+                backgroundImage: "radial-gradient(circle at center, #fcfdfc 0%, #f4faf6 100%)"
+              }}
+            >
+              {/* Background watermark round logo */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
+                <img
+                  src="/kanha_logo_round.png"
+                  alt="Watermark Logo"
+                  className="w-[280px] h-[280px] object-contain opacity-[0.04]"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1593113598332-cd288d649433?w=300&auto=format&fit=crop&q=80";
+                  }}
+                />
+              </div>
+
+              {/* Top Branding Section */}
+              <div className="relative z-10 flex flex-col items-center">
+                <img
+                  src="/kanha_logo_round.png"
+                  alt="Kanha Foundation Logo"
+                  className="h-16 w-16 object-contain mb-3"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1593113598332-cd288d649433?w=120&auto=format&fit=crop&q=80";
+                  }}
+                />
+                <h4 className="text-sm font-black tracking-[0.25em] text-[#1E4D2B] uppercase mb-1">KANHA FOUNDATION</h4>
+                <p className="text-[10px] text-zinc-550 uppercase tracking-widest font-bold">Registered Charity & Volunteer Network</p>
+                <div className="w-24 h-0.5 bg-[#F3A61E] mt-3 mb-1"></div>
+              </div>
+
+              {/* Middle Certificate Core */}
+              <div className="relative z-10 my-auto space-y-4">
+                <h2 className="text-3xl font-black tracking-tight text-[#1E4D2B] font-serif uppercase">
+                  Certificate of Internship
+                </h2>
+                
+                <div className="space-y-1.5 mt-2">
+                  <p className="text-xs text-zinc-500 uppercase tracking-widest font-semibold">This is proudly presented to</p>
+                  <h3 className="text-2xl font-black text-[#1E4D2B] underline decoration-[#F3A61E] decoration-2 underline-offset-8">
+                    {viewingCertVol.name.toUpperCase()}
+                  </h3>
+                </div>
+
+                <p className="text-sm text-zinc-655 max-w-2xl mx-auto leading-relaxed mt-4">
+                  has successfully completed their volunteering internship under Kanha Foundation from <strong className="text-[#1E4D2B]">{viewingCertVol.internship_start_date || certStartDate || "N/A"}</strong> to <strong className="text-[#1E4D2B]">{viewingCertVol.certificate_issue_date || certDate || "N/A"}</strong>. Their contributions have significantly impacted local relief drives and education initiatives.
+                </p>
+
+                <div className="grid grid-cols-3 gap-4 max-w-lg mx-auto pt-4 text-xs font-bold text-zinc-650">
+                  <div className="bg-zinc-50 p-2.5 rounded-xl border border-zinc-150/40">
+                    <span className="block text-[8px] text-zinc-400 uppercase tracking-wider mb-0.5">Start Date</span>
+                    <span className="text-xs text-[#1E4D2B] font-black">{viewingCertVol.internship_start_date || certStartDate || "N/A"}</span>
+                  </div>
+                  <div className="bg-zinc-50 p-2.5 rounded-xl border border-zinc-150/40">
+                    <span className="block text-[8px] text-zinc-400 uppercase tracking-wider mb-0.5">Duration</span>
+                    <span className="text-xs text-[#1E4D2B] font-black">{viewingCertVol.internship_duration || "1 Month"}</span>
+                  </div>
+                  <div className="bg-zinc-50 p-2.5 rounded-xl border border-zinc-150/40">
+                    <span className="block text-[8px] text-zinc-400 uppercase tracking-wider mb-0.5">Completion Date</span>
+                    <span className="text-xs text-[#1E4D2B] font-black">{viewingCertVol.certificate_issue_date || certDate || "N/A"}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bottom Stamp and Signature block */}
+              <div className="relative z-10 flex justify-between items-end border-t border-zinc-200/60 pt-6 mt-6 text-left">
+                <div>
+                  <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">Verification ID</p>
+                  <p className="text-xs font-extrabold text-[#F3A61E]">KH-VOL-CERT-{viewingCertVol.id}</p>
+                </div>
+                
+                {/* Stamp Seal */}
+                <div className="h-16 w-16 border-2 border-dashed border-[#1E4D2B]/40 rounded-full flex items-center justify-center text-[#1E4D2B] opacity-60 relative select-none">
+                  <div className="text-[8px] font-black uppercase text-center tracking-wider">
+                    KANHA<br />FOUNDATION<br />SEAL
+                  </div>
+                </div>
+
+                <div className="text-right w-44">
+                  <div className="h-8 border-b border-zinc-300 w-full mb-1"></div>
+                  <p className="text-[10px] font-black text-[#1E4D2B] uppercase tracking-wider">Authorized Officer</p>
+                  <p className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest mt-0.5">Kanha Foundation</p>
+                </div>
+              </div>
+            </div>
+
           </div>
         )}
       </AnimatePresence>

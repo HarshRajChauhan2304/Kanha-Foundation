@@ -15,6 +15,12 @@ interface Volunteer {
   profile_photo?: string;
   gender?: string;
   terms_accepted?: boolean;
+  aadhar_number?: string;
+  aadhar_upload_url?: string;
+  internship_duration?: string;
+  certificate_url?: string;
+  certificate_issue_date?: string;
+  internship_start_date?: string;
 }
 
 const AVAILABLE_SKILLS = [
@@ -46,6 +52,14 @@ export default function VolunteerProfilePage() {
   const [formGender, setFormGender] = useState("");
   const [formProfilePhoto, setFormProfilePhoto] = useState("");
   const [isFormPhotoUploading, setIsFormPhotoUploading] = useState(false);
+  const [formAadharNumber, setFormAadharNumber] = useState("");
+  const [formAadharUploadUrl, setFormAadharUploadUrl] = useState("");
+  const [isFormAadharUploading, setIsFormAadharUploading] = useState(false);
+  const [isCertModalOpen, setIsCertModalOpen] = useState(false);
+  const [showCertCelebration, setShowCertCelebration] = useState(false);
+  const [starRecord, setStarRecord] = useState<any | null>(null);
+  const [isStarCertModalOpen, setIsStarCertModalOpen] = useState(false);
+  const [showStarCelebration, setShowStarCelebration] = useState(false);
   const [editSuccessMsg, setEditSuccessMsg] = useState("");
   const [editErrorMsg, setEditErrorMsg] = useState("");
   const [isSaving, setIsSaving] = useState(false);
@@ -59,7 +73,7 @@ export default function VolunteerProfilePage() {
   const [completingTask, setCompletingTask] = useState<any | null>(null);
   const [moneyReceived, setMoneyReceived] = useState("");
   const [moneySpent, setMoneySpent] = useState("");
-  const [proofMedia, setProofMedia] = useState("");
+  const [proofMediaList, setProofMediaList] = useState<string[]>([]);
   const [isProofUploading, setIsProofUploading] = useState(false);
   const [volunteerFeedback, setVolunteerFeedback] = useState("");
   const [completionError, setCompletionError] = useState("");
@@ -104,7 +118,7 @@ export default function VolunteerProfilePage() {
     setCompletingTask(task);
     setMoneyReceived(task.assigned_money?.toString() || "0");
     setMoneySpent("");
-    setProofMedia("");
+    setProofMediaList([]);
     setVolunteerFeedback("");
     setCompletionError("");
     setIsCompletionModalOpen(true);
@@ -114,8 +128,8 @@ export default function VolunteerProfilePage() {
     e.preventDefault();
     setCompletionError("");
 
-    if (!moneyReceived || !moneySpent || !proofMedia || !volunteerFeedback.trim()) {
-      setCompletionError("Please fill in all required fields and upload a media receipt.");
+    if (!moneyReceived || !moneySpent || proofMediaList.length === 0 || !volunteerFeedback.trim()) {
+      setCompletionError("Please fill in all required fields and upload at least one media proof.");
       return;
     }
 
@@ -129,7 +143,7 @@ export default function VolunteerProfilePage() {
           status: "Completed",
           money_received: parseFloat(moneyReceived) || 0,
           money_spent: parseFloat(moneySpent) || 0,
-          proof_media: proofMedia,
+          proof_media: proofMediaList.join(","),
           feedback: volunteerFeedback
         })
       });
@@ -176,6 +190,43 @@ export default function VolunteerProfilePage() {
     }
   }, []);
 
+  // Check if a certificate is available and show the celebration popup
+  useEffect(() => {
+    if (volunteer && volunteer.certificate_url) {
+      const hasDismissed = localStorage.getItem(`dismissed_cert_${volunteer.id}`);
+      if (!hasDismissed) {
+        setShowCertCelebration(true);
+      }
+    } else {
+      setShowCertCelebration(false);
+    }
+  }, [volunteer]);
+
+  // Query weekly star API and set star status/records
+  useEffect(() => {
+    if (volunteer) {
+      fetch('/api/volunteer/star')
+        .then(res => res.json())
+        .then(data => {
+          if (data.success && Array.isArray(data.stars)) {
+            const matchedStar = data.stars.find((s: any) => s && String(s.volunteer_id) === String(volunteer.id));
+            if (matchedStar) {
+              setStarRecord(matchedStar);
+              const weekKey = `dismissed_star_${volunteer.id}_${matchedStar.week_label.replace(/\s+/g, '_')}`;
+              const hasDismissed = localStorage.getItem(weekKey);
+              if (!hasDismissed) {
+                setShowStarCelebration(true);
+              }
+            }
+          }
+        })
+        .catch(err => console.error("Error checking weekly star volunteer status:", err));
+    } else {
+      setStarRecord(null);
+      setShowStarCelebration(false);
+    }
+  }, [volunteer]);
+
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoginError("");
@@ -190,6 +241,7 @@ export default function VolunteerProfilePage() {
       const data = await res.json();
       if (data.success) {
         localStorage.setItem("volunteer_session", JSON.stringify(data.volunteer));
+        window.dispatchEvent(new Event("user_avatar_update"));
         setVolunteer(data.volunteer);
         setIsLoggedIn(true);
         fetchTasks(data.volunteer.id);
@@ -218,6 +270,8 @@ export default function VolunteerProfilePage() {
     setFormSkills(volunteer.skills || []);
     setFormGender(volunteer.gender || "");
     setFormProfilePhoto(volunteer.profile_photo || "");
+    setFormAadharNumber(volunteer.aadhar_number || "");
+    setFormAadharUploadUrl(volunteer.aadhar_upload_url || "");
     setIsEditing(true);
     setEditSuccessMsg("");
     setEditErrorMsg("");
@@ -243,9 +297,11 @@ export default function VolunteerProfilePage() {
           city: formCity,
           motivation: formMotivation,
           skills: formSkills,
-          status: volunteer.status,
+           status: volunteer.status,
           profile_photo: formProfilePhoto,
-          gender: formGender
+          gender: formGender,
+          aadhar_number: formAadharNumber,
+          aadhar_upload_url: formAadharUploadUrl
         })
       });
       const data = await res.json();
@@ -271,7 +327,7 @@ export default function VolunteerProfilePage() {
   };
 
   return (
-    <div className="bg-zinc-950 text-white min-h-screen py-24 px-4 flex items-center justify-center font-sans relative overflow-hidden">
+    <div className={`bg-zinc-950 text-white min-h-screen px-4 flex flex-col items-center justify-center font-sans relative overflow-hidden ${isLoggedIn ? "pt-28 pb-12" : "py-24"}`}>
       
       {/* Decorative Floating Glassmorphic Blobs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
@@ -435,6 +491,57 @@ export default function VolunteerProfilePage() {
                   </span>
                 </div>
 
+                {/* Certificate banner card */}
+                {volunteer?.certificate_url && (
+                  <div className="bg-amber-500/10 border border-amber-500/30 p-5 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                      <h2 className="text-sm font-bold text-white flex items-center gap-1.5">
+                        🎓 Internship Completion Certificate
+                      </h2>
+                      <p className="text-xs text-zinc-400 mt-0.5">
+                        Congratulations! Your certificate has been issued on {volunteer.certificate_issue_date || "N/A"}.
+                      </p>
+                    </div>
+                    {volunteer.certificate_url === "auto" ? (
+                      <button
+                        onClick={() => setIsCertModalOpen(true)}
+                        className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-black font-black uppercase tracking-wider rounded-xl text-xs cursor-pointer shadow-md text-center transition-all"
+                      >
+                        View & Print
+                      </button>
+                    ) : (
+                      <a
+                        href={volunteer.certificate_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-black font-black uppercase tracking-wider rounded-xl text-xs cursor-pointer shadow-md text-center transition-all"
+                      >
+                        Download Certificate ↗
+                      </a>
+                    )}
+                  </div>
+                )}
+
+                {/* Star Volunteer Certificate banner card */}
+                {starRecord && (
+                  <div className="bg-amber-550/10 border border-[#F3A61E]/30 p-5 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                      <h2 className="text-sm font-bold text-white flex items-center gap-1.5">
+                        🌟 Star Volunteer Certificate
+                      </h2>
+                      <p className="text-xs text-zinc-400 mt-0.5">
+                        Congratulations! You have been selected as the Star Volunteer for the {starRecord.week_label}.
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setIsStarCertModalOpen(true)}
+                      className="px-4 py-2 bg-[#F3A61E] hover:bg-[#d68f12] text-black font-black uppercase tracking-wider rounded-xl text-xs cursor-pointer shadow-md text-center transition-all"
+                    >
+                      View & Print Star Cert
+                    </button>
+                  </div>
+                )}
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div>
                     <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest block">Full Name</label>
@@ -451,6 +558,25 @@ export default function VolunteerProfilePage() {
                   <div>
                     <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest block">Phone (WhatsApp)</label>
                     <p className="text-sm font-extrabold text-white mt-1">{volunteer?.phone}</p>
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest block">Aadhaar Card Number</label>
+                    <p className="text-sm font-extrabold text-white mt-1">{volunteer?.aadhar_number || "Not Logged"}</p>
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest block">Aadhaar Card File</label>
+                    {volunteer?.aadhar_upload_url ? (
+                      <a
+                        href={volunteer.aadhar_upload_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-xs text-emerald-450 hover:underline font-bold block mt-1"
+                      >
+                        View Document ↗
+                      </a>
+                    ) : (
+                      <p className="text-sm font-extrabold text-zinc-500 mt-1">No Document</p>
+                    )}
                   </div>
                   <div>
                     <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest block">City / Location</label>
@@ -686,6 +812,51 @@ export default function VolunteerProfilePage() {
                   </select>
                 </div>
 
+                {/* Aadhaar Card Number and Upload */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-1.5">Aadhaar Card Number *</label>
+                    <input
+                      type="text"
+                      required
+                      value={formAadharNumber}
+                      onChange={(e) => setFormAadharNumber(e.target.value)}
+                      placeholder="12-digit number"
+                      maxLength={12}
+                      className="w-full px-4 py-2.5 bg-zinc-955 border border-zinc-800 rounded-xl text-sm text-white focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-1.5">Upload Aadhaar Card *</label>
+                    <div className="relative border border-zinc-800 rounded-xl p-2.5 bg-zinc-950 flex items-center justify-between cursor-pointer hover:border-emerald-500 transition-colors">
+                      <div className="text-xs text-zinc-500 truncate max-w-[180px]">
+                        {isFormAadharUploading ? "Uploading..." : formAadharUploadUrl ? "✓ Aadhaar ready" : "Choose file..."}
+                      </div>
+                      <input
+                        type="file"
+                        accept="image/*,application/pdf"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          setIsFormAadharUploading(true);
+                          const formData = new FormData();
+                          formData.append("file", file);
+                          try {
+                            const res = await fetch('/api/upload', { method: 'POST', body: formData });
+                            const data = await res.json();
+                            if (data.success) setFormAadharUploadUrl(data.url);
+                          } catch (err) {
+                            console.error("Aadhaar photo upload failed:", err);
+                          } finally {
+                            setIsFormAadharUploading(false);
+                          }
+                        }}
+                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                      />
+                    </div>
+                  </div>
+                </div>
+
                 <div>
                   <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">Areas of Interest / Skills</label>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 bg-zinc-950/40 p-4 rounded-xl border border-zinc-800/80">
@@ -796,56 +967,82 @@ export default function VolunteerProfilePage() {
                   </div>
                 </div>
 
-                {/* Proof Media File Upload */}
+                {/* Proof Media File Upload (Multiple Support) */}
                 <div>
-                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-2 ml-1">Upload Proof Media (Photo/Receipt/Video)</label>
-                  <div className="relative border-2 border-dashed border-zinc-800 rounded-2xl h-36 flex flex-col items-center justify-center bg-zinc-950/50 hover:border-emerald-500 transition-colors cursor-pointer overflow-hidden">
-                    {proofMedia ? (
-                      proofMedia.endsWith(".mp4") || proofMedia.endsWith(".mov") ? (
-                        <video src={proofMedia} className="h-full w-full object-cover" controls />
-                      ) : (
-                        <img src={proofMedia} alt="Proof Preview" className="h-full w-full object-cover" />
-                      )
-                    ) : (
-                      <div className="text-center p-4 text-zinc-550 hover:text-emerald-550 transition-colors">
+                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-2 ml-1">Upload Proof Media (Photos, Receipts, or Videos)</label>
+                  <div className="flex flex-col gap-3">
+                    <div className="relative border-2 border-dashed border-zinc-800 rounded-2xl h-24 flex flex-col items-center justify-center bg-zinc-950/50 hover:border-emerald-500 transition-colors cursor-pointer overflow-hidden">
+                      <div className="text-center p-3 text-zinc-550">
                         {isProofUploading ? (
-                          <div className="animate-spin rounded-full h-6 w-6 border-2 border-t-transparent border-emerald-500 mx-auto" />
+                          <div className="animate-spin rounded-full h-5 w-5 border-2 border-t-transparent border-emerald-500 mx-auto" />
                         ) : (
                           <>
-                            <svg className="h-8 w-8 mx-auto mb-2 text-zinc-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                            <svg className="h-6 w-6 mx-auto mb-1 text-zinc-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                               <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
-                            <span className="text-[10px] font-black uppercase tracking-wider block">Select File (Image or Video)</span>
+                            <span className="text-[10px] font-black uppercase tracking-wider block">Select Media (Multiple Files)</span>
                           </>
                         )}
                       </div>
-                    )}
-                    <input
-                      type="file"
-                      accept="image/*,video/*"
-                      onChange={async (e) => {
-                        const file = e.target.files?.[0];
-                        if (!file) return;
-                        setIsProofUploading(true);
-                        setCompletionError("");
-                        const formData = new FormData();
-                        formData.append("file", file);
-                        try {
-                          const res = await fetch('/api/upload', { method: 'POST', body: formData });
-                          const data = await res.json();
-                          if (data.success) {
-                            setProofMedia(data.url);
-                          } else {
-                            setCompletionError(data.error || "Failed to upload media.");
+                      <input
+                        type="file"
+                        multiple
+                        accept="image/*,video/*"
+                        disabled={isProofUploading}
+                        onChange={async (e) => {
+                          const files = e.target.files;
+                          if (!files || files.length === 0) return;
+                          setIsProofUploading(true);
+                          setCompletionError("");
+                          try {
+                            const uploadPromises = Array.from(files).map(async (file) => {
+                              const formData = new FormData();
+                              formData.append("file", file);
+                              const res = await fetch('/api/upload', { method: 'POST', body: formData });
+                              const data = await res.json();
+                              return data.success ? data.url : null;
+                            });
+                            const urls = await Promise.all(uploadPromises);
+                            const successfulUrls = urls.filter((url): url is string => url !== null);
+                            if (successfulUrls.length > 0) {
+                              setProofMediaList(prev => [...prev, ...successfulUrls]);
+                            }
+                          } catch (err) {
+                            setCompletionError("Error uploading one or more files.");
+                          } finally {
+                            setIsProofUploading(false);
                           }
-                        } catch (err) {
-                          setCompletionError("Error uploading proof file.");
-                        } finally {
-                          setIsProofUploading(false);
-                        }
-                      }}
-                      className="absolute inset-0 opacity-0 cursor-pointer"
-                    />
+                        }}
+                        className="absolute inset-0 opacity-0 cursor-pointer"
+                      />
+                    </div>
+
+                    {/* Previews with Delete button */}
+                    {proofMediaList.length > 0 && (
+                      <div className="grid grid-cols-4 gap-2 bg-zinc-950 p-2.5 rounded-xl border border-zinc-800">
+                        {proofMediaList.map((url, pIdx) => {
+                          const isVideo = url.endsWith(".mp4") || url.endsWith(".mov") || url.includes("video");
+                          return (
+                            <div key={pIdx} className="relative aspect-video rounded-lg overflow-hidden border border-zinc-800 group shadow-inner">
+                              {isVideo ? (
+                                <video src={url} className="object-cover w-full h-full" />
+                              ) : (
+                                <img src={url} alt="proof thumbnail preview" className="object-cover w-full h-full" />
+                              )}
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setProofMediaList(prev => prev.filter((_, idx) => idx !== pIdx));
+                                }}
+                                className="absolute inset-0 bg-red-650/80 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-[9px] font-black uppercase cursor-pointer"
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -915,17 +1112,28 @@ export default function VolunteerProfilePage() {
 
                 <div>
                   <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-2">Proof Media</label>
-                  <div className="border border-zinc-800 rounded-2xl overflow-hidden bg-black/40 h-44 flex items-center justify-center">
-                    {viewingTaskProof.proof_media ? (
-                      viewingTaskProof.proof_media.endsWith(".mp4") || viewingTaskProof.proof_media.endsWith(".mov") ? (
-                        <video src={viewingTaskProof.proof_media} className="h-full w-full object-cover animate-fade-in" controls />
-                      ) : (
-                        <img src={viewingTaskProof.proof_media} alt="Proof Media" className="h-full w-full object-cover animate-fade-in" />
-                      )
-                    ) : (
+                  {viewingTaskProof.proof_media ? (
+                    <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">
+                      {viewingTaskProof.proof_media.split(",").filter(Boolean).map((url: string, idx: number) => {
+                        const isVideo = url.endsWith(".mp4") || url.endsWith(".mov") || url.includes("video");
+                        return (
+                          <div key={idx} className="border border-zinc-800 rounded-xl overflow-hidden bg-black/40 aspect-video flex items-center justify-center">
+                            {isVideo ? (
+                              <video src={url} className="h-full w-full object-cover" controls />
+                            ) : (
+                              <a href={url} target="_blank" rel="noreferrer" className="w-full h-full block">
+                                <img src={url} alt={`Proof Media ${idx + 1}`} className="h-full w-full object-cover hover:scale-[1.02] transition-transform" />
+                              </a>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="border border-zinc-800 rounded-2xl overflow-hidden bg-black/40 h-32 flex items-center justify-center">
                       <span className="text-xs text-zinc-550 italic">No media uploaded</span>
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </div>
 
                 <div>
@@ -945,6 +1153,414 @@ export default function VolunteerProfilePage() {
                 </button>
               </div>
             </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Dynamic premium certificate print modal */}
+      <AnimatePresence>
+        {isCertModalOpen && volunteer && (
+          <div className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-sm flex flex-col items-center justify-center p-4">
+            <style>{`
+              @media print {
+                body * {
+                  visibility: hidden;
+                }
+                #premium-certificate-print-area, #premium-certificate-print-area * {
+                  visibility: visible;
+                }
+                #premium-certificate-print-area {
+                  position: fixed;
+                  left: 0;
+                  top: 0;
+                  width: 297mm;
+                  height: 210mm;
+                  margin: 0 !important;
+                  padding: 2.5rem !important;
+                  box-sizing: border-box;
+                  background-color: white !important;
+                  background-image: none !important;
+                  color: #121212 !important;
+                  border: 15px double #1E4D2B !important;
+                  box-shadow: none !important;
+                  z-index: 99999;
+                  display: flex !important;
+                  flex-direction: column !important;
+                  justify-content: space-between !important;
+                }
+                .no-print {
+                  display: none !important;
+                }
+              }
+              @page {
+                size: A4 landscape;
+                margin: 0;
+              }
+            `}</style>
+
+            <div className="no-print flex justify-end w-full max-w-4xl mb-4 gap-3">
+              <button
+                onClick={() => window.print()}
+                className="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-black font-extrabold uppercase tracking-wider rounded-xl text-xs cursor-pointer shadow-lg transition-all"
+              >
+                Print / Save PDF
+              </button>
+              <button
+                onClick={() => setIsCertModalOpen(false)}
+                className="px-5 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-extrabold uppercase tracking-wider rounded-xl text-xs cursor-pointer transition-all"
+              >
+                Close Certificate
+              </button>
+            </div>
+
+            <div
+              id="premium-certificate-print-area"
+              className="relative w-full max-w-4xl aspect-[1.414/1] bg-white border-[16px] border-double border-[#1E4D2B] p-8 sm:p-12 text-center text-[#0e1711] shadow-2xl flex flex-col justify-between rounded-xl select-none"
+              style={{
+                fontFamily: "'Outfit', 'Inter', sans-serif",
+                backgroundImage: "radial-gradient(circle at center, #fcfdfc 0%, #f4faf6 100%)"
+              }}
+            >
+              {/* Background watermark round logo */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
+                <img
+                  src="/kanha_logo_round.png"
+                  alt="Watermark Logo"
+                  className="w-[280px] h-[280px] object-contain opacity-[0.04]"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1593113598332-cd288d649433?w=300&auto=format&fit=crop&q=80";
+                  }}
+                />
+              </div>
+
+              {/* Top Branding Section */}
+              <div className="relative z-10 flex flex-col items-center">
+                <img
+                  src="/kanha_logo_round.png"
+                  alt="Kanha Foundation Logo"
+                  className="h-16 w-16 object-contain mb-3"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1593113598332-cd288d649433?w=120&auto=format&fit=crop&q=80";
+                  }}
+                />
+                <h4 className="text-sm font-black tracking-[0.25em] text-[#1E4D2B] uppercase mb-1">KANHA FOUNDATION</h4>
+                <p className="text-[10px] text-zinc-550 uppercase tracking-widest font-bold">Registered Charity & Volunteer Network</p>
+                <div className="w-24 h-0.5 bg-[#F3A61E] mt-3 mb-1"></div>
+              </div>
+
+              {/* Middle Certificate Core */}
+              <div className="relative z-10 my-auto space-y-4">
+                <h2 className="text-3xl font-black tracking-tight text-[#1E4D2B] font-serif uppercase">
+                  Certificate of Internship
+                </h2>
+                
+                <div className="space-y-1.5 mt-2">
+                  <p className="text-xs text-zinc-500 uppercase tracking-widest font-semibold">This is proudly presented to</p>
+                  <h3 className="text-2xl font-black text-[#1E4D2B] underline decoration-[#F3A61E] decoration-2 underline-offset-8">
+                    {volunteer.name.toUpperCase()}
+                  </h3>
+                </div>
+
+                <p className="text-sm text-zinc-650 max-w-2xl mx-auto leading-relaxed mt-4">
+                  has successfully completed their volunteering internship under Kanha Foundation from <strong className="text-[#1E4D2B]">{volunteer.internship_start_date || "N/A"}</strong> to <strong className="text-[#1E4D2B]">{volunteer.certificate_issue_date || "N/A"}</strong>. Their contributions have significantly impacted local relief drives and education initiatives.
+                </p>
+
+                <div className="grid grid-cols-3 gap-4 max-w-lg mx-auto pt-4 text-xs font-bold text-zinc-600">
+                  <div className="bg-zinc-50 p-2.5 rounded-xl border border-zinc-150/40">
+                    <span className="block text-[8px] text-zinc-400 uppercase tracking-wider mb-0.5">Start Date</span>
+                    <span className="text-xs text-[#1E4D2B] font-black">{volunteer.internship_start_date || "N/A"}</span>
+                  </div>
+                  <div className="bg-zinc-50 p-2.5 rounded-xl border border-zinc-150/40">
+                    <span className="block text-[8px] text-zinc-400 uppercase tracking-wider mb-0.5">Duration</span>
+                    <span className="text-xs text-[#1E4D2B] font-black">{volunteer.internship_duration || "1 Month"}</span>
+                  </div>
+                  <div className="bg-zinc-50 p-2.5 rounded-xl border border-zinc-150/40">
+                    <span className="block text-[8px] text-zinc-400 uppercase tracking-wider mb-0.5">Completion Date</span>
+                    <span className="text-xs text-[#1E4D2B] font-black">{volunteer.certificate_issue_date || "N/A"}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bottom Stamp and Signature block */}
+              <div className="relative z-10 flex justify-between items-end border-t border-zinc-200/60 pt-6 mt-6 text-left">
+                <div>
+                  <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">Verification ID</p>
+                  <p className="text-xs font-extrabold text-[#F3A61E]">KH-VOL-CERT-{volunteer.id}</p>
+                </div>
+                
+                {/* Stamp Seal */}
+                <div className="h-16 w-16 border-2 border-dashed border-[#1E4D2B]/40 rounded-full flex items-center justify-center text-[#1E4D2B] opacity-60 relative select-none">
+                  <div className="text-[8px] font-black uppercase text-center tracking-wider">
+                    KANHA<br />FOUNDATION<br />SEAL
+                  </div>
+                </div>
+
+                <div className="text-right w-44">
+                  <div className="h-8 border-b border-zinc-300 w-full mb-1"></div>
+                  <p className="text-[10px] font-black text-[#1E4D2B] uppercase tracking-wider">Authorized Officer</p>
+                  <p className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest mt-0.5">Kanha Foundation</p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Celebration Modal for issued certificate */}
+      <AnimatePresence>
+        {showCertCelebration && volunteer && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-zinc-900 border border-zinc-800 text-white w-full max-w-md rounded-3xl p-6 sm:p-8 text-center relative z-50 shadow-2xl"
+              style={{ backgroundColor: "#141916" }}
+            >
+              {/* Confetti decoration */}
+              <div className="text-4xl mb-4 animate-bounce">🎉 🥳 🎓</div>
+              
+              <h2 className="text-xl sm:text-2xl font-black text-white mb-3">
+                Congratulations, {volunteer.name}!
+              </h2>
+              
+              <p className="text-sm text-zinc-350 leading-relaxed mb-6">
+                Your volunteering internship certificate has been officially issued by the Kanha Foundation! Thank you for your incredible support and dedication.
+              </p>
+
+              <div className="flex flex-col gap-3">
+                {volunteer.certificate_url === "auto" ? (
+                  <button
+                    onClick={() => {
+                      localStorage.setItem(`dismissed_cert_${volunteer.id}`, "true");
+                      setShowCertCelebration(false);
+                      setIsCertModalOpen(true);
+                    }}
+                    className="w-full py-3 bg-[#1E4D2B] hover:bg-[#15381E] text-white font-extrabold uppercase tracking-wider rounded-xl text-xs cursor-pointer shadow-lg transition-all"
+                  >
+                    View & Download Certificate
+                  </button>
+                ) : (
+                  <a
+                    href={volunteer.certificate_url}
+                    target="_blank"
+                    rel="noreferrer"
+                    onClick={() => {
+                      localStorage.setItem(`dismissed_cert_${volunteer.id}`, "true");
+                      setShowCertCelebration(false);
+                    }}
+                    className="w-full py-3 bg-[#1E4D2B] hover:bg-[#15381E] text-white font-extrabold uppercase tracking-wider rounded-xl text-xs cursor-pointer shadow-lg text-center transition-all block"
+                  >
+                    Download Certificate ↗
+                  </a>
+                )}
+                <button
+                  onClick={() => {
+                    localStorage.setItem(`dismissed_cert_${volunteer.id}`, "true");
+                    setShowCertCelebration(false);
+                  }}
+                  className="w-full py-2.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-800 text-zinc-400 hover:text-white font-bold rounded-xl text-xs cursor-pointer transition-all"
+                >
+                  Maybe Later
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Star Volunteer Celebration Modal */}
+      <AnimatePresence>
+        {showStarCelebration && starRecord && volunteer && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-zinc-900 border border-zinc-800 text-white w-full max-w-md rounded-3xl p-6 sm:p-8 text-center relative z-50 shadow-2xl"
+              style={{ backgroundColor: "#141916" }}
+            >
+              {/* Confetti decoration */}
+              <div className="text-4xl mb-4 animate-bounce">🏆 🌟 🥳</div>
+              
+              <h2 className="text-xl sm:text-2xl font-black text-amber-400 mb-3">
+                Star Volunteer of the Week!
+              </h2>
+              
+              <p className="text-sm text-zinc-350 leading-relaxed mb-6">
+                Congratulations, {volunteer.name}! You have been dynamically selected as the **Star Volunteer** for the <strong className="text-white">{starRecord.week_label}</strong> in recognition of your outstanding dedication!
+              </p>
+
+              <div className="flex flex-col gap-3">
+                <button
+                  onClick={() => {
+                    const weekKey = `dismissed_star_${volunteer.id}_${starRecord.week_label.replace(/\s+/g, '_')}`;
+                    localStorage.setItem(weekKey, "true");
+                    setShowStarCelebration(false);
+                    setIsStarCertModalOpen(true);
+                  }}
+                  className="w-full py-3 bg-[#F3A61E] hover:bg-[#d68f12] text-black font-extrabold uppercase tracking-wider rounded-xl text-xs cursor-pointer shadow-lg transition-all"
+                >
+                  View & Download Star Certificate
+                </button>
+                <button
+                  onClick={() => {
+                    const weekKey = `dismissed_star_${volunteer.id}_${starRecord.week_label.replace(/\s+/g, '_')}`;
+                    localStorage.setItem(weekKey, "true");
+                    setShowStarCelebration(false);
+                  }}
+                  className="w-full py-2.5 bg-zinc-850 hover:bg-zinc-800 border border-zinc-850 hover:border-zinc-800 text-zinc-400 hover:text-white font-bold rounded-xl text-xs cursor-pointer transition-all"
+                >
+                  Maybe Later
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Dynamic premium Star Volunteer Certificate print modal */}
+      <AnimatePresence>
+        {isStarCertModalOpen && starRecord && volunteer && (
+          <div className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-sm flex flex-col items-center justify-center p-4">
+            <style>{`
+              @media print {
+                body * {
+                  visibility: hidden;
+                }
+                #star-certificate-print-area, #star-certificate-print-area * {
+                  visibility: visible;
+                }
+                #star-certificate-print-area {
+                  position: fixed;
+                  left: 0;
+                  top: 0;
+                  width: 297mm;
+                  height: 210mm;
+                  margin: 0 !important;
+                  padding: 2.5rem !important;
+                  box-sizing: border-box;
+                  background-color: white !important;
+                  background-image: none !important;
+                  color: #121212 !important;
+                  border: 15px double #F3A61E !important;
+                  box-shadow: none !important;
+                  z-index: 99999;
+                  display: flex !important;
+                  flex-direction: column !important;
+                  justify-content: space-between !important;
+                }
+                .no-print {
+                  display: none !important;
+                }
+              }
+              @page {
+                size: A4 landscape;
+                margin: 0;
+              }
+            `}</style>
+
+            <div className="no-print flex justify-end w-full max-w-4xl mb-4 gap-3">
+              <button
+                onClick={() => window.print()}
+                className="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-black font-extrabold uppercase tracking-wider rounded-xl text-xs cursor-pointer shadow-lg transition-all"
+              >
+                Print / Save PDF
+              </button>
+              <button
+                onClick={() => setIsStarCertModalOpen(false)}
+                className="px-5 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-extrabold uppercase tracking-wider rounded-xl text-xs cursor-pointer transition-all"
+              >
+                Close Certificate
+              </button>
+            </div>
+
+            <div
+              id="star-certificate-print-area"
+              className="relative w-full max-w-4xl aspect-[1.414/1] bg-white border-[16px] border-double border-[#F3A61E] p-8 sm:p-12 text-center text-[#0e1711] shadow-2xl flex flex-col justify-between rounded-xl select-none"
+              style={{
+                fontFamily: "'Outfit', 'Inter', sans-serif",
+                backgroundImage: "radial-gradient(circle at center, #fdfdfd 0%, #fefcf7 100%)"
+              }}
+            >
+              {/* Background watermark gold star */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
+                <svg className="w-[300px] h-[300px] text-[#F3A61E]/5 fill-current" viewBox="0 0 24 24">
+                  <path d="M12 .587l3.668 7.431 8.2 1.192-5.934 5.787 1.4 8.168L12 18.896l-7.334 3.858 1.4-8.168L.132 9.21l8.2-1.192z" />
+                </svg>
+              </div>
+
+              {/* Top Branding Section */}
+              <div className="relative z-10 flex flex-col items-center">
+                <img
+                  src="/kanha_logo_round.png"
+                  alt="Kanha Foundation Logo"
+                  className="h-16 w-16 object-contain mb-3"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1593113598332-cd288d649433?w=120&auto=format&fit=crop&q=80";
+                  }}
+                />
+                <h4 className="text-sm font-black tracking-[0.25em] text-[#1E4D2B] uppercase mb-1">KANHA FOUNDATION</h4>
+                <p className="text-[10px] text-zinc-550 uppercase tracking-widest font-bold">Registered Charity & Volunteer Network</p>
+                <div className="w-24 h-0.5 bg-[#F3A61E] mt-3 mb-1"></div>
+              </div>
+
+              {/* Middle Certificate Core */}
+              <div className="relative z-10 my-auto space-y-4">
+                <h2 className="text-3xl font-black tracking-tight text-[#F3A61E] font-serif uppercase">
+                  Star Volunteer Certificate
+                </h2>
+                
+                <div className="space-y-1.5 mt-2">
+                  <p className="text-xs text-zinc-500 uppercase tracking-widest font-semibold">This Weekly Award is proudly presented to</p>
+                  <h3 className="text-2xl font-black text-[#1E4D2B] underline decoration-[#F3A61E] decoration-2 underline-offset-8">
+                    {volunteer.name.toUpperCase()}
+                  </h3>
+                </div>
+
+                <p className="text-sm text-zinc-655 max-w-2xl mx-auto leading-relaxed mt-4">
+                  in recognition of their outstanding performance and dedication as the <strong className="text-[#F3A61E]">Star Volunteer of the Week ({starRecord.week_label})</strong> at Kanha Foundation. They achieved <strong className="text-[#1E4D2B]">Grade {starRecord.grade}</strong> by successfully completing volunteer tasks.
+                </p>
+
+                <div className="grid grid-cols-3 gap-4 max-w-lg mx-auto pt-4 text-xs font-bold text-zinc-600">
+                  <div className="bg-zinc-50 p-2.5 rounded-xl border border-zinc-150/40">
+                    <span className="block text-[8px] text-zinc-400 uppercase tracking-wider mb-0.5">Award Category</span>
+                    <span className="text-xs text-[#1E4D2B] font-black">Star Volunteer</span>
+                  </div>
+                  <div className="bg-zinc-50 p-2.5 rounded-xl border border-zinc-150/40">
+                    <span className="block text-[8px] text-zinc-400 uppercase tracking-wider mb-0.5">Tasks Completed</span>
+                    <span className="text-xs text-[#1E4D2B] font-black">{starRecord.tasks_completed || 0} Drives</span>
+                  </div>
+                  <div className="bg-zinc-50 p-2.5 rounded-xl border border-zinc-150/40">
+                    <span className="block text-[8px] text-zinc-400 uppercase tracking-wider mb-0.5">Weekly Grade</span>
+                    <span className="text-xs text-[#1E4D2B] font-black">Grade {starRecord.grade}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bottom Stamp and Signature block */}
+              <div className="relative z-10 flex justify-between items-end border-t border-zinc-200/60 pt-6 mt-6 text-left">
+                <div>
+                  <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">Verification ID</p>
+                  <p className="text-xs font-extrabold text-[#F3A61E]">{starRecord.id}</p>
+                </div>
+                
+                {/* Stamp Seal */}
+                <div className="h-16 w-16 border-2 border-dashed border-[#F3A61E]/40 rounded-full flex items-center justify-center text-[#F3A61E] opacity-60 relative select-none">
+                  <div className="text-[8px] font-black uppercase text-center tracking-wider">
+                    STAR<br />VOLUNTEER<br />SEAL
+                  </div>
+                </div>
+
+                <div className="text-right w-44">
+                  <div className="h-8 border-b border-zinc-300 w-full mb-1"></div>
+                  <p className="text-[10px] font-black text-[#1E4D2B] uppercase tracking-wider">Authorized Officer</p>
+                  <p className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest mt-0.5">Kanha Foundation</p>
+                </div>
+              </div>
+            </div>
+
           </div>
         )}
       </AnimatePresence>

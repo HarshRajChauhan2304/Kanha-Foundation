@@ -16,6 +16,10 @@ export default function VolunteerRegistrationPage() {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [isPhotoUploading, setIsPhotoUploading] = useState(false);
   const [hasScrolledToBottom, setHasScrolledToBottom] = useState(false);
+  const [aadharNumber, setAadharNumber] = useState("");
+  const [aadharPhoto, setAadharPhoto] = useState("");
+  const [isAadharUploading, setIsAadharUploading] = useState(false);
+  const [internshipDuration, setInternshipDuration] = useState("1 Month");
 
   // Flow states
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -57,6 +61,16 @@ export default function VolunteerRegistrationPage() {
       return;
     }
 
+    if (!aadharNumber.trim() || aadharNumber.length !== 12) {
+      setErrorMsg("Please enter a valid 12-digit Aadhaar Card number.");
+      return;
+    }
+
+    if (!aadharPhoto) {
+      setErrorMsg("Please upload your Aadhaar Card document.");
+      return;
+    }
+
     if (!termsAccepted) {
       setErrorMsg("You must read and agree to the Terms and Conditions to submit.");
       return;
@@ -82,7 +96,10 @@ export default function VolunteerRegistrationPage() {
         password,
         profile_photo: profilePhoto,
         gender,
-        terms_accepted: termsAccepted
+        terms_accepted: termsAccepted,
+        aadhar_number: aadharNumber,
+        aadhar_upload_url: aadharPhoto,
+        internship_duration: internshipDuration
       })
     })
       .then(res => res.json())
@@ -278,7 +295,7 @@ export default function VolunteerRegistrationPage() {
             {/* Gender and Password */}
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Gender</label>
+                <label className="block text-[10px] font-black text-gray-550 dark:text-gray-400 uppercase tracking-wider mb-2">Gender</label>
                 <select
                   required
                   value={gender}
@@ -292,7 +309,7 @@ export default function VolunteerRegistrationPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Choose Password (for profile access)</label>
+                <label className="block text-[10px] font-black text-gray-550 dark:text-gray-400 uppercase tracking-wider mb-2">Choose Password (for profile access)</label>
                 <input
                   type="password"
                   required
@@ -302,6 +319,78 @@ export default function VolunteerRegistrationPage() {
                   className="w-full px-4 py-3 bg-gray-50 dark:bg-[#0c1510] border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-[#1E4D2B]"
                 />
               </div>
+            </div>
+
+            {/* Aadhaar Card Number and Upload */}
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label className="block text-[10px] font-black text-gray-555 dark:text-gray-400 uppercase tracking-wider mb-2">Aadhaar Card Number *</label>
+                <input
+                  type="text"
+                  required
+                  value={aadharNumber}
+                  onChange={(e) => setAadharNumber(e.target.value)}
+                  placeholder="12-digit Aadhaar number"
+                  maxLength={12}
+                  className="w-full px-4 py-3 bg-gray-55 dark:bg-[#0c1510] border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-[#1E4D2B]"
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-black text-gray-555 dark:text-gray-400 uppercase tracking-wider mb-2">Upload Aadhaar Card (Image/PDF) *</label>
+                <div className="relative border border-dashed border-gray-200 dark:border-zinc-700 rounded-xl p-3 bg-gray-55 dark:bg-[#0c1510] flex items-center justify-between cursor-pointer hover:border-emerald-500 transition-colors">
+                  <div className="text-xs text-gray-550 truncate max-w-[200px]">
+                    {isAadharUploading ? "Uploading..." : aadharPhoto ? "✓ Aadhaar ready" : "Choose file..."}
+                  </div>
+                  <input
+                    type="file"
+                    accept="image/*,application/pdf"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      setIsAadharUploading(true);
+                      setErrorMsg("");
+                      const formData = new FormData();
+                      formData.append("file", file);
+                      try {
+                        const res = await fetch('/api/upload', { method: 'POST', body: formData });
+                        const data = await res.json();
+                        if (data.success) {
+                          setAadharPhoto(data.url);
+                        } else {
+                          setErrorMsg(data.error || "Failed to upload Aadhaar card.");
+                        }
+                      } catch (err) {
+                        setErrorMsg("Error uploading Aadhaar card.");
+                      } finally {
+                        setIsAadharUploading(false);
+                      }
+                    }}
+                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                  />
+                  {aadharPhoto && (
+                    <span className="text-[10px] text-[#52c47c] font-bold">Uploaded</span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Internship Duration selection */}
+            <div>
+              <label className="block text-[10px] font-black text-gray-550 dark:text-gray-400 uppercase tracking-wider mb-2">Internship Duration *</label>
+              <select
+                required
+                value={internshipDuration}
+                onChange={(e) => setInternshipDuration(e.target.value)}
+                className="w-full px-4 py-3 bg-gray-50 dark:bg-[#0c1510] border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-[#1E4D2B] text-gray-700 dark:text-gray-300"
+              >
+                <option value="1 Month">1 Month</option>
+                <option value="2 Months">2 Months</option>
+                <option value="3 Months">3 Months</option>
+                <option value="4 Months">4 Months</option>
+                <option value="5 Months">5 Months</option>
+                <option value="6 Months">6 Months</option>
+                <option value="12 Months">12 Months</option>
+              </select>
             </div>
 
             {/* Checkboxes skills */}

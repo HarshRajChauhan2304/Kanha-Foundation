@@ -69,7 +69,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, email, phone, city, motivation, skills, password, profile_photo, gender, terms_accepted } = body;
+    const { name, email, phone, city, motivation, skills, password, profile_photo, gender, terms_accepted, aadhar_number, aadhar_upload_url, internship_duration, certificate_url, certificate_issue_date, internship_start_date } = body;
 
     if (!name || !email || !phone || !city || !skills || skills.length === 0) {
       return NextResponse.json({ success: false, error: "Please fill all required profile fields." }, { status: 400 });
@@ -89,7 +89,13 @@ export async function POST(request: Request) {
         password: password || "volunteer123",
         profile_photo: profile_photo || "",
         gender: gender || "",
-        terms_accepted: !!terms_accepted
+        terms_accepted: !!terms_accepted,
+        aadhar_number: aadhar_number || "",
+        aadhar_upload_url: aadhar_upload_url || "",
+        internship_duration: internship_duration || "1 Month",
+        certificate_url: certificate_url || "",
+        certificate_issue_date: certificate_issue_date || "",
+        internship_start_date: internship_start_date || ""
       }
     });
 
@@ -107,7 +113,7 @@ export async function POST(request: Request) {
 export async function PUT(request: Request) {
   try {
     const body = await request.json();
-    const { id, name, email, phone, city, motivation, skills, status, profile_photo, gender, terms_accepted } = body;
+    const { id, name, email, phone, city, motivation, skills, status, profile_photo, gender, terms_accepted, aadhar_number, aadhar_upload_url, internship_duration, certificate_url, certificate_issue_date, internship_start_date } = body;
 
     if (!id || !name || !email || !phone || !city) {
       return NextResponse.json({ success: false, error: "Missing required fields" }, { status: 400 });
@@ -127,7 +133,13 @@ export async function PUT(request: Request) {
         status: status || "Pending",
         profile_photo: profile_photo || "",
         gender: gender || "",
-        terms_accepted: terms_accepted === undefined ? true : !!terms_accepted
+        terms_accepted: terms_accepted === undefined ? true : !!terms_accepted,
+        aadhar_number: aadhar_number || "",
+        aadhar_upload_url: aadhar_upload_url || "",
+        internship_duration: internship_duration || "1 Month",
+        certificate_url: certificate_url || "",
+        certificate_issue_date: certificate_issue_date || "",
+        internship_start_date: internship_start_date || ""
       }
     });
 

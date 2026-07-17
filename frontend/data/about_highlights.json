@@ -29,6 +29,20 @@
       "image": "/uploads/1783322176372_rachit.jpeg",
       "quote": "Happiness come from helping needy.",
       "id": 1
+    },
+    {
+      "id": 14,
+      "name": "KASHISH",
+      "role": "Volunteer",
+      "image": "https://cwpfhfcxpeqiihiqxqtu.supabase.co/storage/v1/object/public/uploads/1783959697217_pic.jpeg",
+      "quote": "Your Kindness today can change someone's tomorrow"
+    },
+    {
+      "id": 20,
+      "name": "Harsh Raj Chauhan",
+      "role": "Volunteer",
+      "image": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80",
+      "quote": "Role updated to Volunteer by Admin"
     }
   ]
 }
