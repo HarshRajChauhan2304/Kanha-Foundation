@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface Volunteer {
@@ -56,6 +56,27 @@ export default function VolunteerProfilePage() {
   const [formAadharUploadUrl, setFormAadharUploadUrl] = useState("");
   const [isFormAadharUploading, setIsFormAadharUploading] = useState(false);
   const [isCertModalOpen, setIsCertModalOpen] = useState(false);
+  const [certScale, setCertScale] = useState(1);
+  const certContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isCertModalOpen) return;
+    const handleResize = () => {
+      if (certContainerRef.current) {
+        const parentWidth = certContainerRef.current.parentElement?.clientWidth || 360;
+        const availableWidth = parentWidth - 32;
+        const newScale = Math.min(1, availableWidth / 800);
+        setCertScale(newScale);
+      }
+    };
+    const timeoutId = setTimeout(handleResize, 100);
+    window.addEventListener('resize', handleResize);
+    return () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [isCertModalOpen, volunteer]);
+
   const [showCertCelebration, setShowCertCelebration] = useState(false);
   const [starRecord, setStarRecord] = useState<any | null>(null);
   const [isStarCertModalOpen, setIsStarCertModalOpen] = useState(false);
@@ -1164,8 +1185,9 @@ export default function VolunteerProfilePage() {
                       position: fixed;
                       left: 0;
                       top: 0;
-                      width: 297mm;
-                      height: 210mm;
+                      width: 297mm !important;
+                      height: 210mm !important;
+                      transform: none !important;
                       margin: 0 !important;
                       padding: 2.5rem !important;
                       box-sizing: border-box;
@@ -1204,92 +1226,103 @@ export default function VolunteerProfilePage() {
                   </button>
                 </div>
 
-                <div
-                  id="premium-certificate-print-area"
-                  className="relative w-full max-w-4xl aspect-[1.414/1] bg-white border-[16px] border-double border-[#1E4D2B] p-8 sm:p-12 text-center text-[#0e1711] shadow-2xl flex flex-col justify-between rounded-xl select-none"
-                  style={{
-                    fontFamily: "'Outfit', 'Inter', sans-serif",
-                    backgroundImage: "radial-gradient(circle at center, #fcfdfc 0%, #f4faf6 100%)"
-                  }}
+                <div 
+                  ref={certContainerRef}
+                  className="w-full flex items-center justify-center overflow-hidden"
+                  style={{ height: `${565 * certScale}px` }}
                 >
-                  {/* Background watermark round logo */}
-                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
-                    <img
-                      src="/kanha_logo_round.png"
-                      alt="Watermark Logo"
-                      className="w-[280px] h-[280px] object-contain opacity-[0.04]"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1593113598332-cd288d649433?w=300&auto=format&fit=crop&q=80";
-                      }}
-                    />
-                  </div>
-
-                  {/* Top Branding Section */}
-                  <div className="relative z-10 flex flex-col items-center">
-                    <img
-                      src="/kanha_logo_round.png"
-                      alt="Kanha Foundation Logo"
-                      className="h-16 w-16 object-contain mb-3"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1593113598332-cd288d649433?w=120&auto=format&fit=crop&q=80";
-                      }}
-                    />
-                    <h4 className="text-sm font-black tracking-[0.25em] text-[#1E4D2B] uppercase mb-1">KANHA FOUNDATION</h4>
-                    <p className="text-[10px] text-zinc-550 uppercase tracking-widest font-bold">Registered Charity & Volunteer Network</p>
-                    <div className="w-24 h-0.5 bg-[#F3A61E] mt-3 mb-1"></div>
-                  </div>
-
-                  {/* Middle Certificate Core */}
-                  <div className="relative z-10 my-auto space-y-4">
-                    <h2 className="text-3xl font-black tracking-tight text-[#1E4D2B] font-serif uppercase">
-                      Certificate of Internship
-                    </h2>
-                    
-                    <div className="space-y-1.5 mt-2">
-                      <p className="text-xs text-zinc-500 uppercase tracking-widest font-semibold">This is proudly presented to</p>
-                      <h3 className="text-2xl font-black text-[#1E4D2B] underline decoration-[#F3A61E] decoration-2 underline-offset-8">
-                        {volunteer.name.toUpperCase()}
-                      </h3>
+                  <div
+                    id="premium-certificate-print-area"
+                    className="relative bg-white border-[16px] border-double border-[#1E4D2B] p-8 sm:p-12 text-center text-[#0e1711] shadow-2xl flex flex-col justify-between rounded-xl select-none"
+                    style={{
+                      fontFamily: "'Outfit', 'Inter', sans-serif",
+                      backgroundImage: "radial-gradient(circle at center, #fcfdfc 0%, #f4faf6 100%)",
+                      width: '800px',
+                      height: '565px',
+                      transform: `scale(${certScale})`,
+                      transformOrigin: 'top center',
+                      flexShrink: 0
+                    }}
+                  >
+                    {/* Background watermark round logo */}
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
+                      <img
+                        src="/kanha_logo_round.png"
+                        alt="Watermark Logo"
+                        className="w-[280px] h-[280px] object-contain opacity-[0.04]"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1593113598332-cd288d649433?w=300&auto=format&fit=crop&q=80";
+                        }}
+                      />
                     </div>
 
-                    <p className="text-sm text-zinc-650 max-w-2xl mx-auto leading-relaxed mt-4">
-                      has successfully completed their volunteering internship under Kanha Foundation from <strong className="text-[#1E4D2B]">{volunteer.internship_start_date || "N/A"}</strong> to <strong className="text-[#1E4D2B]">{volunteer.certificate_issue_date || "N/A"}</strong>. Their contributions have significantly impacted local relief drives and education initiatives.
-                    </p>
-
-                    <div className="grid grid-cols-3 gap-4 max-w-lg mx-auto pt-4 text-xs font-bold text-zinc-600">
-                      <div className="bg-zinc-50 p-2.5 rounded-xl border border-zinc-150/40">
-                        <span className="block text-[8px] text-zinc-400 uppercase tracking-wider mb-0.5">Start Date</span>
-                        <span className="text-xs text-[#1E4D2B] font-black">{volunteer.internship_start_date || "N/A"}</span>
-                      </div>
-                      <div className="bg-zinc-50 p-2.5 rounded-xl border border-zinc-150/40">
-                        <span className="block text-[8px] text-zinc-400 uppercase tracking-wider mb-0.5">Duration</span>
-                        <span className="text-xs text-[#1E4D2B] font-black">{volunteer.internship_duration || "1 Month"}</span>
-                      </div>
-                      <div className="bg-zinc-50 p-2.5 rounded-xl border border-zinc-150/40">
-                        <span className="block text-[8px] text-zinc-400 uppercase tracking-wider mb-0.5">Completion Date</span>
-                        <span className="text-xs text-[#1E4D2B] font-black">{volunteer.certificate_issue_date || "N/A"}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Bottom Stamp and Signature block */}
-                  <div className="relative z-10 flex justify-between items-end border-t border-zinc-200/60 pt-6 mt-6 text-left">
-                    <div>
-                      <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">Verification ID</p>
-                      <p className="text-xs font-extrabold text-[#F3A61E]">KH-VOL-CERT-{volunteer.id}</p>
-                    </div>
-                    
-                    {/* Stamp Seal */}
-                    <div className="h-16 w-16 border-2 border-dashed border-[#1E4D2B]/40 rounded-full flex items-center justify-center text-[#1E4D2B] opacity-60 relative select-none">
-                      <div className="text-[8px] font-black uppercase text-center tracking-wider">
-                        KANHA<br />FOUNDATION<br />SEAL
-                      </div>
+                    {/* Top Branding Section */}
+                    <div className="relative z-10 flex flex-col items-center">
+                      <img
+                        src="/kanha_logo_round.png"
+                        alt="Kanha Foundation Logo"
+                        className="h-16 w-16 object-contain mb-3"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1593113598332-cd288d649433?w=120&auto=format&fit=crop&q=80";
+                        }}
+                      />
+                      <h4 className="text-sm font-black tracking-[0.25em] text-[#1E4D2B] uppercase mb-1">KANHA FOUNDATION</h4>
+                      <p className="text-[10px] text-zinc-550 uppercase tracking-widest font-bold">Registered Charity & Volunteer Network</p>
+                      <div className="w-24 h-0.5 bg-[#F3A61E] mt-3 mb-1"></div>
                     </div>
 
-                    <div className="text-right w-44">
-                      <div className="h-8 border-b border-zinc-300 w-full mb-1"></div>
-                      <p className="text-[10px] font-black text-[#1E4D2B] uppercase tracking-wider">Authorized Officer</p>
-                      <p className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest mt-0.5">Kanha Foundation</p>
+                    {/* Middle Certificate Core */}
+                    <div className="relative z-10 my-auto space-y-4">
+                      <h2 className="text-3xl font-black tracking-tight text-[#1E4D2B] font-serif uppercase">
+                        Certificate of Internship
+                      </h2>
+                      
+                      <div className="space-y-1.5 mt-2">
+                        <p className="text-xs text-zinc-500 uppercase tracking-widest font-semibold">This is proudly presented to</p>
+                        <h3 className="text-2xl font-black text-[#1E4D2B] underline decoration-[#F3A61E] decoration-2 underline-offset-8">
+                          {volunteer.name.toUpperCase()}
+                        </h3>
+                      </div>
+
+                      <p className="text-sm text-zinc-650 max-w-2xl mx-auto leading-relaxed mt-4">
+                        has successfully completed their volunteering internship under Kanha Foundation from <strong className="text-[#1E4D2B]">{volunteer.internship_start_date || "N/A"}</strong> to <strong className="text-[#1E4D2B]">{volunteer.certificate_issue_date || "N/A"}</strong>. Their contributions have significantly impacted local relief drives and education initiatives.
+                      </p>
+
+                      <div className="grid grid-cols-3 gap-4 max-w-lg mx-auto pt-4 text-xs font-bold text-zinc-600">
+                        <div className="bg-zinc-50 p-2.5 rounded-xl border border-zinc-150/40">
+                          <span className="block text-[8px] text-zinc-400 uppercase tracking-wider mb-0.5">Start Date</span>
+                          <span className="text-xs text-[#1E4D2B] font-black">{volunteer.internship_start_date || "N/A"}</span>
+                        </div>
+                        <div className="bg-zinc-50 p-2.5 rounded-xl border border-zinc-150/40">
+                          <span className="block text-[8px] text-zinc-400 uppercase tracking-wider mb-0.5">Duration</span>
+                          <span className="text-xs text-[#1E4D2B] font-black">{volunteer.internship_duration || "1 Month"}</span>
+                        </div>
+                        <div className="bg-zinc-50 p-2.5 rounded-xl border border-zinc-150/40">
+                          <span className="block text-[8px] text-zinc-400 uppercase tracking-wider mb-0.5">Completion Date</span>
+                          <span className="text-xs text-[#1E4D2B] font-black">{volunteer.certificate_issue_date || "N/A"}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Bottom Stamp and Signature block */}
+                    <div className="relative z-10 flex justify-between items-end border-t border-zinc-200/60 pt-6 mt-6 text-left">
+                      <div>
+                        <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">Verification ID</p>
+                        <p className="text-xs font-extrabold text-[#F3A61E]">KH-VOL-CERT-{volunteer.id}</p>
+                      </div>
+                      
+                      {/* Stamp Seal */}
+                      <div className="h-16 w-16 border-2 border-dashed border-[#1E4D2B]/40 rounded-full flex items-center justify-center text-[#1E4D2B] opacity-60 relative select-none">
+                        <div className="text-[8px] font-black uppercase text-center tracking-wider">
+                          KANHA<br />FOUNDATION<br />SEAL
+                        </div>
+                      </div>
+
+                      <div className="text-right w-44">
+                        <div className="h-8 border-b border-zinc-300 w-full mb-1"></div>
+                        <p className="text-[10px] font-black text-[#1E4D2B] uppercase tracking-wider">Authorized Officer</p>
+                        <p className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest mt-0.5">Kanha Foundation</p>
+                      </div>
                     </div>
                   </div>
                 </div>
