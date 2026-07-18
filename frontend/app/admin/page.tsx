@@ -1348,6 +1348,12 @@ export default function AdminPanelPage() {
       const data = await res.json();
       if (data.success) {
         triggerAlert("Certificate updated successfully!");
+        setVolApps(prev => prev.map(app => app.id === certVol.id ? { 
+          ...app, 
+          certificate_url: certUrl, 
+          certificate_issue_date: certDate, 
+          internship_start_date: certStartDate 
+        } : app));
         fetchData();
         setIsCertModalOpen(false);
       } else {
@@ -2287,13 +2293,13 @@ export default function AdminPanelPage() {
                                     }}
                                     className="px-2.5 py-1 bg-emerald-650 hover:bg-emerald-700 text-white font-black uppercase rounded text-[10px] cursor-pointer shadow-md"
                                   >
-                                    View Cert
+                                    View Certificate
                                   </button>
                                   <button 
                                     onClick={() => handleOpenCertificateModal(app)} 
                                     className="px-2.5 py-1 bg-blue-550 hover:bg-blue-650 text-white font-black uppercase rounded text-[10px] cursor-pointer shadow-md"
                                   >
-                                    Edit Cert
+                                    Edit Certificate
                                   </button>
                                 </div>
                               ) : (
@@ -2301,7 +2307,7 @@ export default function AdminPanelPage() {
                                   onClick={() => handleOpenCertificateModal(app)} 
                                   className="px-2.5 py-1 bg-zinc-700 hover:bg-zinc-650 text-white font-black uppercase rounded text-[10px] cursor-pointer shadow-md"
                                 >
-                                  Create Cert
+                                  Create Certificate
                                 </button>
                               )}
                             </div>

@@ -502,23 +502,12 @@ export default function VolunteerProfilePage() {
                         Congratulations! Your certificate has been issued on {volunteer.certificate_issue_date || "N/A"}.
                       </p>
                     </div>
-                    {volunteer.certificate_url === "auto" ? (
-                      <button
-                        onClick={() => setIsCertModalOpen(true)}
-                        className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-black font-black uppercase tracking-wider rounded-xl text-xs cursor-pointer shadow-md text-center transition-all"
-                      >
-                        View & Print
-                      </button>
-                    ) : (
-                      <a
-                        href={volunteer.certificate_url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-black font-black uppercase tracking-wider rounded-xl text-xs cursor-pointer shadow-md text-center transition-all"
-                      >
-                        Download Certificate ↗
-                      </a>
-                    )}
+                    <button
+                      onClick={() => setIsCertModalOpen(true)}
+                      className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-black font-black uppercase tracking-wider rounded-xl text-xs cursor-pointer shadow-md text-center transition-all"
+                    >
+                      View & Download
+                    </button>
                   </div>
                 )}
 
@@ -1161,148 +1150,219 @@ export default function VolunteerProfilePage() {
       <AnimatePresence>
         {isCertModalOpen && volunteer && (
           <div className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-sm flex flex-col items-center justify-center p-4">
-            <style>{`
-              @media print {
-                body * {
-                  visibility: hidden;
-                }
-                #premium-certificate-print-area, #premium-certificate-print-area * {
-                  visibility: visible;
-                }
-                #premium-certificate-print-area {
-                  position: fixed;
-                  left: 0;
-                  top: 0;
-                  width: 297mm;
-                  height: 210mm;
-                  margin: 0 !important;
-                  padding: 2.5rem !important;
-                  box-sizing: border-box;
-                  background-color: white !important;
-                  background-image: none !important;
-                  color: #121212 !important;
-                  border: 15px double #1E4D2B !important;
-                  box-shadow: none !important;
-                  z-index: 99999;
-                  display: flex !important;
-                  flex-direction: column !important;
-                  justify-content: space-between !important;
-                }
-                .no-print {
-                  display: none !important;
-                }
-              }
-              @page {
-                size: A4 landscape;
-                margin: 0;
-              }
-            `}</style>
+            {volunteer.certificate_url === "auto" ? (
+              <>
+                <style>{`
+                  @media print {
+                    body * {
+                      visibility: hidden;
+                    }
+                    #premium-certificate-print-area, #premium-certificate-print-area * {
+                      visibility: visible;
+                    }
+                    #premium-certificate-print-area {
+                      position: fixed;
+                      left: 0;
+                      top: 0;
+                      width: 297mm;
+                      height: 210mm;
+                      margin: 0 !important;
+                      padding: 2.5rem !important;
+                      box-sizing: border-box;
+                      background-color: white !important;
+                      background-image: none !important;
+                      color: #121212 !important;
+                      border: 15px double #1E4D2B !important;
+                      box-shadow: none !important;
+                      z-index: 99999;
+                      display: flex !important;
+                      flex-direction: column !important;
+                      justify-content: space-between !important;
+                    }
+                    .no-print {
+                      display: none !important;
+                    }
+                  }
+                  @page {
+                    size: A4 landscape;
+                    margin: 0;
+                  }
+                `}</style>
 
-            <div className="no-print flex justify-end w-full max-w-4xl mb-4 gap-3">
-              <button
-                onClick={() => window.print()}
-                className="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-black font-extrabold uppercase tracking-wider rounded-xl text-xs cursor-pointer shadow-lg transition-all"
-              >
-                Print / Save PDF
-              </button>
-              <button
-                onClick={() => setIsCertModalOpen(false)}
-                className="px-5 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-extrabold uppercase tracking-wider rounded-xl text-xs cursor-pointer transition-all"
-              >
-                Close Certificate
-              </button>
-            </div>
+                <div className="no-print flex justify-end w-full max-w-4xl mb-4 gap-3">
+                  <button
+                    onClick={() => window.print()}
+                    className="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-black font-extrabold uppercase tracking-wider rounded-xl text-xs cursor-pointer shadow-lg transition-all"
+                  >
+                    Print / Save PDF
+                  </button>
+                  <button
+                    onClick={() => setIsCertModalOpen(false)}
+                    className="px-5 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-extrabold uppercase tracking-wider rounded-xl text-xs cursor-pointer transition-all"
+                  >
+                    Close Certificate
+                  </button>
+                </div>
 
-            <div
-              id="premium-certificate-print-area"
-              className="relative w-full max-w-4xl aspect-[1.414/1] bg-white border-[16px] border-double border-[#1E4D2B] p-8 sm:p-12 text-center text-[#0e1711] shadow-2xl flex flex-col justify-between rounded-xl select-none"
-              style={{
-                fontFamily: "'Outfit', 'Inter', sans-serif",
-                backgroundImage: "radial-gradient(circle at center, #fcfdfc 0%, #f4faf6 100%)"
-              }}
-            >
-              {/* Background watermark round logo */}
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
-                <img
-                  src="/kanha_logo_round.png"
-                  alt="Watermark Logo"
-                  className="w-[280px] h-[280px] object-contain opacity-[0.04]"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1593113598332-cd288d649433?w=300&auto=format&fit=crop&q=80";
+                <div
+                  id="premium-certificate-print-area"
+                  className="relative w-full max-w-4xl aspect-[1.414/1] bg-white border-[16px] border-double border-[#1E4D2B] p-8 sm:p-12 text-center text-[#0e1711] shadow-2xl flex flex-col justify-between rounded-xl select-none"
+                  style={{
+                    fontFamily: "'Outfit', 'Inter', sans-serif",
+                    backgroundImage: "radial-gradient(circle at center, #fcfdfc 0%, #f4faf6 100%)"
                   }}
-                />
-              </div>
+                >
+                  {/* Background watermark round logo */}
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
+                    <img
+                      src="/kanha_logo_round.png"
+                      alt="Watermark Logo"
+                      className="w-[280px] h-[280px] object-contain opacity-[0.04]"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1593113598332-cd288d649433?w=300&auto=format&fit=crop&q=80";
+                      }}
+                    />
+                  </div>
 
-              {/* Top Branding Section */}
-              <div className="relative z-10 flex flex-col items-center">
-                <img
-                  src="/kanha_logo_round.png"
-                  alt="Kanha Foundation Logo"
-                  className="h-16 w-16 object-contain mb-3"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1593113598332-cd288d649433?w=120&auto=format&fit=crop&q=80";
-                  }}
-                />
-                <h4 className="text-sm font-black tracking-[0.25em] text-[#1E4D2B] uppercase mb-1">KANHA FOUNDATION</h4>
-                <p className="text-[10px] text-zinc-550 uppercase tracking-widest font-bold">Registered Charity & Volunteer Network</p>
-                <div className="w-24 h-0.5 bg-[#F3A61E] mt-3 mb-1"></div>
-              </div>
+                  {/* Top Branding Section */}
+                  <div className="relative z-10 flex flex-col items-center">
+                    <img
+                      src="/kanha_logo_round.png"
+                      alt="Kanha Foundation Logo"
+                      className="h-16 w-16 object-contain mb-3"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1593113598332-cd288d649433?w=120&auto=format&fit=crop&q=80";
+                      }}
+                    />
+                    <h4 className="text-sm font-black tracking-[0.25em] text-[#1E4D2B] uppercase mb-1">KANHA FOUNDATION</h4>
+                    <p className="text-[10px] text-zinc-550 uppercase tracking-widest font-bold">Registered Charity & Volunteer Network</p>
+                    <div className="w-24 h-0.5 bg-[#F3A61E] mt-3 mb-1"></div>
+                  </div>
 
-              {/* Middle Certificate Core */}
-              <div className="relative z-10 my-auto space-y-4">
-                <h2 className="text-3xl font-black tracking-tight text-[#1E4D2B] font-serif uppercase">
-                  Certificate of Internship
-                </h2>
-                
-                <div className="space-y-1.5 mt-2">
-                  <p className="text-xs text-zinc-500 uppercase tracking-widest font-semibold">This is proudly presented to</p>
-                  <h3 className="text-2xl font-black text-[#1E4D2B] underline decoration-[#F3A61E] decoration-2 underline-offset-8">
-                    {volunteer.name.toUpperCase()}
+                  {/* Middle Certificate Core */}
+                  <div className="relative z-10 my-auto space-y-4">
+                    <h2 className="text-3xl font-black tracking-tight text-[#1E4D2B] font-serif uppercase">
+                      Certificate of Internship
+                    </h2>
+                    
+                    <div className="space-y-1.5 mt-2">
+                      <p className="text-xs text-zinc-500 uppercase tracking-widest font-semibold">This is proudly presented to</p>
+                      <h3 className="text-2xl font-black text-[#1E4D2B] underline decoration-[#F3A61E] decoration-2 underline-offset-8">
+                        {volunteer.name.toUpperCase()}
+                      </h3>
+                    </div>
+
+                    <p className="text-sm text-zinc-650 max-w-2xl mx-auto leading-relaxed mt-4">
+                      has successfully completed their volunteering internship under Kanha Foundation from <strong className="text-[#1E4D2B]">{volunteer.internship_start_date || "N/A"}</strong> to <strong className="text-[#1E4D2B]">{volunteer.certificate_issue_date || "N/A"}</strong>. Their contributions have significantly impacted local relief drives and education initiatives.
+                    </p>
+
+                    <div className="grid grid-cols-3 gap-4 max-w-lg mx-auto pt-4 text-xs font-bold text-zinc-600">
+                      <div className="bg-zinc-50 p-2.5 rounded-xl border border-zinc-150/40">
+                        <span className="block text-[8px] text-zinc-400 uppercase tracking-wider mb-0.5">Start Date</span>
+                        <span className="text-xs text-[#1E4D2B] font-black">{volunteer.internship_start_date || "N/A"}</span>
+                      </div>
+                      <div className="bg-zinc-50 p-2.5 rounded-xl border border-zinc-150/40">
+                        <span className="block text-[8px] text-zinc-400 uppercase tracking-wider mb-0.5">Duration</span>
+                        <span className="text-xs text-[#1E4D2B] font-black">{volunteer.internship_duration || "1 Month"}</span>
+                      </div>
+                      <div className="bg-zinc-50 p-2.5 rounded-xl border border-zinc-150/40">
+                        <span className="block text-[8px] text-zinc-400 uppercase tracking-wider mb-0.5">Completion Date</span>
+                        <span className="text-xs text-[#1E4D2B] font-black">{volunteer.certificate_issue_date || "N/A"}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Bottom Stamp and Signature block */}
+                  <div className="relative z-10 flex justify-between items-end border-t border-zinc-200/60 pt-6 mt-6 text-left">
+                    <div>
+                      <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">Verification ID</p>
+                      <p className="text-xs font-extrabold text-[#F3A61E]">KH-VOL-CERT-{volunteer.id}</p>
+                    </div>
+                    
+                    {/* Stamp Seal */}
+                    <div className="h-16 w-16 border-2 border-dashed border-[#1E4D2B]/40 rounded-full flex items-center justify-center text-[#1E4D2B] opacity-60 relative select-none">
+                      <div className="text-[8px] font-black uppercase text-center tracking-wider">
+                        KANHA<br />FOUNDATION<br />SEAL
+                      </div>
+                    </div>
+
+                    <div className="text-right w-44">
+                      <div className="h-8 border-b border-zinc-300 w-full mb-1"></div>
+                      <p className="text-[10px] font-black text-[#1E4D2B] uppercase tracking-wider">Authorized Officer</p>
+                      <p className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest mt-0.5">Kanha Foundation</p>
+                    </div>
+                  </div>
+                </div>
+              </>
+            ) : (
+              /* Custom uploaded certificate file view */
+              <div className="w-full max-w-3xl flex flex-col items-center justify-center">
+                <div className="flex justify-end w-full mb-4 gap-3 no-print">
+                  <a
+                    href={volunteer.certificate_url}
+                    download={`Certificate_${volunteer.name}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-black font-extrabold uppercase tracking-wider rounded-xl text-xs cursor-pointer shadow-lg transition-all text-center"
+                  >
+                    Download Certificate 📥
+                  </a>
+                  <button
+                    onClick={() => setIsCertModalOpen(false)}
+                    className="px-5 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-extrabold uppercase tracking-wider rounded-xl text-xs cursor-pointer transition-all"
+                  >
+                    Close Certificate
+                  </button>
+                </div>
+
+                <div 
+                  className="w-full bg-zinc-900 border border-zinc-800 rounded-3xl p-6 sm:p-8 flex flex-col items-center gap-6 shadow-2xl relative"
+                  style={{ backgroundColor: "#141916" }}
+                >
+                  <h3 className="text-lg font-black text-white border-b border-zinc-800 pb-3 w-full text-center">
+                    Your Internship Certificate
                   </h3>
-                </div>
 
-                <p className="text-sm text-zinc-650 max-w-2xl mx-auto leading-relaxed mt-4">
-                  has successfully completed their volunteering internship under Kanha Foundation from <strong className="text-[#1E4D2B]">{volunteer.internship_start_date || "N/A"}</strong> to <strong className="text-[#1E4D2B]">{volunteer.certificate_issue_date || "N/A"}</strong>. Their contributions have significantly impacted local relief drives and education initiatives.
-                </p>
+                  {volunteer.certificate_url?.toLowerCase().match(/\.(jpeg|jpg|gif|png|webp|svg)/) ? (
+                    <div className="w-full flex items-center justify-center bg-zinc-950 p-4 rounded-2xl border border-zinc-850 max-h-[60vh] overflow-auto">
+                      <img
+                        src={volunteer.certificate_url}
+                        alt="Certificate Preview"
+                        className="max-h-[50vh] object-contain rounded-lg shadow-md"
+                      />
+                    </div>
+                  ) : volunteer.certificate_url?.toLowerCase().endsWith('.pdf') ? (
+                    <div className="w-full h-[50vh] bg-zinc-950 rounded-2xl border border-zinc-850 overflow-hidden">
+                      <iframe
+                        src={volunteer.certificate_url}
+                        className="w-full h-full border-none"
+                        title="Certificate PDF Preview"
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-full flex flex-col items-center justify-center bg-zinc-950/50 border border-dashed border-zinc-800 py-12 px-6 rounded-2xl text-center">
+                      <div className="text-5xl mb-4">📄</div>
+                      <p className="text-sm font-bold text-white mb-2">Certificate Document</p>
+                      <p className="text-xs text-zinc-400 max-w-sm mb-6">
+                        Your certificate has been issued and is available for viewing/download.
+                      </p>
+                      <a
+                        href={volunteer.certificate_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="px-6 py-2.5 bg-amber-500 hover:bg-amber-600 text-black font-extrabold uppercase tracking-wider rounded-xl text-xs transition-all shadow-md"
+                      >
+                        Open Document ↗
+                      </a>
+                    </div>
+                  )}
 
-                <div className="grid grid-cols-3 gap-4 max-w-lg mx-auto pt-4 text-xs font-bold text-zinc-600">
-                  <div className="bg-zinc-50 p-2.5 rounded-xl border border-zinc-150/40">
-                    <span className="block text-[8px] text-zinc-400 uppercase tracking-wider mb-0.5">Start Date</span>
-                    <span className="text-xs text-[#1E4D2B] font-black">{volunteer.internship_start_date || "N/A"}</span>
-                  </div>
-                  <div className="bg-zinc-50 p-2.5 rounded-xl border border-zinc-150/40">
-                    <span className="block text-[8px] text-zinc-400 uppercase tracking-wider mb-0.5">Duration</span>
-                    <span className="text-xs text-[#1E4D2B] font-black">{volunteer.internship_duration || "1 Month"}</span>
-                  </div>
-                  <div className="bg-zinc-50 p-2.5 rounded-xl border border-zinc-150/40">
-                    <span className="block text-[8px] text-zinc-400 uppercase tracking-wider mb-0.5">Completion Date</span>
-                    <span className="text-xs text-[#1E4D2B] font-black">{volunteer.certificate_issue_date || "N/A"}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Bottom Stamp and Signature block */}
-              <div className="relative z-10 flex justify-between items-end border-t border-zinc-200/60 pt-6 mt-6 text-left">
-                <div>
-                  <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">Verification ID</p>
-                  <p className="text-xs font-extrabold text-[#F3A61E]">KH-VOL-CERT-{volunteer.id}</p>
-                </div>
-                
-                {/* Stamp Seal */}
-                <div className="h-16 w-16 border-2 border-dashed border-[#1E4D2B]/40 rounded-full flex items-center justify-center text-[#1E4D2B] opacity-60 relative select-none">
-                  <div className="text-[8px] font-black uppercase text-center tracking-wider">
-                    KANHA<br />FOUNDATION<br />SEAL
-                  </div>
-                </div>
-
-                <div className="text-right w-44">
-                  <div className="h-8 border-b border-zinc-300 w-full mb-1"></div>
-                  <p className="text-[10px] font-black text-[#1E4D2B] uppercase tracking-wider">Authorized Officer</p>
-                  <p className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest mt-0.5">Kanha Foundation</p>
+                  <p className="text-xs text-zinc-400 text-center">
+                    Issued officially by the Kanha Foundation on {volunteer.certificate_issue_date || "N/A"}.
+                  </p>
                 </div>
               </div>
-            </div>
-
+            )}
           </div>
         )}
       </AnimatePresence>
@@ -1330,31 +1390,16 @@ export default function VolunteerProfilePage() {
               </p>
 
               <div className="flex flex-col gap-3">
-                {volunteer.certificate_url === "auto" ? (
-                  <button
-                    onClick={() => {
-                      localStorage.setItem(`dismissed_cert_${volunteer.id}`, "true");
-                      setShowCertCelebration(false);
-                      setIsCertModalOpen(true);
-                    }}
-                    className="w-full py-3 bg-[#1E4D2B] hover:bg-[#15381E] text-white font-extrabold uppercase tracking-wider rounded-xl text-xs cursor-pointer shadow-lg transition-all"
-                  >
-                    View & Download Certificate
-                  </button>
-                ) : (
-                  <a
-                    href={volunteer.certificate_url}
-                    target="_blank"
-                    rel="noreferrer"
-                    onClick={() => {
-                      localStorage.setItem(`dismissed_cert_${volunteer.id}`, "true");
-                      setShowCertCelebration(false);
-                    }}
-                    className="w-full py-3 bg-[#1E4D2B] hover:bg-[#15381E] text-white font-extrabold uppercase tracking-wider rounded-xl text-xs cursor-pointer shadow-lg text-center transition-all block"
-                  >
-                    Download Certificate ↗
-                  </a>
-                )}
+                <button
+                  onClick={() => {
+                    localStorage.setItem(`dismissed_cert_${volunteer.id}`, "true");
+                    setShowCertCelebration(false);
+                    setIsCertModalOpen(true);
+                  }}
+                  className="w-full py-3 bg-[#1E4D2B] hover:bg-[#15381E] text-white font-extrabold uppercase tracking-wider rounded-xl text-xs cursor-pointer shadow-lg transition-all"
+                >
+                  View & Download Certificate
+                </button>
                 <button
                   onClick={() => {
                     localStorage.setItem(`dismissed_cert_${volunteer.id}`, "true");
