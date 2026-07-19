@@ -2,10 +2,11 @@ import { NextResponse } from 'next/server';
 import { supabase, supabaseAdmin } from '@/lib/supabase';
 import fs from 'fs';
 import path from 'path';
+import { getFallbackPath } from '@/lib/db-fallback';
 
 const getLocalStarVolunteers = (): any[] => {
   try {
-    const dataPath = path.join(process.cwd(), 'data', 'star_volunteers.json');
+    const dataPath = getFallbackPath('star_volunteers.json');
     if (fs.existsSync(dataPath)) {
       const fileContent = fs.readFileSync(dataPath, 'utf-8');
       return JSON.parse(fileContent);
@@ -18,11 +19,7 @@ const getLocalStarVolunteers = (): any[] => {
 
 const saveLocalStarVolunteers = (stars: any[]) => {
   try {
-    const dataDir = path.join(process.cwd(), 'data');
-    if (!fs.existsSync(dataDir)) {
-      fs.mkdirSync(dataDir, { recursive: true });
-    }
-    const dataPath = path.join(dataDir, 'star_volunteers.json');
+    const dataPath = getFallbackPath('star_volunteers.json');
     fs.writeFileSync(dataPath, JSON.stringify(stars, null, 2), 'utf-8');
   } catch (e) {
     console.error("Error writing local star_volunteers.json:", e);
@@ -97,7 +94,7 @@ export async function GET() {
       } catch (e) {}
       if (volunteers.length === 0) {
         try {
-          const fall = path.join(process.cwd(), 'data', 'volunteer_applications.json');
+          const fall = getFallbackPath('volunteer_applications.json');
           if (fs.existsSync(fall)) volunteers = JSON.parse(fs.readFileSync(fall, 'utf-8'));
         } catch (e) {}
       }
@@ -109,7 +106,7 @@ export async function GET() {
       } catch (e) {}
       if (tasks.length === 0) {
         try {
-          const fall = path.join(process.cwd(), 'data', 'volunteer_tasks.json');
+          const fall = getFallbackPath('volunteer_tasks.json');
           if (fs.existsSync(fall)) tasks = JSON.parse(fs.readFileSync(fall, 'utf-8'));
         } catch (e) {}
       }

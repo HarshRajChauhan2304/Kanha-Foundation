@@ -10,7 +10,15 @@ ADD COLUMN IF NOT EXISTS aadhar_upload_url TEXT,
 ADD COLUMN IF NOT EXISTS internship_duration TEXT,
 ADD COLUMN IF NOT EXISTS certificate_url TEXT,
 ADD COLUMN IF NOT EXISTS certificate_issue_date TEXT,
-ADD COLUMN IF NOT EXISTS internship_start_date TEXT;
+ADD COLUMN IF NOT EXISTS internship_start_date TEXT,
+ADD COLUMN IF NOT EXISTS internship_end_date TEXT,
+ADD COLUMN IF NOT EXISTS certificate_text TEXT,
+ADD COLUMN IF NOT EXISTS certificate_signature_name TEXT,
+ADD COLUMN IF NOT EXISTS certificate_signature_title TEXT,
+ADD COLUMN IF NOT EXISTS certificate_seal_text TEXT,
+ADD COLUMN IF NOT EXISTS certificate_signature_image_url TEXT,
+ADD COLUMN IF NOT EXISTS certificate_seal_image_url TEXT;
+
 
 -- 2. Update users table
 ALTER TABLE public.users 

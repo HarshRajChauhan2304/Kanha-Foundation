@@ -704,7 +704,13 @@ export default function Navbar() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100 dark:divide-zinc-900 text-gray-800 dark:text-zinc-200 text-xs">
-                    {reportDonations
+                    {[...reportDonations]
+                      .sort((a, b) => {
+                        const timeA = a.created_at ? new Date(a.created_at).getTime() : 0;
+                        const timeB = b.created_at ? new Date(b.created_at).getTime() : 0;
+                        if (timeA !== timeB) return timeB - timeA;
+                        return (parseInt(b.id, 10) || 0) - (parseInt(a.id, 10) || 0);
+                      })
                       .filter(d => {
                         const addr = getDonorAddress(d);
                         const matchStr = `${d.name || ''} ${addr} ${d.email || ''}`.toLowerCase();

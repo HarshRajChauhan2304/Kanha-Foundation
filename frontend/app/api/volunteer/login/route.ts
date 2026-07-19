@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
+import fs from 'fs';
+import { getFallbackPath } from '@/lib/db-fallback';
 
 export async function POST(request: Request) {
   try {
@@ -13,32 +15,47 @@ export async function POST(request: Request) {
     // Clean phone input to match digits-only or exact match
     const cleanPhone = phone.replace(/[^0-9+]/g, "");
 
+    // Load local JSON fallback data to merge
+    let localApps: any[] = [];
+    try {
+      const fallbackPath = getFallbackPath('volunteer_applications.json');
+      if (fs.existsSync(fallbackPath)) {
+        localApps = JSON.parse(fs.readFileSync(fallbackPath, 'utf-8'));
+      }
+    } catch (e) {
+      console.warn("Failed to read local fallback in login:", e);
+    }
+
     // Search volunteer_applications for matches
     const { data: rawApps, error } = await supabaseAdmin
       .from('volunteer_applications')
       .select('*')
       .eq('email', email.trim().toLowerCase());
 
-    if (error) {
-      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
-    }
+    let apps: any[] = [];
+    if (error || !rawApps || rawApps.length === 0) {
+      // Fallback search in local database
+      apps = localApps.filter((la: any) => la.email && la.email.trim().toLowerCase() === email.trim().toLowerCase());
+    } else {
+      apps = rawApps.map((item: any) => {
+        let newItem = { ...item };
+        try {
+          if (item.motivation && item.motivation.trim().startsWith('{')) {
+            const parsed = JSON.parse(item.motivation);
+            newItem.motivation = parsed.text || "";
+            newItem.profile_photo = parsed.profile_photo || item.profile_photo || "";
+            newItem.gender = parsed.gender || item.gender || "";
+          }
+        } catch (e) {}
 
-    if (!rawApps || rawApps.length === 0) {
-      return NextResponse.json({ success: false, error: "No profile found with this email." }, { status: 404 });
-    }
-
-    const apps = rawApps.map((item: any) => {
-      let newItem = { ...item };
-      try {
-        if (item.motivation && item.motivation.trim().startsWith('{')) {
-          const parsed = JSON.parse(item.motivation);
-          newItem.motivation = parsed.text || "";
-          newItem.profile_photo = parsed.profile_photo || item.profile_photo || "";
-          newItem.gender = parsed.gender || item.gender || "";
+        // Merge from local fallback to ensure we have certificate details
+        const localMatch = localApps.find((la: any) => String(la.id) === String(item.id));
+        if (localMatch) {
+          newItem = { ...newItem, ...localMatch };
         }
-      } catch (e) {}
-      return newItem;
-    });
+        return newItem;
+      });
+    }
 
     // Validate phone and password
     const match = apps.find(app => {

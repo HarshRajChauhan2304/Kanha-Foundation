@@ -21,6 +21,13 @@ interface Volunteer {
   certificate_url?: string;
   certificate_issue_date?: string;
   internship_start_date?: string;
+  internship_end_date?: string;
+  certificate_text?: string;
+  certificate_signature_name?: string;
+  certificate_signature_title?: string;
+  certificate_seal_text?: string;
+  certificate_signature_image_url?: string;
+  certificate_seal_image_url?: string;
 }
 
 const AVAILABLE_SKILLS = [
@@ -591,6 +598,18 @@ export default function VolunteerProfilePage() {
                   <div>
                     <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest block">City / Location</label>
                     <p className="text-sm font-extrabold text-white mt-1">{volunteer?.city}</p>
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest block">Internship Duration</label>
+                    <p className="text-sm font-extrabold text-[#F3A61E] mt-1">{volunteer?.internship_duration || "1 Month"}</p>
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest block">Internship Start Date</label>
+                    <p className="text-sm font-extrabold text-white mt-1">{volunteer?.internship_start_date || "N/A"}</p>
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest block">Internship Completion Date</label>
+                    <p className="text-sm font-extrabold text-white mt-1">{volunteer?.internship_end_date || "N/A"}</p>
                   </div>
                 </div>
 
@@ -1233,7 +1252,7 @@ export default function VolunteerProfilePage() {
                 >
                   <div
                     id="premium-certificate-print-area"
-                    className="relative bg-white border-[16px] border-double border-[#1E4D2B] p-8 sm:p-12 text-center text-[#0e1711] shadow-2xl flex flex-col justify-between rounded-xl select-none"
+                    className="relative bg-white border-[16px] border-double border-[#1E4D2B] p-6 sm:p-8 text-center text-[#0e1711] shadow-2xl flex flex-col justify-between rounded-xl select-none"
                     style={{
                       fontFamily: "'Outfit', 'Inter', sans-serif",
                       backgroundImage: "radial-gradient(circle at center, #fcfdfc 0%, #f4faf6 100%)",
@@ -1272,11 +1291,11 @@ export default function VolunteerProfilePage() {
                     </div>
 
                     {/* Middle Certificate Core */}
-                    <div className="relative z-10 my-auto space-y-4">
+                    <div className="relative z-10 my-auto space-y-3">
                       <h2 className="text-3xl font-black tracking-tight text-[#1E4D2B] font-serif uppercase">
                         Certificate of Internship
                       </h2>
-                      
+
                       <div className="space-y-1.5 mt-2">
                         <p className="text-xs text-zinc-500 uppercase tracking-widest font-semibold">This is proudly presented to</p>
                         <h3 className="text-2xl font-black text-[#1E4D2B] underline decoration-[#F3A61E] decoration-2 underline-offset-8">
@@ -1285,7 +1304,13 @@ export default function VolunteerProfilePage() {
                       </div>
 
                       <p className="text-sm text-zinc-650 max-w-2xl mx-auto leading-relaxed mt-4">
-                        has successfully completed their volunteering internship under Kanha Foundation from <strong className="text-[#1E4D2B]">{volunteer.internship_start_date || "N/A"}</strong> to <strong className="text-[#1E4D2B]">{volunteer.certificate_issue_date || "N/A"}</strong>. Their contributions have significantly impacted local relief drives and education initiatives.
+                        {volunteer.certificate_text ? (
+                          volunteer.certificate_text
+                        ) : (
+                          <>
+                            has successfully completed their volunteering internship under Kanha Foundation from <strong className="text-[#1E4D2B]">{volunteer.internship_start_date || "N/A"}</strong> to <strong className="text-[#1E4D2B]">{volunteer.certificate_issue_date || "N/A"}</strong>. Their contributions have significantly impacted local relief drives and education initiatives.
+                          </>
+                        )}
                       </p>
 
                       <div className="grid grid-cols-3 gap-4 max-w-lg mx-auto pt-4 text-xs font-bold text-zinc-600">
@@ -1305,22 +1330,51 @@ export default function VolunteerProfilePage() {
                     </div>
 
                     {/* Bottom Stamp and Signature block */}
-                    <div className="relative z-10 flex justify-between items-end border-t border-zinc-200/60 pt-6 mt-6 text-left">
+                    <div className="relative z-10 flex justify-between items-end border-t border-zinc-200/60 pt-3 mt-3 text-left">
                       <div>
                         <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">Verification ID</p>
                         <p className="text-xs font-extrabold text-[#F3A61E]">KH-VOL-CERT-{volunteer.id}</p>
                       </div>
                       
                       {/* Stamp Seal */}
-                      <div className="h-16 w-16 border-2 border-dashed border-[#1E4D2B]/40 rounded-full flex items-center justify-center text-[#1E4D2B] opacity-60 relative select-none">
-                        <div className="text-[8px] font-black uppercase text-center tracking-wider">
-                          KANHA<br />FOUNDATION<br />SEAL
-                        </div>
+                      <div className="h-16 w-16 flex items-center justify-center relative select-none">
+                        {volunteer.certificate_seal_image_url ? (
+                          <img 
+                            src={volunteer.certificate_seal_image_url} 
+                            className="h-16 w-16 object-contain" 
+                            alt="Seal"
+                          />
+                        ) : (
+                          <div className="h-16 w-16 border-2 border-dashed border-[#1E4D2B]/40 rounded-full flex items-center justify-center text-[#1E4D2B] opacity-60">
+                            <div className="text-[8px] font-black uppercase text-center tracking-wider leading-tight">
+                              {volunteer.certificate_seal_text ? (
+                                volunteer.certificate_seal_text.split(" ").map((w, idx) => (
+                                  <span key={idx} className="block">{w}</span>
+                                ))
+                              ) : (
+                                <>KANHA<br />FOUNDATION<br />SEAL</>
+                              )}
+                            </div>
+                          </div>
+                        )}
                       </div>
 
                       <div className="text-right w-44">
-                        <div className="h-8 border-b border-zinc-300 w-full mb-1"></div>
-                        <p className="text-[10px] font-black text-[#1E4D2B] uppercase tracking-wider">Authorized Officer</p>
+                        {volunteer.certificate_signature_image_url ? (
+                          <img 
+                            src={volunteer.certificate_signature_image_url} 
+                            className="h-10 max-w-full object-contain mx-auto mb-1" 
+                            alt="Signature"
+                          />
+                        ) : volunteer.certificate_signature_name ? (
+                          <p className="text-[10px] font-bold text-gray-800 text-center select-none font-serif italic mb-0.5 border-b border-zinc-200/60 pb-1">
+                            {volunteer.certificate_signature_name}
+                          </p>
+                        ) : null}
+                        <div className={`${(volunteer.certificate_signature_image_url || volunteer.certificate_signature_name) ? "h-2" : "h-8 border-b border-zinc-300"} w-full mb-1`}></div>
+                        <p className="text-[10px] font-black text-[#1E4D2B] uppercase tracking-wider">
+                          {volunteer.certificate_signature_title || "Authorized Officer"}
+                        </p>
                         <p className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest mt-0.5">Kanha Foundation</p>
                       </div>
                     </div>

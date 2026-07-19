@@ -74,6 +74,13 @@ interface VolunteerApplication {
   certificate_url?: string;
   certificate_issue_date?: string;
   internship_start_date?: string;
+  internship_end_date?: string;
+  certificate_text?: string;
+  certificate_signature_name?: string;
+  certificate_signature_title?: string;
+  certificate_seal_text?: string;
+  certificate_signature_image_url?: string;
+  certificate_seal_image_url?: string;
 }
 
 interface PageMediaConfig {
@@ -330,6 +337,12 @@ export default function AdminPanelPage() {
   const [certStartDate, setCertStartDate] = useState("");
   const [certUrl, setCertUrl] = useState("");
   const [isCertSaving, setIsCertSaving] = useState(false);
+  const [certText, setCertText] = useState("");
+  const [certSigName, setCertSigName] = useState("");
+  const [certSigTitle, setCertSigTitle] = useState("");
+  const [certSealText, setCertSealText] = useState("");
+  const [certSigImg, setCertSigImg] = useState("");
+  const [certSealImg, setCertSealImg] = useState("");
   const [isViewCertModalOpen, setIsViewCertModalOpen] = useState(false);
   const [viewingCertVol, setViewingCertVol] = useState<VolunteerApplication | null>(null);
   const [certScale, setCertScale] = useState(1);
@@ -1343,9 +1356,17 @@ export default function AdminPanelPage() {
 
   const handleOpenCertificateModal = (app: VolunteerApplication) => {
     setCertVol(app);
-    setCertDate(app.certificate_issue_date || getFormattedDate());
+    // Pre-fill completion date with app.internship_end_date if available
+    setCertDate(app.certificate_issue_date || app.internship_end_date || getFormattedDate());
     setCertStartDate(app.internship_start_date || getFormattedDate());
-    setCertUrl(app.certificate_url || "");
+    // Pre-fill certificate url to "auto" if it is not set (1-click generation)
+    setCertUrl(app.certificate_url || "auto");
+    setCertText(app.certificate_text || "");
+    setCertSigName(app.certificate_signature_name || "");
+    setCertSigTitle(app.certificate_signature_title || "Authorized Officer");
+    setCertSealText(app.certificate_seal_text || "KANHA FOUNDATION SEAL");
+    setCertSigImg(app.certificate_signature_image_url || "");
+    setCertSealImg(app.certificate_seal_image_url || "");
     setIsCertModalOpen(true);
   };
 
@@ -1362,7 +1383,13 @@ export default function AdminPanelPage() {
           ...certVol,
           certificate_url: certUrl,
           certificate_issue_date: certDate,
-          internship_start_date: certStartDate
+          internship_start_date: certStartDate,
+          certificate_text: certText,
+          certificate_signature_name: certSigName,
+          certificate_signature_title: certSigTitle,
+          certificate_seal_text: certSealText,
+          certificate_signature_image_url: certSigImg,
+          certificate_seal_image_url: certSealImg
         })
       });
       const data = await res.json();
@@ -1372,7 +1399,13 @@ export default function AdminPanelPage() {
           ...app, 
           certificate_url: certUrl, 
           certificate_issue_date: certDate, 
-          internship_start_date: certStartDate 
+          internship_start_date: certStartDate,
+          certificate_text: certText,
+          certificate_signature_name: certSigName,
+          certificate_signature_title: certSigTitle,
+          certificate_seal_text: certSealText,
+          certificate_signature_image_url: certSigImg,
+          certificate_seal_image_url: certSealImg
         } : app));
         fetchData();
         setIsCertModalOpen(false);
@@ -4750,7 +4783,16 @@ export default function AdminPanelPage() {
                           <button
                             type="button"
                             onClick={() => {
-                              setViewingCertVol(certVol);
+                              setViewingCertVol({
+                                ...certVol,
+                                certificate_url: certUrl,
+                                certificate_issue_date: certDate,
+                                internship_start_date: certStartDate,
+                                certificate_text: certText,
+                                certificate_signature_name: certSigName,
+                                certificate_signature_title: certSigTitle,
+                                certificate_seal_text: certSealText
+                              });
                               setIsViewCertModalOpen(true);
                             }}
                             className="w-full py-1 bg-amber-500 hover:bg-amber-600 text-black font-bold text-[9px] uppercase tracking-wider rounded-lg transition-all"
@@ -4779,6 +4821,158 @@ export default function AdminPanelPage() {
                         >
                           Revoke
                         </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {certUrl === "auto" && (
+                    <div className="space-y-4 border-t border-zinc-800/80 pt-4">
+                      <h4 className="text-[10px] font-black text-emerald-400 uppercase tracking-wider">Customize Certificate Content</h4>
+                      <div>
+                        <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-1.5">Description Text (Optional)</label>
+                        <textarea
+                          value={certText}
+                          onChange={(e) => setCertText(e.target.value)}
+                          placeholder="e.g. has successfully completed their volunteering internship under Kanha Foundation..."
+                          className="w-full px-4 py-2 bg-zinc-950 border border-zinc-800 rounded-xl text-xs text-white focus:outline-none h-16 resize-none"
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-1.5">Officer Name</label>
+                          <input
+                            type="text"
+                            value={certSigName}
+                            onChange={(e) => setCertSigName(e.target.value)}
+                            placeholder="e.g. Harsh Raj"
+                            className="w-full px-4 py-2 bg-zinc-950 border border-zinc-800 rounded-xl text-xs text-white focus:outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-1.5">Officer Title</label>
+                          <input
+                            type="text"
+                            value={certSigTitle}
+                            onChange={(e) => setCertSigTitle(e.target.value)}
+                            placeholder="Default: Authorized Officer"
+                            className="w-full px-4 py-2 bg-zinc-950 border border-zinc-800 rounded-xl text-xs text-white focus:outline-none"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-1.5">Seal Text</label>
+                        <input
+                          type="text"
+                          value={certSealText}
+                          onChange={(e) => setCertSealText(e.target.value)}
+                          placeholder="Default: KANHA FOUNDATION SEAL"
+                          className="w-full px-4 py-2 bg-zinc-950 border border-zinc-800 rounded-xl text-xs text-white focus:outline-none"
+                        />
+                      </div>
+
+                      {/* Image Upload Inputs for custom Seal and Signature */}
+                      <div className="grid grid-cols-2 gap-4 border-t border-zinc-800/40 pt-4 mt-2">
+                        <div>
+                          <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-1.5">Signature Image (PNG)</label>
+                          <div className="flex flex-col gap-2">
+                            {certSigImg ? (
+                              <div className="flex items-center justify-between bg-zinc-950 p-2 border border-zinc-800 rounded-xl">
+                                <img src={certSigImg} className="h-8 max-w-[80px] object-contain" alt="Signature Thumbnail" />
+                                <button
+                                  type="button"
+                                  onClick={() => setCertSigImg("")}
+                                  className="text-xs text-red-500 font-bold hover:text-red-400 cursor-pointer"
+                                >
+                                  Remove
+                                </button>
+                              </div>
+                            ) : (
+                              <>
+                                <input
+                                  type="file"
+                                  id="cert-sig-image-upload"
+                                  accept="image/*"
+                                  onChange={async (e) => {
+                                    const file = e.target.files?.[0];
+                                    if (!file) return;
+                                    const formData = new FormData();
+                                    formData.append("file", file);
+                                    try {
+                                      const res = await fetch('/api/upload', { method: 'POST', body: formData });
+                                      const data = await res.json();
+                                      if (data.success) {
+                                        setCertSigImg(data.url);
+                                      } else {
+                                        alert(data.error || "Upload failed");
+                                      }
+                                    } catch (err) {
+                                      console.error("Signature image upload error:", err);
+                                    }
+                                  }}
+                                  className="hidden"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => document.getElementById('cert-sig-image-upload')?.click()}
+                                  className="w-full py-2 bg-zinc-950 border border-zinc-800 hover:border-zinc-700 text-zinc-350 hover:text-white rounded-xl text-[10px] font-bold transition-all cursor-pointer text-center"
+                                >
+                                  Upload Signature
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-1.5">Seal Image (PNG)</label>
+                          <div className="flex flex-col gap-2">
+                            {certSealImg ? (
+                              <div className="flex items-center justify-between bg-zinc-950 p-2 border border-zinc-800 rounded-xl">
+                                <img src={certSealImg} className="h-8 max-w-[85px] object-contain" alt="Seal Thumbnail" />
+                                <button
+                                  type="button"
+                                  onClick={() => setCertSealImg("")}
+                                  className="text-xs text-red-500 font-bold hover:text-red-400 cursor-pointer"
+                                >
+                                  Remove
+                                </button>
+                              </div>
+                            ) : (
+                              <>
+                                <input
+                                  type="file"
+                                  id="cert-seal-image-upload"
+                                  accept="image/*"
+                                  onChange={async (e) => {
+                                    const file = e.target.files?.[0];
+                                    if (!file) return;
+                                    const formData = new FormData();
+                                    formData.append("file", file);
+                                    try {
+                                      const res = await fetch('/api/upload', { method: 'POST', body: formData });
+                                      const data = await res.json();
+                                      if (data.success) {
+                                        setCertSealImg(data.url);
+                                      } else {
+                                        alert(data.error || "Upload failed");
+                                      }
+                                    } catch (err) {
+                                      console.error("Seal image upload error:", err);
+                                    }
+                                  }}
+                                  className="hidden"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => document.getElementById('cert-seal-image-upload')?.click()}
+                                  className="w-full py-2 bg-zinc-950 border border-zinc-800 hover:border-zinc-700 text-zinc-350 hover:text-white rounded-xl text-[10px] font-bold transition-all cursor-pointer text-center"
+                                >
+                                  Upload Seal
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     </div>
                   )}
@@ -4870,7 +5064,7 @@ export default function AdminPanelPage() {
             >
               <div
                 id="premium-certificate-print-area"
-                className="relative bg-white border-[16px] border-double border-[#1E4D2B] p-8 sm:p-12 text-center text-[#0e1711] shadow-2xl flex flex-col justify-between rounded-xl select-none"
+                className="relative bg-white border-[16px] border-double border-[#1E4D2B] p-6 sm:p-8 text-center text-[#0e1711] shadow-2xl flex flex-col justify-between rounded-xl select-none"
                 style={{
                   fontFamily: "'Outfit', 'Inter', sans-serif",
                   backgroundImage: "radial-gradient(circle at center, #fcfdfc 0%, #f4faf6 100%)",
@@ -4909,7 +5103,7 @@ export default function AdminPanelPage() {
                 </div>
 
                 {/* Middle Certificate Core */}
-                <div className="relative z-10 my-auto space-y-4">
+                <div className="relative z-10 my-auto space-y-3">
                   <h2 className="text-3xl font-black tracking-tight text-[#1E4D2B] font-serif uppercase">
                     Certificate of Internship
                   </h2>
@@ -4921,11 +5115,17 @@ export default function AdminPanelPage() {
                     </h3>
                   </div>
 
-                  <p className="text-sm text-zinc-655 max-w-2xl mx-auto leading-relaxed mt-4">
-                    has successfully completed their volunteering internship under Kanha Foundation from <strong className="text-[#1E4D2B]">{viewingCertVol.internship_start_date || certStartDate || "N/A"}</strong> to <strong className="text-[#1E4D2B]">{viewingCertVol.certificate_issue_date || certDate || "N/A"}</strong>. Their contributions have significantly impacted local relief drives and education initiatives.
+                  <p className="text-sm text-zinc-650 max-w-2xl mx-auto leading-relaxed mt-4">
+                    {viewingCertVol.certificate_text ? (
+                      viewingCertVol.certificate_text
+                    ) : (
+                      <>
+                        has successfully completed their volunteering internship under Kanha Foundation from <strong className="text-[#1E4D2B]">{viewingCertVol.internship_start_date || certStartDate || "N/A"}</strong> to <strong className="text-[#1E4D2B]">{viewingCertVol.certificate_issue_date || certDate || "N/A"}</strong>. Their contributions have significantly impacted local relief drives and education initiatives.
+                      </>
+                    )}
                   </p>
 
-                  <div className="grid grid-cols-3 gap-4 max-w-lg mx-auto pt-4 text-xs font-bold text-zinc-650">
+                  <div className="grid grid-cols-3 gap-4 max-w-lg mx-auto pt-4 text-xs font-bold text-zinc-600">
                     <div className="bg-zinc-50 p-2.5 rounded-xl border border-zinc-150/40">
                       <span className="block text-[8px] text-zinc-400 uppercase tracking-wider mb-0.5">Start Date</span>
                       <span className="text-xs text-[#1E4D2B] font-black">{viewingCertVol.internship_start_date || certStartDate || "N/A"}</span>
@@ -4942,22 +5142,51 @@ export default function AdminPanelPage() {
                 </div>
 
                 {/* Bottom Stamp and Signature block */}
-                <div className="relative z-10 flex justify-between items-end border-t border-zinc-200/60 pt-6 mt-6 text-left">
+                <div className="relative z-10 flex justify-between items-end border-t border-zinc-200/60 pt-3 mt-3 text-left">
                   <div>
                     <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">Verification ID</p>
                     <p className="text-xs font-extrabold text-[#F3A61E]">KH-VOL-CERT-{viewingCertVol.id}</p>
                   </div>
                   
                   {/* Stamp Seal */}
-                  <div className="h-16 w-16 border-2 border-dashed border-[#1E4D2B]/40 rounded-full flex items-center justify-center text-[#1E4D2B] opacity-60 relative select-none">
-                    <div className="text-[8px] font-black uppercase text-center tracking-wider">
-                      KANHA<br />FOUNDATION<br />SEAL
-                    </div>
+                  <div className="h-16 w-16 flex items-center justify-center relative select-none">
+                    {viewingCertVol.certificate_seal_image_url ? (
+                      <img 
+                        src={viewingCertVol.certificate_seal_image_url} 
+                        className="h-16 w-16 object-contain" 
+                        alt="Seal"
+                      />
+                    ) : (
+                      <div className="h-16 w-16 border-2 border-dashed border-[#1E4D2B]/40 rounded-full flex items-center justify-center text-[#1E4D2B] opacity-60">
+                        <div className="text-[8px] font-black uppercase text-center tracking-wider leading-tight">
+                          {viewingCertVol.certificate_seal_text ? (
+                            viewingCertVol.certificate_seal_text.split(" ").map((w, idx) => (
+                              <span key={idx} className="block">{w}</span>
+                            ))
+                          ) : (
+                            <>KANHA<br />FOUNDATION<br />SEAL</>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   <div className="text-right w-44">
-                    <div className="h-8 border-b border-zinc-300 w-full mb-1"></div>
-                    <p className="text-[10px] font-black text-[#1E4D2B] uppercase tracking-wider">Authorized Officer</p>
+                    {viewingCertVol.certificate_signature_image_url ? (
+                      <img 
+                        src={viewingCertVol.certificate_signature_image_url} 
+                        className="h-10 max-w-full object-contain mx-auto mb-1" 
+                        alt="Signature"
+                      />
+                    ) : viewingCertVol.certificate_signature_name ? (
+                      <p className="text-[10px] font-bold text-gray-800 text-center select-none font-serif italic mb-0.5 border-b border-zinc-200/60 pb-1">
+                        {viewingCertVol.certificate_signature_name}
+                      </p>
+                    ) : null}
+                    <div className={`${(viewingCertVol.certificate_signature_image_url || viewingCertVol.certificate_signature_name) ? "h-2" : "h-8 border-b border-zinc-300"} w-full mb-1`}></div>
+                    <p className="text-[10px] font-black text-[#1E4D2B] uppercase tracking-wider">
+                      {viewingCertVol.certificate_signature_title || "Authorized Officer"}
+                    </p>
                     <p className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest mt-0.5">Kanha Foundation</p>
                   </div>
                 </div>

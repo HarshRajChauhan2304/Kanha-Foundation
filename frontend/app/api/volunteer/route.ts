@@ -2,12 +2,23 @@ import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import fs from 'fs';
 import path from 'path';
-import { resilientDelete, resilientPost, resilientPut, syncVolunteerToHighlights } from '@/lib/db-fallback';
+import { resilientDelete, resilientPost, resilientPut, syncVolunteerToHighlights, getFallbackPath } from '@/lib/db-fallback';
 
 // GET all volunteer registrations (for admin review)
 export async function GET() {
   let applications: any[] = [];
   let useFallback = false;
+
+  // Load local JSON fallback data to merge or fallback to
+  let localApps: any[] = [];
+  try {
+    const fallbackPath = getFallbackPath('volunteer_applications.json');
+    if (fs.existsSync(fallbackPath)) {
+      localApps = JSON.parse(fs.readFileSync(fallbackPath, 'utf-8'));
+    }
+  } catch (e) {
+    console.error("Failed to read local fallback in GET:", e);
+  }
 
   try {
     const { data, error } = await supabaseAdmin
@@ -28,6 +39,12 @@ export async function GET() {
             newItem.gender = parsed.gender || item.gender || "";
           }
         } catch (e) {}
+
+        // Merge from local fallback if available to ensure schema additions like certificate exist
+        const localMatch = localApps.find((la: any) => String(la.id) === String(item.id));
+        if (localMatch) {
+          newItem = { ...newItem, ...localMatch };
+        }
         return newItem;
       });
     }
@@ -36,11 +53,11 @@ export async function GET() {
   }
 
   if (useFallback) {
-    try {
-      const fallbackPath = path.join(process.cwd(), 'data', 'volunteer_applications.json');
-      if (fs.existsSync(fallbackPath)) {
-        applications = JSON.parse(fs.readFileSync(fallbackPath, 'utf-8'));
-      } else {
+    applications = localApps;
+    if (applications.length === 0) {
+      // Create seed fallback if empty
+      try {
+        const fallbackPath = getFallbackPath('volunteer_applications.json');
         applications = [
           {
             id: 1,
@@ -54,13 +71,59 @@ export async function GET() {
             password: "volunteer123"
           }
         ];
-        fs.mkdirSync(path.dirname(fallbackPath), { recursive: true });
         fs.writeFileSync(fallbackPath, JSON.stringify(applications, null, 2), 'utf-8');
+      } catch (e) {
+        console.error("Failed to write initial fallback JSON:", e);
       }
-    } catch (e) {
-      console.error("Failed to read volunteer_applications fallback JSON:", e);
     }
   }
+
+  const todayStr = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+  applications = applications.map((newItem: any) => {
+    // Auto-generate certificate if completion date is reached and not already created
+    if (newItem.status === 'Approved' && (!newItem.certificate_url || newItem.certificate_url === '') && newItem.internship_end_date) {
+      if (todayStr >= newItem.internship_end_date) {
+        newItem.certificate_url = 'auto';
+        newItem.certificate_issue_date = newItem.internship_end_date;
+
+        // Asynchronously update database and local file fallbacks
+        (async () => {
+          try {
+            // Update local JSON fallback file
+            const fallbackPath = getFallbackPath('volunteer_applications.json');
+            if (fs.existsSync(fallbackPath)) {
+              const fileContent = fs.readFileSync(fallbackPath, 'utf-8');
+              const currentData = JSON.parse(fileContent);
+              if (Array.isArray(currentData)) {
+                const idx = currentData.findIndex((item: any) => String(item.id) === String(newItem.id));
+                if (idx !== -1) {
+                  currentData[idx].certificate_url = 'auto';
+                  currentData[idx].certificate_issue_date = newItem.internship_end_date;
+                  fs.writeFileSync(fallbackPath, JSON.stringify(currentData, null, 2), 'utf-8');
+                }
+              }
+            }
+          } catch (e) {
+            console.error("Auto-issue local JSON update failed:", e);
+          }
+
+          try {
+            // Update Supabase DB
+            await supabaseAdmin
+              .from('volunteer_applications')
+              .update({
+                certificate_url: 'auto',
+                certificate_issue_date: newItem.internship_end_date
+              })
+              .eq('id', newItem.id);
+          } catch (dbErr) {
+            console.warn("Auto-issue Supabase update failed:", dbErr);
+          }
+        })();
+      }
+    }
+    return newItem;
+  });
 
   return NextResponse.json(applications);
 }
@@ -69,7 +132,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, email, phone, city, motivation, skills, password, profile_photo, gender, terms_accepted, aadhar_number, aadhar_upload_url, internship_duration, certificate_url, certificate_issue_date, internship_start_date } = body;
+    const { name, email, phone, city, motivation, skills, password, profile_photo, gender, terms_accepted, aadhar_number, aadhar_upload_url, internship_duration, certificate_url, certificate_issue_date, internship_start_date, internship_end_date, certificate_text, certificate_signature_name, certificate_signature_title, certificate_seal_text, certificate_signature_image_url, certificate_seal_image_url } = body;
 
     if (!name || !email || !phone || !city || !skills || skills.length === 0) {
       return NextResponse.json({ success: false, error: "Please fill all required profile fields." }, { status: 400 });
@@ -95,7 +158,14 @@ export async function POST(request: Request) {
         internship_duration: internship_duration || "1 Month",
         certificate_url: certificate_url || "",
         certificate_issue_date: certificate_issue_date || "",
-        internship_start_date: internship_start_date || ""
+        internship_start_date: internship_start_date || "",
+        internship_end_date: internship_end_date || "",
+        certificate_text: certificate_text || "",
+        certificate_signature_name: certificate_signature_name || "",
+        certificate_signature_title: certificate_signature_title || "",
+        certificate_seal_text: certificate_seal_text || "",
+        certificate_signature_image_url: certificate_signature_image_url || "",
+        certificate_seal_image_url: certificate_seal_image_url || ""
       }
     });
 
@@ -113,7 +183,7 @@ export async function POST(request: Request) {
 export async function PUT(request: Request) {
   try {
     const body = await request.json();
-    const { id, name, email, phone, city, motivation, skills, status, profile_photo, gender, terms_accepted, aadhar_number, aadhar_upload_url, internship_duration, certificate_url, certificate_issue_date, internship_start_date } = body;
+    const { id, name, email, phone, city, motivation, skills, status, profile_photo, gender, terms_accepted, aadhar_number, aadhar_upload_url, internship_duration, certificate_url, certificate_issue_date, internship_start_date, internship_end_date, certificate_text, certificate_signature_name, certificate_signature_title, certificate_seal_text, certificate_signature_image_url, certificate_seal_image_url } = body;
 
     if (!id || !name || !email || !phone || !city) {
       return NextResponse.json({ success: false, error: "Missing required fields" }, { status: 400 });
@@ -139,7 +209,14 @@ export async function PUT(request: Request) {
         internship_duration: internship_duration || "1 Month",
         certificate_url: certificate_url || "",
         certificate_issue_date: certificate_issue_date || "",
-        internship_start_date: internship_start_date || ""
+        internship_start_date: internship_start_date || "",
+        internship_end_date: internship_end_date || "",
+        certificate_text: certificate_text || "",
+        certificate_signature_name: certificate_signature_name || "",
+        certificate_signature_title: certificate_signature_title || "",
+        certificate_seal_text: certificate_seal_text || "",
+        certificate_signature_image_url: certificate_signature_image_url || "",
+        certificate_seal_image_url: certificate_seal_image_url || ""
       }
     });
 

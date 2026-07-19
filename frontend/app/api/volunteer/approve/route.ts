@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import fs from 'fs';
 import path from 'path';
-import { syncVolunteerToHighlights } from '@/lib/db-fallback';
+import { syncVolunteerToHighlights, getFallbackPath } from '@/lib/db-fallback';
 
 export async function POST(request: Request) {
   try {
@@ -37,7 +37,7 @@ export async function POST(request: Request) {
     // If not found in Supabase or ID is out of range, look in local JSON fallback
     if (!app) {
       try {
-        const fallbackPath = path.join(process.cwd(), 'data', 'volunteer_applications.json');
+        const fallbackPath = getFallbackPath('volunteer_applications.json');
         if (fs.existsSync(fallbackPath)) {
           const fileContent = fs.readFileSync(fallbackPath, 'utf-8');
           const currentData = JSON.parse(fileContent);
@@ -54,31 +54,86 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: "Application not found in database or local fallback." }, { status: 404 });
     }
 
+    // Calculate joining and completion dates based on internship duration
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    const joiningDate = `${yyyy}-${mm}-${dd}`;
+
+    let durationMonths = 1;
+    if (app.internship_duration) {
+      const match = app.internship_duration.match(/\d+/);
+      if (match) {
+        durationMonths = parseInt(match[0], 10);
+      }
+    }
+    const completionDateObj = new Date(today);
+    completionDateObj.setMonth(completionDateObj.getMonth() + durationMonths);
+    const compY = completionDateObj.getFullYear();
+    const compM = String(completionDateObj.getMonth() + 1).padStart(2, '0');
+    const compD = String(completionDateObj.getDate()).padStart(2, '0');
+    const completionDate = `${compY}-${compM}-${compD}`;
+
+    const updatePayload = {
+      status: 'Approved',
+      internship_start_date: joiningDate,
+      internship_end_date: completionDate
+    };
+
     // 2. Update status to 'Approved'
     if (fetchFromSupabase) {
-      const { error: updateError } = await supabaseAdmin
+      let { error: updateError } = await supabaseAdmin
         .from('volunteer_applications')
-        .update({ status: 'Approved' })
+        .update(updatePayload)
         .eq('id', numericId);
 
       if (updateError) {
-        console.warn("Supabase update status failed, falling back to local approval:", updateError.message);
+        console.warn("Supabase update status with full payload failed, retrying with status and start_date only:", updateError.message);
+        const { error: retryError } = await supabaseAdmin
+          .from('volunteer_applications')
+          .update({
+            status: 'Approved',
+            internship_start_date: joiningDate
+          })
+          .eq('id', numericId);
+        if (retryError) {
+          console.warn("Supabase retry status update failed:", retryError.message);
+        }
       }
     } else {
       // If the app was only local (or had a large ID), let's try inserting it into Supabase as Approved now
       try {
-        const insertData = { ...app, status: 'Approved' };
+        const insertData = {
+          ...app,
+          status: 'Approved',
+          internship_start_date: joiningDate,
+          internship_end_date: completionDate
+        };
         // If ID is a large fallback timestamp, strip it so Postgres generates a valid serial integer ID
         if (!isIdWithinIntRange) {
           delete insertData.id;
         }
-        const { data: newDbApp, error: insertError } = await supabaseAdmin
+        let { data: newDbApp, error: insertError } = await supabaseAdmin
           .from('volunteer_applications')
           .insert([insertData])
           .select()
           .single();
         
-        if (!insertError && newDbApp) {
+        if (insertError) {
+          console.warn("Supabase insert with full payload failed, retrying without internship_end_date:", insertError.message);
+          delete insertData.internship_end_date;
+          const { data: retryDbApp, error: retryInsertError } = await supabaseAdmin
+            .from('volunteer_applications')
+            .insert([insertData])
+            .select()
+            .single();
+          if (!retryInsertError && retryDbApp) {
+            newDbApp = retryDbApp;
+          }
+        }
+
+        if (newDbApp) {
           // Update the local JSON entry with the new correct Supabase integer ID!
           app = newDbApp;
         }
@@ -89,8 +144,7 @@ export async function POST(request: Request) {
 
     // 2.5 Update status to 'Approved' in the local JSON fallback
     try {
-      const fallbackFile = 'volunteer_applications.json';
-      const fallbackPath = path.join(process.cwd(), 'data', fallbackFile);
+      const fallbackPath = getFallbackPath('volunteer_applications.json');
       if (fs.existsSync(fallbackPath)) {
         const fileContent = fs.readFileSync(fallbackPath, 'utf-8');
         const currentData = JSON.parse(fileContent);
@@ -98,6 +152,8 @@ export async function POST(request: Request) {
           const idx = currentData.findIndex((item: any) => String(item.id) === String(id));
           if (idx !== -1) {
             currentData[idx].status = 'Approved';
+            currentData[idx].internship_start_date = joiningDate;
+            currentData[idx].internship_end_date = completionDate;
             // Sync the updated ID if it was synced to Supabase
             currentData[idx].id = app.id;
             fs.writeFileSync(fallbackPath, JSON.stringify(currentData, null, 2), 'utf-8');

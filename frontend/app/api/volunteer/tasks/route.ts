@@ -2,10 +2,11 @@ import { NextResponse } from 'next/server';
 import { supabase, supabaseAdmin } from '@/lib/supabase';
 import fs from 'fs';
 import path from 'path';
+import { getFallbackPath } from '@/lib/db-fallback';
 
 const getLocalTasks = (): any[] => {
   try {
-    const dataPath = path.join(process.cwd(), 'data', 'volunteer_tasks.json');
+    const dataPath = getFallbackPath('volunteer_tasks.json');
     if (fs.existsSync(dataPath)) {
       const fileContent = fs.readFileSync(dataPath, 'utf-8');
       return JSON.parse(fileContent);
@@ -18,11 +19,7 @@ const getLocalTasks = (): any[] => {
 
 const saveLocalTasks = (tasks: any[]) => {
   try {
-    const dataDir = path.join(process.cwd(), 'data');
-    if (!fs.existsSync(dataDir)) {
-      fs.mkdirSync(dataDir, { recursive: true });
-    }
-    const dataPath = path.join(dataDir, 'volunteer_tasks.json');
+    const dataPath = getFallbackPath('volunteer_tasks.json');
     fs.writeFileSync(dataPath, JSON.stringify(tasks, null, 2), 'utf-8');
   } catch (e) {
     console.error("Error writing local volunteer tasks JSON:", e);
