@@ -100,7 +100,11 @@ export async function GET() {
             const meta = JSON.parse(d.time.split('|')[1]);
             if (meta) {
               if (meta.meals !== undefined || meta.lives !== undefined || meta.studykit !== undefined || meta.birthday !== undefined) {
-                parsedBirthday = meta.birthday || 0;
+                let pb = meta.birthday || 0;
+                if (pb >= 600) {
+                  pb = Math.round(pb / 1200) || 1;
+                }
+                parsedBirthday = pb;
                 parsedMeals = meta.meals || 0;
                 parsedLives = meta.lives || 0;
                 parsedStudykit = meta.studykit || 0;
@@ -115,7 +119,7 @@ export async function GET() {
           const donationFor = (d.donation_for || '').toLowerCase();
           
           if (donationFor.includes('birthday') || donationFor.includes('celebration') || donationFor.includes('anniversary')) {
-            parsedBirthday = amt;
+            parsedBirthday = amt >= 600 ? Math.round(amt / 1200) || 1 : 1;
           }
           if (donationFor.includes('thali') || donationFor.includes('meals') || donationFor.includes('feed') || 
               donationFor.includes('cows') || donationFor.includes('dogs') || donationFor.includes('chara') || 

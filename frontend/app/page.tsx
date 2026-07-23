@@ -340,7 +340,13 @@ export default function Home() {
                 const metaStr = d.time.split('|')[1];
                 const meta = JSON.parse(metaStr);
                 if (meta) {
-                  if (meta.birthday) extraBirthday += meta.birthday;
+                  if (meta.birthday) {
+                    let b = meta.birthday;
+                    if (b >= 600) {
+                      b = Math.round(b / 1200) || 1;
+                    }
+                    extraBirthday += b;
+                  }
                   if (meta.meals) extraMeals += meta.meals;
                   if (meta.lives) extraLives += meta.lives;
                   if (meta.studykit) extraStudykit += meta.studykit;

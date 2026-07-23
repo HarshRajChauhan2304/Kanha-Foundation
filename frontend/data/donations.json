@@ -300,7 +300,7 @@
     "id": 57,
     "name": "Aman Kumar",
     "amount": "₹1,200",
-    "time": "22 July 2026 at 03:33 pm|{\"birthday\":1200,\"meals\":0,\"lives\":0,\"studykit\":0,\"total\":1200,\"marketing\":{\"receiveMarketing\":true,\"marketingPhone\":\"+917488164529\",\"marketingEmail\":\"amankumar22@gmail.com\"},\"customisation\":{\"isAnonymous\":true,\"printedName\":\"\",\"deliveryDate\":\"\",\"photoUrl\":\"\",\"videoWish\":\"\",\"instagramId\":\"\",\"isGift\":false,\"giftMessage\":\"\",\"isOtherRequest\":false,\"otherRequestText\":\"\"}}",
+    "time": "22 July 2026 at 03:33 pm|{\"birthday\":1,\"meals\":0,\"lives\":0,\"studykit\":0,\"total\":1200,\"marketing\":{\"receiveMarketing\":true,\"marketingPhone\":\"+917488164529\",\"marketingEmail\":\"amankumar22@gmail.com\"},\"customisation\":{\"isAnonymous\":true,\"printedName\":\"\",\"deliveryDate\":\"\",\"photoUrl\":\"\",\"videoWish\":\"\",\"instagramId\":\"\",\"isGift\":false,\"giftMessage\":\"\",\"isOtherRequest\":false,\"otherRequestText\":\"\"}}",
     "created_at": "2026-07-22T15:33:41.910372+00:00",
     "email": "amankumar22@gmail.com",
     "phone": "+917488164529",

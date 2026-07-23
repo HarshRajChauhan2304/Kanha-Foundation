@@ -2,7 +2,7 @@
   {
     "title": "Sponsor a Food Packet for Underpriviled Children",
     "price": "₹ 300.00 /₹150.00",
-    "image": "/uploads/1783278856056_food1.jpeg",
+    "image": "https://cwpfhfcxpeqiihiqxqtu.supabase.co/storage/v1/object/public/uploads/1784830553939_food_packet.jpeg",
     "video": "",
     "category": "Giving To The Needy",
     "id": 1
@@ -10,7 +10,7 @@
   {
     "title": "Sponsor a Wholesome Thali for Underpriviled Children",
     "price": "₹ 800.00",
-    "image": "/uploads/1783278966727_food2.jpeg",
+    "image": "https://cwpfhfcxpeqiihiqxqtu.supabase.co/storage/v1/object/public/uploads/1784830580656_THALI.png",
     "video": "",
     "category": "Giving To The Needy",
     "id": 2
@@ -18,7 +18,7 @@
   {
     "title": "Sponsor Menstrual Hygiene  Kit for Underprivilged  Girls",
     "price": "₹ 250.00",
-    "image": "/uploads/1783279217172_menkit.jpeg",
+    "image": "https://cwpfhfcxpeqiihiqxqtu.supabase.co/storage/v1/object/public/uploads/1784830879703_ChatGPT_Image_Mar_31__2026__09_03_58_PM.png",
     "video": "",
     "category": "Women Care",
     "id": 3
@@ -26,25 +26,41 @@
   {
     "title": "Birthday  Celebration with Slum Kids (10 Food Packets + 1Cake)",
     "price": "₹ 600.00",
-    "image": "/uploads/1783279412022_food1.jpeg",
+    "image": "https://cwpfhfcxpeqiihiqxqtu.supabase.co/storage/v1/object/public/uploads/1784831088905_ChatGPT_Image_Jul_23__2026__11_53_13_PM.png",
     "video": "",
     "category": "Birthday Giving",
     "id": 4
   },
   {
     "title": "Birthday Celebration With Slum Kids",
-    "price": "₹ 1200",
-    "image": "/uploads/1783279492895_food2.jpeg",
+    "price": "₹ 1200.00",
+    "image": "https://cwpfhfcxpeqiihiqxqtu.supabase.co/storage/v1/object/public/uploads/1784831060269_ChatGPT_Image_Jul_23__2026__11_34_08_PM.png",
     "video": "",
     "category": "Birthday Giving",
     "id": 5
   },
   {
     "title": "Sponsor Study Kit for an Underprivilged Children",
-    "price": "₹ 150",
-    "image": "/uploads/1783279627812_book.jpeg",
+    "price": "₹ 150.00",
+    "image": "https://cwpfhfcxpeqiihiqxqtu.supabase.co/storage/v1/object/public/uploads/1784831342708_Screenshot_2026_07_23_235841.png",
     "video": "",
     "category": "Education",
     "id": 6
+  },
+  {
+    "title": "Planting Tree for Pollution free Environment",
+    "price": "₹ 101.00",
+    "image": "https://cwpfhfcxpeqiihiqxqtu.supabase.co/storage/v1/object/public/uploads/1784831461277_plant.png",
+    "video": "",
+    "category": "Nature",
+    "id": 7
+  },
+  {
+    "title": "Feeding Street Cows and Dogs",
+    "price": "₹ 51 .00",
+    "image": "https://cwpfhfcxpeqiihiqxqtu.supabase.co/storage/v1/object/public/uploads/1784831504995_feedcow.png",
+    "video": "",
+    "category": "Animal",
+    "id": 8
   }
 ]

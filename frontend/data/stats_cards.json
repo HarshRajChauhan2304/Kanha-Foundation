@@ -20,7 +20,7 @@
   {
     "id": 3,
     "title": "Birthday Giving",
-    "base_value": 1200,
+    "base_value": 1,
     "prefix": "",
     "suffix": "+",
     "icon": "cake",
@@ -29,7 +29,7 @@
   {
     "id": 4,
     "title": "Lives Impacted",
-    "base_value": 1394,
+    "base_value": 195,
     "prefix": "",
     "suffix": "+",
     "icon": "heart",

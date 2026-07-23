@@ -64,6 +64,7 @@ export async function POST(request: Request) {
 
     // Calculate metadata similar to normal donation creation
     let birthdayTotal = 0;
+    let birthdayCount = 0;
     let foodTotal = 0;
     let welfareTotal = 0;
     let studyKitTotal = 0;
@@ -87,7 +88,10 @@ export async function POST(request: Request) {
                           
         const isStudyKit = category.includes("education") || (title.includes("study") && title.includes("kit"));
 
-        if (isBirthday) birthdayTotal += amt;
+        if (isBirthday) {
+          birthdayTotal += amt;
+          birthdayCount += 1;
+        }
         if (isFood) foodTotal += amt;
         if (isWelfare) welfareTotal += amt;
         if (isStudyKit) studyKitTotal += amt;
@@ -96,10 +100,10 @@ export async function POST(request: Request) {
 
     const mealsCount = Math.round(foodTotal / 30);
     const livesCount = Math.round(welfareTotal / 50);
-    const studyKitsCount = Math.round(studyKitTotal / 1200);
+    const studyKitsCount = Math.round(studyKitTotal / 150);
 
     const metadata = {
-      birthday: birthdayTotal,
+      birthday: birthdayCount,
       meals: mealsCount,
       lives: livesCount,
       studykit: studyKitsCount,
