@@ -23,8 +23,38 @@ export default function FeaturesCauses() {
   }, []);
 
   const display = causesList.length > 0 ? causesList : causesDataFallback;
-  // Display up to 5 causes to allow complete 4-5 view
-  const items = display.slice(0, 5);
+  
+  // Dynamic ordering of featured categories requested by user:
+  // 1. Giving To The Needy (Food/Needy)
+  // 2. Education (Study kit)
+  // 3. Women Care (Menstrual kit)
+  // 4. Nature (Tree planting)
+  // 5. Birthday Giving (Birthday celebration)
+  const categoriesOrder = [
+    "Giving To The Needy",
+    "Education",
+    "Women Care",
+    "Nature",
+    "Birthday Giving"
+  ];
+
+  const featuredItems: any[] = [];
+  const usedIds = new Set<number>();
+
+  categoriesOrder.forEach(catName => {
+    const found = display.find(item => 
+      !usedIds.has(item.id) && 
+      (item.category === catName || 
+       (item.category || "").toLowerCase() === catName.toLowerCase() ||
+       (item.category || "").toLowerCase().includes(catName.toLowerCase()))
+    );
+    if (found) {
+      featuredItems.push(found);
+      usedIds.add(found.id);
+    }
+  });
+
+  const items = featuredItems.length > 0 ? featuredItems : display.slice(0, 5);
 
   const scroll = (direction: 'left' | 'right') => {
     if (scrollRef.current) {
