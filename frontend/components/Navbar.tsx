@@ -613,7 +613,10 @@ export default function Navbar() {
                     </svg>
                     <p className="mt-4 text-base font-medium text-gray-500">Your cart is empty</p>
                     <button
-                      onClick={() => setIsCartOpen(false)}
+                      onClick={() => {
+                        setIsCartOpen(false);
+                        router.push('/causes');
+                      }}
                       className="mt-4 text-sm font-semibold text-[#1E4D2B] hover:underline"
                     >
                       Continue Browsing
