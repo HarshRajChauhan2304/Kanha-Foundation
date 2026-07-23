@@ -102,7 +102,7 @@ export default function OurImpactsPage() {
     impacts_header: getFallbackMedia("impacts_header", "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=1600&auto=format&fit=crop&q=80")
   });
   const [textSettings, setTextSettings] = useState<Record<string, string>>({
-    impacts_banner_title_prefix: "1.2 cr+",
+    impacts_banner_title_prefix: "1394+",
     impacts_banner_title_highlight: "Lives Impacted",
     impacts_banner_subtitle: "Real people. Real stories. Real change — powered by everyday givers like you.",
   });
@@ -110,8 +110,8 @@ export default function OurImpactsPage() {
     {
       id: 1,
       image: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=600&auto=format&fit=crop&q=80",
-      title: "7 Lakh+ Birthday Giving",
-      desc: "7 Lakh Moments of Meaningful Giving"
+      title: "1200+ Birthday Giving",
+      desc: "1200+ Moments of Meaningful Giving"
     },
     {
       id: 2,
@@ -122,14 +122,14 @@ export default function OurImpactsPage() {
     {
       id: 3,
       image: "https://images.unsplash.com/photo-1509062522246-3755977927d7?w=600&auto=format&fit=crop&q=80",
-      title: "20 Lakh+ Lives Impacted",
+      title: "1394+ Lives Impacted",
       desc: "Impacting Lives. Creating Hope."
     },
     {
       id: 4,
       image: "https://images.unsplash.com/photo-1593113598332-cd288d649433?w=600&auto=format&fit=crop&q=80",
-      title: "35 Lakh+ Meals Served",
-      desc: "35 Lakh Meals of Dignity"
+      title: "59+ Meals Served",
+      desc: "59+ Meals of Dignity"
     }
   ]);
 
@@ -201,12 +201,12 @@ export default function OurImpactsPage() {
       {/* Intro Description section */}
       <section className="mx-auto max-w-4xl px-4 py-16 text-center">
         <h2 className="text-xl sm:text-2xl font-black text-gray-900 dark:text-white leading-snug">
-          {textSettings.impacts_intro_title || "At Givea, impact isn't a promise — it's a responsibility."}
+          {textSettings.impacts_intro_title || "At Kanha Foundation, impact isn't a promise — it's a responsibility."}
         </h2>
         
         <div className="mt-8 space-y-6 text-sm sm:text-base text-gray-600 dark:text-gray-400 leading-relaxed font-normal">
           <p>
-            {textSettings.impacts_intro_desc_1 || "Every contribution made on Givea turns into action on the ground. From feeding hungry children and supporting women's hygiene, to caring for stray animals and planting trees — each cause is executed with transparency, speed, and heart."}
+            {textSettings.impacts_intro_desc_1 || "Every contribution made on Kanha Foundation turns into action on the ground. From feeding hungry children and supporting women's hygiene, to caring for stray animals and planting trees — each cause is executed with transparency, speed, and heart."}
           </p>
           <p>
             {textSettings.impacts_intro_desc_2 || "We work closely with on-ground teams and partner organizations to ensure that every donation reaches where it's needed the most. What makes us different is simple: you don't just give — you see your impact."}

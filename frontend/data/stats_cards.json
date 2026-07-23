@@ -2,7 +2,7 @@
   {
     "id": 1,
     "title": "Donations Raised",
-    "base_value": 5700,
+    "base_value": 6900,
     "prefix": "₹",
     "suffix": "+",
     "icon": "rupee",
@@ -20,7 +20,7 @@
   {
     "id": 3,
     "title": "Birthday Giving",
-    "base_value": 0,
+    "base_value": 1200,
     "prefix": "",
     "suffix": "+",
     "icon": "cake",
@@ -29,7 +29,7 @@
   {
     "id": 4,
     "title": "Lives Impacted",
-    "base_value": 194,
+    "base_value": 1394,
     "prefix": "",
     "suffix": "+",
     "icon": "heart",
