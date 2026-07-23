@@ -215,7 +215,7 @@ function DonateCheckoutPageContent() {
     return sum + (parseFloat(numericStr) || 0);
   }, 0);
 
-  const handleCashfreePayment = async () => {
+  const handleCashfreePayment = async (amountToSend: number) => {
     try {
       setIsProcessing(true);
       setErrorMsg("");
@@ -227,7 +227,7 @@ function DonateCheckoutPageContent() {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          amount: totalAmount,
+          amount: amountToSend,
           name: fullName,
           email: email,
           phone: phone,
@@ -310,6 +310,13 @@ function DonateCheckoutPageContent() {
       return;
     }
 
+    // Auto top-up to 700 if they want to customize (not anonymous) and are below the limit
+    let finalAmount = totalAmount;
+    if (!isAnonymous && totalAmount < 700) {
+      finalAmount = 700;
+    }
+
+    // Only validate customization fields if they originally had 700 or more
     if (!isAnonymous && totalAmount >= 700 && (!printedName.trim() || !deliveryDate.trim())) {
       setErrorMsg("Please fill in the printed name and preferred delivery date for customization, or choose anonymous donation.");
       return;
@@ -322,7 +329,7 @@ function DonateCheckoutPageContent() {
 
     // Trigger loader
     setIsProcessing(true);
-    handleCashfreePayment();
+    handleCashfreePayment(finalAmount);
   };
 
   return (
