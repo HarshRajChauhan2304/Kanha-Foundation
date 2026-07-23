@@ -267,15 +267,7 @@ export default function AdminPanelPage() {
   // Highlights database lists
   const [directors, setDirectors] = useState<HighlightItem[]>([]);
   const [volunteers, setVolunteers] = useState<HighlightItem[]>([]);
-  const [extraData, setExtraData] = useState({
-    extraAmount: 0,
-    uniqueDonors: 0,
-    extraBirthday: 0,
-    extraMeals: 0,
-    extraLives: 0,
-    extraStudykit: 0
-  });
-  
+
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any | null>(null);
@@ -592,56 +584,6 @@ export default function AdminPanelPage() {
         const res = await fetch('/api/stats-cards');
         const data = await res.json();
         setStatsCards(Array.isArray(data) ? data : []);
-
-        // Also fetch donations to calculate live stats
-        try {
-          const donRes = await fetch('/api/donations', { cache: 'no-store' });
-          const donData = await donRes.json();
-          if (Array.isArray(donData)) {
-            let extraAmount = 0;
-            let extraBirthday = 0;
-            let extraMeals = 0;
-            let extraLives = 0;
-            let extraStudykit = 0;
-            const uniqueNames = new Set<string>();
-
-            donData.forEach(d => {
-              const clean = d.amount ? d.amount.replace(/[^\d.]/g, "") : "0";
-              const amt = parseFloat(clean) || 0;
-              extraAmount += amt;
-
-              if (d.name) {
-                uniqueNames.add(d.name.trim().toLowerCase());
-              }
-
-              if (d.time && d.time.includes('|')) {
-                try {
-                  const metaStr = d.time.split('|')[1];
-                  const meta = JSON.parse(metaStr);
-                  if (meta) {
-                    if (meta.birthday) extraBirthday += meta.birthday;
-                    if (meta.meals) extraMeals += meta.meals;
-                    if (meta.lives) extraLives += meta.lives;
-                    if (meta.studykit) extraStudykit += meta.studykit;
-                  }
-                } catch (e) {
-                  console.error("Failed to parse donation metadata:", e);
-                }
-              }
-            });
-
-            setExtraData({
-              extraAmount,
-              uniqueDonors: uniqueNames.size,
-              extraBirthday,
-              extraMeals,
-              extraLives,
-              extraStudykit
-            });
-          }
-        } catch (donErr) {
-          console.error("Error loading donations for stats calculation:", donErr);
-        }
       } else if (activeTab === "RoleManagement") {
         try {
           const userRes = await fetch('/api/admin/users');
@@ -2549,22 +2491,7 @@ export default function AdminPanelPage() {
                         <p className="text-sm font-extrabold text-[#F3A61E]">
                           {(() => {
                             const base = parseFloat(card.base_value) || 0;
-                            const cat = card.category;
-                            let target = base;
-                            if (cat === "raised") {
-                              target = base + extraData.extraAmount;
-                            } else if (cat === "donors") {
-                              target = base + extraData.uniqueDonors;
-                            } else if (cat === "birthday") {
-                              target = base + extraData.extraBirthday;
-                            } else if (cat === "lives") {
-                              target = base + extraData.extraLives;
-                            } else if (cat === "meals") {
-                              target = base + extraData.extraMeals;
-                            } else if (cat === "studykit") {
-                              target = base + extraData.extraStudykit;
-                            }
-                            return `${card.prefix || ""}${target.toLocaleString('en-IN')}${card.suffix || ""}`;
+                            return `${card.prefix || ""}${base.toLocaleString('en-IN')}${card.suffix || ""}`;
                           })()}
                         </p>
                       </td>

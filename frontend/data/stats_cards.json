@@ -2,7 +2,7 @@
   {
     "id": 1,
     "title": "Donations Raised",
-    "base_value": 4900,
+    "base_value": 5700,
     "prefix": "₹",
     "suffix": "+",
     "icon": "rupee",
@@ -29,7 +29,7 @@
   {
     "id": 4,
     "title": "Lives Impacted",
-    "base_value": 151,
+    "base_value": 194,
     "prefix": "",
     "suffix": "+",
     "icon": "heart",
@@ -38,7 +38,7 @@
   {
     "id": 5,
     "title": "Meals Served",
-    "base_value": 32,
+    "base_value": 59,
     "prefix": "",
     "suffix": "+",
     "icon": "meals",
