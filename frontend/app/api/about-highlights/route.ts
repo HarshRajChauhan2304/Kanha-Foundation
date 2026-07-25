@@ -12,6 +12,7 @@ export async function GET() {
   let directors: any[] = [];
   let volunteers: any[] = [];
   let useFallback = false;
+  let dbApps: any[] = [];
 
   try {
     const { data: dbDirs, error: dirError } = await supabase
@@ -24,14 +25,31 @@ export async function GET() {
       .select('*')
       .order('id', { ascending: true });
 
-    if (dirError || volError || !dbDirs || !dbVols || dbDirs.length === 0 || dbVols.length === 0) {
+    const { data: dbApprovedApps, error: appError } = await supabase
+      .from('volunteer_applications')
+      .select('*')
+      .eq('status', 'Approved');
+
+    if (dirError || volError || !dbDirs || !dbVols || dbDirs.length === 0) {
       useFallback = true;
     } else {
       directors = dbDirs;
-      volunteers = dbVols;
+      volunteers = dbVols || [];
+      dbApps = dbApprovedApps || [];
     }
   } catch (err) {
     useFallback = true;
+  }
+
+  // Load volunteer applications fallback
+  let localApps: any[] = [];
+  try {
+    const appsFallbackPath = path.join(process.cwd(), 'data', 'volunteer_applications.json');
+    if (fs.existsSync(appsFallbackPath)) {
+      localApps = JSON.parse(fs.readFileSync(appsFallbackPath, 'utf-8'));
+    }
+  } catch (e) {
+    console.error("Failed to read volunteer applications fallback:", e);
   }
 
   if (useFallback) {
@@ -48,9 +66,44 @@ export async function GET() {
     }
   }
 
+  // Resolve approved applications (from Supabase or local fallback)
+  const approvedApps = dbApps.length > 0 ? dbApps : localApps.filter((a: any) => a.status === 'Approved');
+
+  // Map approved applications to volunteer highlight format
+  const appVolunteers = approvedApps.map((item: any) => {
+    let quote = item.motivation || "Proud to be a volunteer at Kanha Foundation!";
+    let profile_photo = item.profile_photo || "";
+    try {
+      if (item.motivation && item.motivation.trim().startsWith('{')) {
+        const parsed = JSON.parse(item.motivation);
+        quote = parsed.text || quote;
+        profile_photo = parsed.profile_photo || profile_photo;
+      }
+    } catch (e) {}
+
+    return {
+      id: `app-${item.id}`,
+      name: item.name,
+      role: "Volunteer",
+      image: profile_photo || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80",
+      quote: quote
+    };
+  });
+
+  // Merge lists to avoid duplicates (case-insensitive check by name)
+  const mergedVolunteers = [...volunteers];
+  appVolunteers.forEach((appVol: any) => {
+    const exists = mergedVolunteers.some(
+      (v: any) => v.name && v.name.trim().toLowerCase() === appVol.name.trim().toLowerCase()
+    );
+    if (!exists) {
+      mergedVolunteers.push(appVol);
+    }
+  });
+
   return NextResponse.json({
     directors,
-    volunteers
+    volunteers: mergedVolunteers
   });
 }
 

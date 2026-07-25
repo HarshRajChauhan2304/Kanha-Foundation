@@ -43,6 +43,13 @@
       "role": "Volunteer",
       "image": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80",
       "quote": "Role updated to Volunteer by Admin"
+    },
+    {
+      "id": 23,
+      "name": "Pinki Kumari",
+      "role": "Volunteer",
+      "image": "https://cwpfhfcxpeqiihiqxqtu.supabase.co/storage/v1/object/public/uploads/1785003003252_photo3.jpeg",
+      "quote": "I want to volunteer to serve the community, help those in need, and make a positive difference. I also hope to develop my teamwork, leadership, and communication skills while contributing to meaningful social causes."
     }
   ]
 }
