@@ -40,6 +40,7 @@ export async function POST(request: Request) {
     const highlights = await readLocalJSON('about_highlights.json');
     const categories = await readLocalJSON('categories.json');
     const starVolunteers = await readLocalJSON('star_volunteers.json');
+    const volunteerTasks = await readLocalJSON('volunteer_tasks.json');
 
     // Helper to throw if Supabase action returns an error
     const checkError = (result: { error: any }, stepName: string) => {
@@ -76,6 +77,12 @@ export async function POST(request: Request) {
       await supabaseAdmin.from('star_volunteers').delete().neq('id', 0);
     } catch (e) {
       console.warn("Could not clear star_volunteers table in Supabase:", e);
+    }
+
+    try {
+      await supabaseAdmin.from('volunteer_tasks').delete().neq('id', 0);
+    } catch (e) {
+      console.warn("Could not clear volunteer_tasks table in Supabase:", e);
     }
 
     // 3. Seed Causes
@@ -159,6 +166,28 @@ export async function POST(request: Request) {
         await supabaseAdmin.from('star_volunteers').insert(payload);
       } catch (e) {
         console.warn("Could not seed star_volunteers table in Supabase:", e);
+      }
+    }
+
+    // Seed Volunteer Tasks
+    if (volunteerTasks && volunteerTasks.length > 0) {
+      try {
+        const payload = volunteerTasks.map((t: any) => ({
+          volunteer_id: t.volunteer_id,
+          task_title: t.task_title,
+          task_description: t.task_description || '',
+          task_date: t.task_date,
+          task_time: t.task_time,
+          status: t.status || 'Pending',
+          assigned_money: t.assigned_money || 0,
+          money_received: t.money_received || 0,
+          money_spent: t.money_spent || 0,
+          proof_media: t.proof_media || '',
+          feedback: t.feedback || ''
+        }));
+        await supabaseAdmin.from('volunteer_tasks').insert(payload);
+      } catch (e) {
+        console.warn("Could not seed volunteer_tasks table in Supabase:", e);
       }
     }
 

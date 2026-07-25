@@ -76,6 +76,7 @@ export async function resilientPost({
 }: ResilientOptions) {
   let dbResult: any = null;
   let dbSucceeded = false;
+  let dbErrorMsg: string | null = null;
 
   try {
     let supabaseData = { ...bodyData };
@@ -94,7 +95,9 @@ export async function resilientPost({
       .select()
       .single();
 
-    if (!error && data) {
+    if (error) {
+      dbErrorMsg = error.message;
+    } else if (data) {
       dbResult = data;
       // Deserialize database record back to standard fields before returning
       try {
@@ -107,7 +110,8 @@ export async function resilientPost({
       } catch (e) {}
       dbSucceeded = true;
     }
-  } catch (dbErr) {
+  } catch (dbErr: any) {
+    dbErrorMsg = dbErr.message || String(dbErr);
     console.warn(`Supabase DB insert failed for ${table}, using local fallback:`, dbErr);
   }
 
@@ -146,11 +150,10 @@ export async function resilientPost({
     fs.writeFileSync(fallbackPath, JSON.stringify(currentData, null, 2), 'utf-8');
     
     return { success: true, item: newRecord };
-  } catch (err) {
+  } catch (err: any) {
     console.error(`Local JSON file insert failed for ${fallbackFile}:`, err);
+    return { success: dbSucceeded, item: dbResult, error: dbSucceeded ? undefined : (dbErrorMsg || err.message) };
   }
-
-  return { success: dbSucceeded, item: dbResult };
 }
 
 export async function resilientPut({
@@ -162,6 +165,7 @@ export async function resilientPut({
 }: ResilientOptions) {
   let dbResult: any = null;
   let dbSucceeded = false;
+  let dbErrorMsg: string | null = null;
 
   try {
     let supabaseData = { ...bodyData };
@@ -181,7 +185,9 @@ export async function resilientPut({
       .select()
       .single();
 
-    if (!error && data) {
+    if (error) {
+      dbErrorMsg = error.message;
+    } else if (data) {
       dbResult = data;
       // Deserialize database record back to standard fields before returning
       try {
@@ -194,7 +200,8 @@ export async function resilientPut({
       } catch (e) {}
       dbSucceeded = true;
     }
-  } catch (dbErr) {
+  } catch (dbErr: any) {
+    dbErrorMsg = dbErr.message || String(dbErr);
     console.warn(`Supabase DB update failed for ${table}, using local fallback:`, dbErr);
   }
 
@@ -224,11 +231,12 @@ export async function resilientPut({
       fs.writeFileSync(fallbackPath, JSON.stringify(currentData, null, 2), 'utf-8');
       return { success: true, item: { ...bodyData, [idField]: idOrKey } };
     }
-  } catch (err) {
+  } catch (err: any) {
     console.error(`Local JSON file update failed for ${fallbackFile}:`, err);
+    return { success: dbSucceeded, item: dbResult, error: dbSucceeded ? undefined : (dbErrorMsg || err.message) };
   }
 
-  return { success: dbSucceeded, item: dbResult };
+  return { success: dbSucceeded, item: dbResult, error: dbSucceeded ? undefined : dbErrorMsg };
 }
 
 export async function syncVolunteerToHighlights(app: {

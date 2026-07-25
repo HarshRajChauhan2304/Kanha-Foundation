@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function VolunteerRegistrationPage() {
@@ -25,6 +25,61 @@ export default function VolunteerRegistrationPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+
+  // Zoom preview modal state
+  const [zoomModal, setZoomModal] = useState<{ isOpen: boolean; type: 'profile' | 'aadhar'; url: string } | null>(null);
+
+  // Hidden input refs
+  const profileInputRef = useRef<HTMLInputElement>(null);
+  const aadharInputRef = useRef<HTMLInputElement>(null);
+
+  // Upload handlers
+  const handleProfilePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsPhotoUploading(true);
+    setErrorMsg("");
+    const formData = new FormData();
+    formData.append("file", file);
+    try {
+      const res = await fetch('/api/upload', { method: 'POST', body: formData });
+      const data = await res.json();
+      if (data.success) {
+        setProfilePhoto(data.url);
+        setZoomModal(prev => prev && prev.type === 'profile' ? { ...prev, url: data.url, isOpen: true } : prev);
+      } else {
+        setErrorMsg(data.error || "Failed to upload photo.");
+      }
+    } catch (err) {
+      setErrorMsg("Error uploading photo.");
+    } finally {
+      setIsPhotoUploading(false);
+    }
+  };
+
+  const handleAadharUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsAadharUploading(true);
+    setErrorMsg("");
+    const formData = new FormData();
+    formData.append("file", file);
+    try {
+      const res = await fetch('/api/upload', { method: 'POST', body: formData });
+      const data = await res.json();
+      if (data.success) {
+        setAadharPhoto(data.url);
+        setZoomModal(prev => prev && prev.type === 'aadhar' ? { ...prev, url: data.url, isOpen: true } : prev);
+      } else {
+        setErrorMsg(data.error || "Failed to upload Aadhaar card.");
+      }
+    } catch (err) {
+      setErrorMsg("Error uploading Aadhaar card.");
+    } finally {
+      setIsAadharUploading(false);
+    }
+  };
 
   const SKILLS_OPTIONS = [
     "Food Distribution & Relief Work",
@@ -192,10 +247,26 @@ export default function VolunteerRegistrationPage() {
           <form onSubmit={handleSubmit} className="space-y-6 text-left">
             {/* Profile Photo Upload */}
             <div className="flex flex-col items-center justify-center mb-6">
-              <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">Profile Photo</label>
-              <div className="relative group h-28 w-28 rounded-full overflow-hidden border-2 border-dashed border-zinc-300 dark:border-zinc-700 flex flex-col items-center justify-center bg-gray-50 dark:bg-[#0c1510] cursor-pointer hover:border-emerald-500 transition-colors">
+              <label className="block text-[10px] font-black text-gray-555 dark:text-gray-400 uppercase tracking-wider mb-3">Profile Photo</label>
+              
+              <div 
+                onClick={() => {
+                  if (profilePhoto) {
+                    setZoomModal({ isOpen: true, type: 'profile', url: profilePhoto });
+                  }
+                }}
+                className="relative group h-28 w-28 rounded-full overflow-hidden border-2 border-dashed border-zinc-300 dark:border-zinc-700 flex flex-col items-center justify-center bg-gray-50 dark:bg-[#0c1510] cursor-pointer hover:border-emerald-500 transition-colors"
+              >
                 {profilePhoto ? (
-                  <img src={profilePhoto} alt="Profile Preview" className="h-full w-full object-cover animate-fade-in" />
+                  <>
+                    <img src={profilePhoto} alt="Profile Preview" className="h-full w-full object-cover" />
+                    <div className="absolute inset-0 bg-black/45 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center text-white text-[10px] font-bold transition-opacity">
+                      <svg className="h-5 w-5 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.637 10.637z" />
+                      </svg>
+                      View / Change
+                    </div>
+                  </>
                 ) : (
                   <div className="text-center p-3 text-zinc-500 group-hover:text-emerald-500 transition-colors">
                     {isPhotoUploading ? (
@@ -211,32 +282,15 @@ export default function VolunteerRegistrationPage() {
                     )}
                   </div>
                 )}
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={async (e) => {
-                    const file = e.target.files?.[0];
-                    if (!file) return;
-                    setIsPhotoUploading(true);
-                    setErrorMsg("");
-                    const formData = new FormData();
-                    formData.append("file", file);
-                    try {
-                      const res = await fetch('/api/upload', { method: 'POST', body: formData });
-                      const data = await res.json();
-                      if (data.success) {
-                        setProfilePhoto(data.url);
-                      } else {
-                        setErrorMsg(data.error || "Failed to upload photo.");
-                      }
-                    } catch (err) {
-                      setErrorMsg("Error uploading photo.");
-                    } finally {
-                      setIsPhotoUploading(false);
-                    }
-                  }}
-                  className="absolute inset-0 opacity-0 cursor-pointer z-10"
-                />
+                
+                {!profilePhoto && (
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleProfilePhotoUpload}
+                    className="absolute inset-0 opacity-0 cursor-pointer z-10"
+                  />
+                )}
               </div>
             </div>
 
@@ -310,14 +364,34 @@ export default function VolunteerRegistrationPage() {
               </div>
               <div>
                 <label className="block text-[10px] font-black text-gray-550 dark:text-gray-400 uppercase tracking-wider mb-2">Choose Password (for profile access)</label>
-                <input
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Choose a strong password"
-                  className="w-full px-4 py-3 bg-gray-50 dark:bg-[#0c1510] border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-[#1E4D2B]"
-                />
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Choose a strong password"
+                    className="w-full pl-4 pr-12 py-3 bg-gray-50 dark:bg-[#0c1510] border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-[#1E4D2B]"
+                  />
+                  {password.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-white focus:outline-none p-1 rounded-md cursor-pointer"
+                    >
+                      {showPassword ? (
+                        <svg className="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
+                        </svg>
+                      ) : (
+                        <svg className="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                      )}
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -337,38 +411,33 @@ export default function VolunteerRegistrationPage() {
               </div>
               <div>
                 <label className="block text-[10px] font-black text-gray-555 dark:text-gray-400 uppercase tracking-wider mb-2">Upload Aadhaar Card (Image/PDF) *</label>
-                <div className="relative border border-dashed border-gray-200 dark:border-zinc-700 rounded-xl p-3 bg-gray-55 dark:bg-[#0c1510] flex items-center justify-between cursor-pointer hover:border-emerald-500 transition-colors">
+                <div className="relative border border-dashed border-gray-200 dark:border-zinc-700 rounded-xl p-3 bg-gray-55 dark:bg-[#0c1510] flex items-center justify-between hover:border-emerald-500 transition-colors">
                   <div className="text-xs text-gray-550 truncate max-w-[200px]">
                     {isAadharUploading ? "Uploading..." : aadharPhoto ? "✓ Aadhaar ready" : "Choose file..."}
                   </div>
-                  <input
-                    type="file"
-                    accept="image/*,application/pdf"
-                    onChange={async (e) => {
-                      const file = e.target.files?.[0];
-                      if (!file) return;
-                      setIsAadharUploading(true);
-                      setErrorMsg("");
-                      const formData = new FormData();
-                      formData.append("file", file);
-                      try {
-                        const res = await fetch('/api/upload', { method: 'POST', body: formData });
-                        const data = await res.json();
-                        if (data.success) {
-                          setAadharPhoto(data.url);
-                        } else {
-                          setErrorMsg(data.error || "Failed to upload Aadhaar card.");
-                        }
-                      } catch (err) {
-                        setErrorMsg("Error uploading Aadhaar card.");
-                      } finally {
-                        setIsAadharUploading(false);
-                      }
-                    }}
-                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                  />
+                  
+                  {!aadharPhoto && (
+                    <input
+                      type="file"
+                      accept="image/*,application/pdf"
+                      onChange={handleAadharUpload}
+                      className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                    />
+                  )}
+
                   {aadharPhoto && (
-                    <span className="text-[10px] text-[#52c47c] font-bold">Uploaded</span>
+                    <div className="flex items-center gap-2 z-10">
+                      <span className="text-[10px] text-[#52c47c] font-bold">Uploaded</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setZoomModal({ isOpen: true, type: 'aadhar', url: aadharPhoto });
+                        }}
+                        className="px-2.5 py-1 bg-emerald-500 hover:bg-emerald-600 text-white text-[10px] font-extrabold rounded-md shadow-sm transition-colors cursor-pointer"
+                      >
+                        View
+                      </button>
+                    </div>
                   )}
                 </div>
               </div>
@@ -484,6 +553,93 @@ export default function VolunteerRegistrationPage() {
         </div>
 
       </section>
+
+      {/* Hidden inputs for programmatic upload triggering */}
+      <input
+        ref={profileInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleProfilePhotoUpload}
+        className="hidden"
+      />
+      <input
+        ref={aadharInputRef}
+        type="file"
+        accept="image/*,application/pdf"
+        onChange={handleAadharUpload}
+        className="hidden"
+      />
+
+      {/* Zoom Preview Modal */}
+      <AnimatePresence>
+        {zoomModal && zoomModal.isOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex flex-col items-center justify-center p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-[#101412] p-6 rounded-3xl max-w-md w-full border border-zinc-800/80 shadow-2xl flex flex-col items-center text-center"
+            >
+              <h3 className="text-sm font-black text-gray-300 uppercase tracking-widest mb-4">
+                {zoomModal.type === 'profile' ? "Profile Photo Preview" : "Aadhaar Card Preview"}
+              </h3>
+
+              <div className="relative w-full aspect-square max-h-[50vh] rounded-2xl overflow-hidden border border-zinc-800 bg-black/40 flex items-center justify-center mb-6">
+                {zoomModal.url.toLowerCase().endsWith('.pdf') ? (
+                  <div className="flex flex-col items-center justify-center p-6 text-zinc-400">
+                    <svg className="h-16 w-16 text-red-500 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m.75 12 3 3m0 0 3-3m-3 3v-6m-1.5-9H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+                    </svg>
+                    <span className="text-xs font-bold mb-4">Aadhaar PDF Document uploaded</span>
+                    <a
+                      href={zoomModal.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-bold rounded-xl border border-zinc-750 transition-colors"
+                    >
+                      Open PDF in New Tab
+                    </a>
+                  </div>
+                ) : (
+                  <img src={zoomModal.url} alt="Zoom Preview" className="w-full h-full object-contain" />
+                )}
+              </div>
+
+              {/* Action Buttons below the picture */}
+              <div className="flex w-full gap-3">
+                <button
+                  type="button"
+                  onClick={() => setZoomModal(null)}
+                  className="flex-1 py-3 bg-zinc-800 hover:bg-zinc-750 text-white text-xs font-bold rounded-xl border border-zinc-750 transition-colors cursor-pointer"
+                >
+                  Back
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (zoomModal.type === 'profile') {
+                      profileInputRef.current?.click();
+                    } else {
+                      aadharInputRef.current?.click();
+                    }
+                  }}
+                  className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+                >
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+                  </svg>
+                  Upload Again
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
     </div>
   );

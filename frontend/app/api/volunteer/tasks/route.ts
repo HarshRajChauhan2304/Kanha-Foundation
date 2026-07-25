@@ -52,7 +52,7 @@ export async function GET(request: Request) {
       useFallback = true;
     }
 
-    if (useFallback || tasks.length === 0) {
+    if (useFallback) {
       const local = getLocalTasks();
       if (volunteerId !== null) {
         tasks = local.filter(t => t.volunteer_id === volunteerId);

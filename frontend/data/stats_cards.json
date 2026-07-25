@@ -2,7 +2,7 @@
   {
     "id": 1,
     "title": "Donations Raised",
-    "base_value": 6900,
+    "base_value": 7050,
     "prefix": "₹",
     "suffix": "+",
     "icon": "rupee",
@@ -11,7 +11,7 @@
   {
     "id": 2,
     "title": "Active Donors",
-    "base_value": 8,
+    "base_value": 9,
     "prefix": "",
     "suffix": "+",
     "icon": "users",
@@ -29,7 +29,7 @@
   {
     "id": 4,
     "title": "Lives Impacted",
-    "base_value": 195,
+    "base_value": 199,
     "prefix": "",
     "suffix": "+",
     "icon": "heart",
@@ -47,7 +47,7 @@
   {
     "id": 1783188136129,
     "title": "Providing Education",
-    "base_value": 21,
+    "base_value": 22,
     "prefix": "",
     "suffix": "+",
     "icon": "child-studykit",

@@ -150,11 +150,62 @@ async function syncAdmins() {
   console.log("Admins synced!");
 }
 
+async function syncVolunteerTasks() {
+  const jsonPath = path.resolve(__dirname, 'data', 'volunteer_tasks.json');
+  if (!fs.existsSync(jsonPath)) {
+    console.log("No volunteer tasks file found to sync.");
+    return;
+  }
+
+  const fileData = fs.readFileSync(jsonPath, 'utf-8');
+  const tasks = JSON.parse(fileData);
+  console.log(`Found ${tasks.length} volunteer tasks. Syncing...`);
+
+  for (const t of tasks) {
+    const payload = {
+      volunteer_id: t.volunteer_id,
+      task_title: t.task_title,
+      task_description: t.task_description || '',
+      task_date: t.task_date,
+      task_time: t.task_time,
+      status: t.status || 'Pending',
+      assigned_money: t.assigned_money || 0,
+      money_received: t.money_received || 0,
+      money_spent: t.money_spent || 0,
+      proof_media: t.proof_media || '',
+      feedback: t.feedback || ''
+    };
+
+    const isIdWithinIntRange = t.id ? (t.id <= 2147483647) : false;
+
+    if (isIdWithinIntRange) {
+      const { error } = await supabase.from('volunteer_tasks').update(payload).eq('id', t.id);
+      if (error) {
+        await supabase.from('volunteer_tasks').insert({ id: t.id, ...payload });
+      }
+    } else {
+      const { data } = await supabase.from('volunteer_tasks').select('id')
+        .eq('volunteer_id', t.volunteer_id)
+        .eq('task_title', t.task_title)
+        .eq('task_date', t.task_date)
+        .maybeSingle();
+
+      if (data) {
+        await supabase.from('volunteer_tasks').update(payload).eq('id', data.id);
+      } else {
+        await supabase.from('volunteer_tasks').insert(payload);
+      }
+    }
+  }
+  console.log("Volunteer tasks synced!");
+}
+
 async function run() {
   try {
     await syncVolunteers();
     await syncUsers();
     await syncAdmins();
+    await syncVolunteerTasks();
     console.log("All tables synchronization completed successfully!");
   } catch (error) {
     console.error("Synchronization failed:", error);
