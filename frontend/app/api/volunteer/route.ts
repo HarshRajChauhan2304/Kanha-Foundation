@@ -51,31 +51,8 @@ export async function GET() {
   } catch (err) {
     useFallback = true;
   }
-
   if (useFallback) {
     applications = localApps;
-    if (applications.length === 0) {
-      // Create seed fallback if empty
-      try {
-        const fallbackPath = getFallbackPath('volunteer_applications.json');
-        applications = [
-          {
-            id: 1,
-            name: "Rajesh Kumar",
-            email: "volunteer@example.com",
-            phone: "+917488164529",
-            city: "Ranchi",
-            motivation: "I want to help children with their studies and serve the local slum kids.",
-            skills: ["Teaching", "Event Management"],
-            status: "Pending",
-            password: "volunteer123"
-          }
-        ];
-        fs.writeFileSync(fallbackPath, JSON.stringify(applications, null, 2), 'utf-8');
-      } catch (e) {
-        console.error("Failed to write initial fallback JSON:", e);
-      }
-    }
   }
 
   const todayStr = new Date().toISOString().split('T')[0]; // YYYY-MM-DD

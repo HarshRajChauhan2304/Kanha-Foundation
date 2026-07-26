@@ -15,6 +15,8 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+import DonorDeliveryPopup from "@/components/DonorDeliveryPopup";
+
 export const metadata: Metadata = {
   title: "Kanha Foundation",
   description: "Official donation platform for Kanha Foundation - supporting community growth, education, stray care, and dynamic food relief projects.",
@@ -33,6 +35,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col overflow-y-auto overflow-x-hidden bg-zinc-50 dark:bg-black text-black dark:text-zinc-50">
         <CartProvider>
           <Navbar />
+          <DonorDeliveryPopup />
           <main className="flex-grow">{children}</main>
           <Footer />
         </CartProvider>

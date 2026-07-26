@@ -2,7 +2,7 @@
   {
     "id": 1,
     "title": "Donations Raised",
-    "base_value": 7050,
+    "base_value": 10151,
     "prefix": "₹",
     "suffix": "+",
     "icon": "rupee",
@@ -20,7 +20,7 @@
   {
     "id": 3,
     "title": "Birthday Giving",
-    "base_value": 1,
+    "base_value": 4,
     "prefix": "",
     "suffix": "+",
     "icon": "cake",
@@ -29,7 +29,7 @@
   {
     "id": 4,
     "title": "Lives Impacted",
-    "base_value": 199,
+    "base_value": 218,
     "prefix": "",
     "suffix": "+",
     "icon": "heart",
@@ -38,7 +38,7 @@
   {
     "id": 5,
     "title": "Meals Served",
-    "base_value": 59,
+    "base_value": 61,
     "prefix": "",
     "suffix": "+",
     "icon": "meals",
@@ -47,7 +47,7 @@
   {
     "id": 1783188136129,
     "title": "Providing Education",
-    "base_value": 22,
+    "base_value": 23,
     "prefix": "",
     "suffix": "+",
     "icon": "child-studykit",

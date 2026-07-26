@@ -71,7 +71,10 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { volunteer_id, task_title, task_description, task_date, task_time, assigned_money } = body;
+    const { 
+      volunteer_id, task_title, task_description, task_date, task_time, assigned_money,
+      donor_name, donor_email, donation_id, cause, quantity, donation_amount, is_premium, premium_file
+    } = body;
 
     if (!volunteer_id || !task_title || !task_date || !task_time) {
       return NextResponse.json({ success: false, error: "Missing required fields" }, { status: 400 });
@@ -86,6 +89,14 @@ export async function POST(request: Request) {
       task_time,
       status: "Pending",
       assigned_money: parseFloat(assigned_money) || 0,
+      donor_name: donor_name || "",
+      donor_email: donor_email || "",
+      donation_id: donation_id || null,
+      cause: cause || "",
+      quantity: quantity || "",
+      donation_amount: donation_amount || "",
+      is_premium: !!is_premium,
+      premium_file: premium_file || "",
       created_at: new Date().toISOString()
     };
 
@@ -105,7 +116,15 @@ export async function POST(request: Request) {
           task_date,
           task_time,
           status: "Pending",
-          assigned_money: parseFloat(assigned_money) || 0
+          assigned_money: parseFloat(assigned_money) || 0,
+          donor_name: donor_name || null,
+          donor_email: donor_email || null,
+          donation_id: donation_id || null,
+          cause: cause || null,
+          quantity: quantity || null,
+          donation_amount: donation_amount || null,
+          is_premium: !!is_premium,
+          premium_file: premium_file || null
         }])
         .select()
         .single();
@@ -132,7 +151,11 @@ export async function POST(request: Request) {
 export async function PUT(request: Request) {
   try {
     const body = await request.json();
-    const { id, volunteer_id, task_title, task_description, task_date, task_time, status, assigned_money, money_received, money_spent, proof_media, feedback } = body;
+    const { 
+      id, volunteer_id, task_title, task_description, task_date, task_time, status, assigned_money, 
+      money_received, money_spent, proof_media, feedback,
+      donor_name, donor_email, donation_id, cause, quantity, donation_amount, is_premium, premium_file, beneficiary_name
+    } = body;
 
     if (!id) {
       return NextResponse.json({ success: false, error: "ID missing" }, { status: 400 });
@@ -155,7 +178,16 @@ export async function PUT(request: Request) {
         ...(money_received !== undefined && { money_received: parseFloat(money_received) || 0 }),
         ...(money_spent !== undefined && { money_spent: parseFloat(money_spent) || 0 }),
         ...(proof_media !== undefined && { proof_media }),
-        ...(feedback !== undefined && { feedback })
+        ...(feedback !== undefined && { feedback }),
+        ...(beneficiary_name !== undefined && { beneficiary_name }),
+        ...(donor_name !== undefined && { donor_name }),
+        ...(donor_email !== undefined && { donor_email }),
+        ...(donation_id !== undefined && { donation_id }),
+        ...(cause !== undefined && { cause }),
+        ...(quantity !== undefined && { quantity }),
+        ...(donation_amount !== undefined && { donation_amount }),
+        ...(is_premium !== undefined && { is_premium }),
+        ...(premium_file !== undefined && { premium_file })
       };
       updatedTask = local[idx];
       saveLocalTasks(local);

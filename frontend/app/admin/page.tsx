@@ -40,6 +40,7 @@ interface Donation {
   name: string;
   amount: string;
   time: string;
+  email?: string;
   created_at?: string;
   donation_for?: string;
   honoree?: string;
@@ -112,7 +113,7 @@ interface VolunteerTask {
   feedback?: string;
 }
 
-type TabType = "Causes" | "Reviews" | "Blogs" | "Stories" | "DetailedStories" | "SuccessStories" | "Donations" | "Beneficiaries" | "Highlights" | "Applications" | "Tasks" | "PageMedia" | "PageTexts" | "StatsCards" | "Categories" | "RoleManagement" | "Navbar" | "Footer" | "AdminProfile" | "StarVolunteers" | "ContactInfo" | "ContactSubmissions" | "WhatsAppCommunity";
+type TabType = "Causes" | "Reviews" | "Blogs" | "Stories" | "DetailedStories" | "SuccessStories" | "Donations" | "Beneficiaries" | "Highlights" | "Applications" | "Tasks" | "AssignTask" | "PageMedia" | "PageTexts" | "StatsCards" | "Categories" | "RoleManagement" | "Navbar" | "Footer" | "AdminProfile" | "StarVolunteers" | "ContactInfo" | "ContactSubmissions" | "WhatsAppCommunity";
 type AuthMode = "signin" | "signup" | "forgot";
 
 const KEY_MAP: Record<string, { title: string; type: string }> = {
@@ -234,6 +235,14 @@ export default function AdminPanelPage() {
   const [taskFormTime, setTaskFormTime] = useState("");
   const [taskFormStatus, setTaskFormStatus] = useState("Pending");
   const [taskFormAssignedMoney, setTaskFormAssignedMoney] = useState("");
+  const [taskSelectedDonationId, setTaskSelectedDonationId] = useState<string>("");
+  const [taskDonorName, setTaskDonorName] = useState("");
+  const [taskDonorEmail, setTaskDonorEmail] = useState("");
+  const [taskDonorCause, setTaskDonorCause] = useState("");
+  const [taskDonorQty, setTaskDonorQty] = useState("");
+  const [taskDonorAmount, setTaskDonorAmount] = useState("");
+  const [taskIsPremium, setTaskIsPremium] = useState(false);
+  const [taskPremiumFile, setTaskPremiumFile] = useState("");
   const [whatsappCommunityLinkInput, setWhatsappCommunityLinkInput] = useState("");
   const [isSavingWhatsappLink, setIsSavingWhatsappLink] = useState(false);
 
@@ -857,6 +866,14 @@ export default function AdminPanelPage() {
     setTaskFormTime("");
     setTaskFormStatus("Pending");
     setTaskFormAssignedMoney("");
+    setTaskSelectedDonationId("");
+    setTaskDonorName("");
+    setTaskDonorEmail("");
+    setTaskDonorCause("");
+    setTaskDonorQty("");
+    setTaskDonorAmount("");
+    setTaskIsPremium(false);
+    setTaskPremiumFile("");
     
     setIsModalOpen(true);
   };
@@ -1149,7 +1166,15 @@ export default function AdminPanelPage() {
         task_date: taskFormDate,
         task_time: taskFormTime,
         status: taskFormStatus,
-        assigned_money: parseFloat(taskFormAssignedMoney) || 0
+        assigned_money: parseFloat(taskFormAssignedMoney) || 0,
+        donor_name: taskDonorName,
+        donor_email: taskDonorEmail,
+        donation_id: taskSelectedDonationId ? parseInt(taskSelectedDonationId, 10) : null,
+        cause: taskDonorCause,
+        quantity: taskDonorQty,
+        donation_amount: taskDonorAmount,
+        is_premium: taskIsPremium,
+        premium_file: taskPremiumFile
       };
     } else if (activeTab === "PageMedia") {
       if (!formTitle.trim() || !formAuthor.trim() || !formImage.trim()) {
@@ -3751,92 +3776,194 @@ export default function AdminPanelPage() {
                   </>
                 )}
 
-                {activeTab === "Tasks" && (
-                  <>
-                    <div>
-                      <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-1.5">Select Approved Volunteer</label>
-                      <select 
-                        required
-                        value={taskFormVolunteerId}
-                        onChange={(e) => setTaskFormVolunteerId(e.target.value)}
-                        className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white focus:outline-none"
-                      >
-                        <option value="">-- Choose a Volunteer --</option>
-                        {volApps.map(a => (
-                          <option key={a.id} value={a.id}>{a.name} ({a.email})</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-1.5">Task Title</label>
-                      <input 
-                        type="text" 
-                        required 
-                        value={taskFormTitle} 
-                        onChange={(e) => setTaskFormTitle(e.target.value)} 
-                        placeholder="e.g. Ranchi Food Distribution Drive" 
-                        className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white focus:outline-none" 
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-1.5">Task Description / Instructions</label>
-                      <textarea 
-                        value={taskFormDesc} 
-                        onChange={(e) => setTaskFormDesc(e.target.value)} 
-                        placeholder="Details/Instructions for the volunteer task..." 
-                        className="w-full h-24 px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white focus:outline-none" 
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
+                {activeTab === "Tasks" && (() => {
+                  const selectedVol = volApps.find(a => a.id === parseInt(taskFormVolunteerId, 10));
+                  const volCity = selectedVol?.city || "";
+
+                  // Filter recent donations based on volunteer location
+                  const locMatchedDonations = donations
+                    .slice()
+                    .sort((a, b) => (b.id || 0) - (a.id || 0))
+                    .filter(d => volCity && d.address && d.address.toLowerCase().includes(volCity.toLowerCase()));
+                  
+                  const otherRecentDonations = donations
+                    .slice()
+                    .sort((a, b) => (b.id || 0) - (a.id || 0))
+                    .filter(d => !(volCity && d.address && d.address.toLowerCase().includes(volCity.toLowerCase())));
+
+                  const recent10 = [...locMatchedDonations, ...otherRecentDonations].slice(0, 10);
+
+                  return (
+                    <>
                       <div>
-                        <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-1.5">Target Date</label>
-                        <input 
-                          type="date" 
-                          required 
-                          value={taskFormDate} 
-                          onChange={(e) => setTaskFormDate(e.target.value)} 
-                          className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white focus:outline-none text-zinc-350" 
-                        />
+                        <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-1.5">Select Approved Volunteer</label>
+                        <select 
+                          required
+                          value={taskFormVolunteerId}
+                          onChange={(e) => setTaskFormVolunteerId(e.target.value)}
+                          className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                        >
+                          <option value="">-- Choose a Volunteer --</option>
+                          {volApps.map(a => (
+                            <option key={a.id} value={a.id}>{a.name} ({a.city || "No location"}) - {a.email}</option>
+                          ))}
+                        </select>
                       </div>
+
+                      {/* Recent 10 Donations Section for selected volunteer location */}
+                      {taskFormVolunteerId && (
+                        <div className="bg-zinc-950/80 p-4 rounded-xl border border-emerald-800/40 space-y-2">
+                          <div className="flex justify-between items-center">
+                            <label className="block text-xs font-extrabold text-emerald-400 uppercase tracking-wider">
+                              📍 Recent 10 Donor Donations ({volCity ? `Location: ${volCity}` : 'All Locations'})
+                            </label>
+                            <span className="text-[10px] text-zinc-400">Click a donation to auto-fill task</span>
+                          </div>
+                          
+                          {recent10.length === 0 ? (
+                            <p className="text-xs text-zinc-500 italic">No recent donations found.</p>
+                          ) : (
+                            <div className="max-h-48 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+                              {recent10.map((don) => {
+                                const isMatched = volCity && don.address && don.address.toLowerCase().includes(volCity.toLowerCase());
+                                const isSelected = String(don.id) === taskSelectedDonationId;
+                                const qtyMatch = (don.donation_for || '').match(/Qty[:]?\s*(\d+)/i);
+                                const qty = qtyMatch ? qtyMatch[1] : '1';
+                                const numAmount = parseInt((don.amount || '0').replace(/[^0-9]/g, ''), 10) || 0;
+
+                                return (
+                                  <div
+                                    key={don.id}
+                                    onClick={() => {
+                                      setTaskSelectedDonationId(String(don.id));
+                                      setTaskDonorName(don.name || 'Anonymous');
+                                      setTaskDonorEmail(don.email || (don as any).marketing_email || '');
+                                      setTaskDonorCause(don.donation_for || 'General Support');
+                                      setTaskDonorQty(qty);
+                                      setTaskDonorAmount(don.amount || '');
+                                      setTaskIsPremium(Boolean((don as any).is_dedicated || (don as any).photo_url));
+                                      setTaskPremiumFile((don as any).photo_url || (don as any).video_wish || '');
+
+                                      setTaskFormTitle(`${don.donation_for || 'Donation Task'} - ${don.name}`);
+                                      setTaskFormDesc(
+                                        `Donor Name: ${don.name}\n` +
+                                        `Cause: ${don.donation_for || 'General Support'}\n` +
+                                        `Quantity: ${qty}\n` +
+                                        `Amount: ${don.amount || '₹0'}\n` +
+                                        `Donor Address: ${don.address || 'N/A'}\n` +
+                                        `Date: ${don.transaction_date || don.time || ''}` +
+                                        ((don as any).is_dedicated ? `\n⭐ Premium Dedicated Donation` : '') +
+                                        ((don as any).photo_url ? `\nPhoto File: ${(don as any).photo_url}` : '')
+                                      );
+                                      if (numAmount > 0) {
+                                        setTaskFormAssignedMoney(String(numAmount));
+                                      }
+                                    }}
+                                    className={`p-2.5 rounded-lg border text-xs cursor-pointer transition-all flex justify-between items-center ${
+                                      isSelected 
+                                        ? 'bg-emerald-950/60 border-emerald-500 text-white' 
+                                        : isMatched
+                                        ? 'bg-zinc-900 border-emerald-800/60 text-zinc-200 hover:border-emerald-500/50'
+                                        : 'bg-zinc-900/50 border-zinc-800 text-zinc-400 hover:border-zinc-700'
+                                    }`}
+                                  >
+                                    <div className="space-y-0.5">
+                                      <div className="flex items-center gap-2">
+                                        <span className="font-bold text-emerald-300">{don.name}</span>
+                                        {isMatched && (
+                                          <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-900/80 text-emerald-300 font-semibold">Matched Location</span>
+                                        )}
+                                        {(don as any).is_dedicated && (
+                                          <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-900/80 text-amber-300 font-semibold">Premium File</span>
+                                        )}
+                                      </div>
+                                      <p className="text-[11px] text-zinc-300 truncate max-w-xs">{don.donation_for || 'General Support'}</p>
+                                      {don.address && <p className="text-[10px] text-zinc-400">📍 {don.address}</p>}
+                                    </div>
+
+                                    <div className="text-right flex flex-col items-end">
+                                      <span className="font-black text-emerald-400 text-xs">{don.amount}</span>
+                                      <span className="text-[10px] text-zinc-400">Qty: {qty}</span>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
                       <div>
-                        <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-1.5">Target Time</label>
+                        <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-1.5">Task Title</label>
                         <input 
-                          type="time" 
+                          type="text" 
                           required 
-                          value={taskFormTime} 
-                          onChange={(e) => setTaskFormTime(e.target.value)} 
-                          className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white focus:outline-none text-zinc-350" 
-                        />
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-1.5">Assigned Money / Budget (₹)</label>
-                        <input 
-                          type="number" 
-                          required 
-                          value={taskFormAssignedMoney} 
-                          onChange={(e) => setTaskFormAssignedMoney(e.target.value)} 
-                          placeholder="e.g. 500" 
+                          value={taskFormTitle} 
+                          onChange={(e) => setTaskFormTitle(e.target.value)} 
+                          placeholder="e.g. Ranchi Food Distribution Drive" 
                           className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white focus:outline-none" 
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-1.5">Task Status</label>
-                        <select 
-                          value={taskFormStatus} 
-                          onChange={(e) => setTaskFormStatus(e.target.value)} 
-                          className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white focus:outline-none"
-                        >
-                          <option value="Pending">Pending</option>
-                          <option value="Started">Started</option>
-                          <option value="Processing">Processing</option>
-                          <option value="Completed">Completed</option>
-                        </select>
+                        <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-1.5">Task Description / Instructions</label>
+                        <textarea 
+                          value={taskFormDesc} 
+                          onChange={(e) => setTaskFormDesc(e.target.value)} 
+                          placeholder="Details/Instructions for the volunteer task..." 
+                          className="w-full h-24 px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white focus:outline-none" 
+                        />
                       </div>
-                    </div>
-                  </>
-                )}
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-1.5">Target Date</label>
+                          <input 
+                            type="date" 
+                            required 
+                            value={taskFormDate} 
+                            onChange={(e) => setTaskFormDate(e.target.value)} 
+                            className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white focus:outline-none text-zinc-350" 
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-1.5">Target Time</label>
+                          <input 
+                            type="time" 
+                            required 
+                            value={taskFormTime} 
+                            onChange={(e) => setTaskFormTime(e.target.value)} 
+                            className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white focus:outline-none text-zinc-350" 
+                          />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-1.5">Assigned Money / Budget (₹)</label>
+                          <input 
+                            type="number" 
+                            required 
+                            value={taskFormAssignedMoney} 
+                            onChange={(e) => setTaskFormAssignedMoney(e.target.value)} 
+                            placeholder="e.g. 500" 
+                            className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white focus:outline-none" 
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-1.5">Task Status</label>
+                          <select 
+                            value={taskFormStatus} 
+                            onChange={(e) => setTaskFormStatus(e.target.value)} 
+                            className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white focus:outline-none"
+                          >
+                            <option value="Pending">Pending</option>
+                            <option value="Started">Started</option>
+                            <option value="Processing">Processing</option>
+                            <option value="Completed">Completed</option>
+                          </select>
+                        </div>
+                      </div>
+                    </>
+                  );
+                })()}
 
                 {activeTab === "PageMedia" && (
                   <>
