@@ -78,10 +78,10 @@ export default function Footer() {
                     {footerData?.contact?.ctaText || "Need help fast? Fill out our form or email"}
                   </p>
                   <a 
-                    href={`mailto:${footerData?.contact?.email || 'support@kanhafoundation.org'}`} 
+                    href={`mailto:${footerData?.contact?.email || 'kanhafoundation223@gmail.com'}`} 
                     className="text-white hover:underline block font-black mt-0.5 break-all text-[8px] sm:text-xs"
                   >
-                    {footerData?.contact?.email || "support@kanhafoundation.org"}
+                    {footerData?.contact?.email || "kanhafoundation223@gmail.com"}
                   </a>
                 </div>
               </div>

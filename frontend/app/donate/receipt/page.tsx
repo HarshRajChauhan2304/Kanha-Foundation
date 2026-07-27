@@ -190,7 +190,7 @@ function ReceiptPageContent() {
                 </div>
                 <div className="text-right">
                   <p className="text-[9px] text-gray-500 font-mono">+91 7488164529</p>
-                  <p className="text-[9px] text-gray-500 font-mono">contact@kanhafoundation.org</p>
+                  <p className="text-[9px] text-gray-500 font-mono">kanhafoundation223@gmail.com</p>
                 </div>
               </div>
             </div>

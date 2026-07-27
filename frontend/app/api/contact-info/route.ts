@@ -34,7 +34,7 @@ export async function GET() {
       } else {
         contactInfo = [
           { id: 1, title: "Registered Address", value: "Kanha Foundation Office,\nRanchi, Jharkhand, 834001, India", type: "address", icon: "map-pin" },
-          { id: 2, title: "Email Inquiry", value: "support@kanhafoundation.org", type: "email", icon: "mail" },
+          { id: 2, title: "Email Inquiry", value: "kanhafoundation223@gmail.com", type: "email", icon: "mail" },
           { id: 3, title: "WhatsApp Support", value: "+91 74881 64529", type: "whatsapp", icon: "whatsapp" }
         ];
         fs.mkdirSync(path.dirname(fallbackPath), { recursive: true });

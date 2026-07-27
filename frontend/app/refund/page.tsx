@@ -54,7 +54,7 @@ export default function RefundPolicy() {
               <li><strong>Unauthorized Payment Activity:</strong> If banking credentials or cards were compromised fraudulently.</li>
             </ul>
             <p>
-              To file a claim for a duplicate payment, donors must send an email to <span className="font-bold text-zinc-800 dark:text-white">contact@kanhafoundation.org</span> within <span className="font-black text-[#F3A61E]">7 calendar days</span> of the transaction date. The email must include the Payment Reference ID, bank statement snippet proof, and transaction amount details.
+              To file a claim for a duplicate payment, donors must send an email to <span className="font-bold text-zinc-800 dark:text-white">kanhafoundation223@gmail.com</span> within <span className="font-black text-[#F3A61E]">7 calendar days</span> of the transaction date. The email must include the Payment Reference ID, bank statement snippet proof, and transaction amount details.
             </p>
 
             <h2 className="text-lg font-black text-zinc-900 dark:text-white pt-4 uppercase tracking-wider">
@@ -84,7 +84,7 @@ export default function RefundPolicy() {
             <div className="bg-zinc-100 dark:bg-zinc-900/60 p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 text-xs space-y-1">
               <p className="font-bold text-zinc-900 dark:text-white">Kanha Foundation (Finance Section)</p>
               <p className="text-zinc-500 dark:text-zinc-400">Multi-State Operations: Bihar • Jharkhand • Delhi NCR • Uttar Pradesh • Pan-India</p>
-              <p className="text-zinc-500 dark:text-zinc-400">Email: <span className="font-bold text-emerald-600 dark:text-emerald-400">contact@kanhafoundation.org</span></p>
+              <p className="text-zinc-500 dark:text-zinc-400">Email: <span className="font-bold text-emerald-600 dark:text-emerald-400">kanhafoundation223@gmail.com</span></p>
             </div>
           </div>
 

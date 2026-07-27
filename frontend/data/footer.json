@@ -7,7 +7,7 @@
     },
     {
       "label": "Our Values",
-      "href": "/about#values"
+      "href": "/values"
     },
     {
       "label": "Privacy Notice",
@@ -33,7 +33,7 @@
     }
   ],
   "contact": {
-    "email": "contact@kanhafoundation.org",
+    "email": "kanhafoundation223@gmail.com",
     "ctaText": "Need help fast? Fill out our form or email"
   },
   "social": [

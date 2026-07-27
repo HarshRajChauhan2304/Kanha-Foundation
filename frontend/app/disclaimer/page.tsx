@@ -77,7 +77,7 @@ export default function DisclaimerPage() {
             <div className="bg-zinc-100 dark:bg-zinc-900/60 p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 text-xs space-y-1">
               <p className="font-bold text-zinc-900 dark:text-white">Kanha Foundation (Section 8 Company)</p>
               <p className="text-zinc-500 dark:text-zinc-400">Branches & Operations: Bihar • Jharkhand • Delhi NCR • Uttar Pradesh • Pan-India</p>
-              <p className="text-zinc-500 dark:text-zinc-400">Email: <span className="font-bold text-emerald-600 dark:text-emerald-400">contact@kanhafoundation.org</span></p>
+              <p className="text-zinc-500 dark:text-zinc-400">Email: <span className="font-bold text-emerald-600 dark:text-emerald-400">kanhafoundation223@gmail.com</span></p>
             </div>
           </div>
 

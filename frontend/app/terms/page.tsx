@@ -95,7 +95,7 @@ export default function TermsOfService() {
               <p className="font-bold text-zinc-900 dark:text-white">Kanha Foundation (Section 8 NPO • Govt. of India Regulated)</p>
               <p className="text-zinc-500 dark:text-zinc-400">Head Office: G 96, Block G, Gamma 2, Greater Noida, U.P., India</p>
               <p className="text-zinc-500 dark:text-zinc-400">Branches & Operations: Bihar • Jharkhand • Delhi NCR • Uttar Pradesh • Pan-India</p>
-              <p className="text-zinc-500 dark:text-zinc-400">Email: <span className="font-bold text-emerald-600 dark:text-emerald-400">contact@kanhafoundation.org</span></p>
+              <p className="text-zinc-500 dark:text-zinc-400">Email: <span className="font-bold text-emerald-600 dark:text-emerald-400">kanhafoundation223@gmail.com</span></p>
             </div>
           </div>
 
