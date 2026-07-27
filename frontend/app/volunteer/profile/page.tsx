@@ -143,10 +143,10 @@ export default function VolunteerProfilePage() {
   const [isViewProofModalOpen, setIsViewProofModalOpen] = useState(false);
   const [viewingTaskProof, setViewingTaskProof] = useState<any | null>(null);
 
-  const fetchTasks = async (volId: number) => {
+  const fetchTasks = async (volId: number, email?: string) => {
     try {
       setTasksLoading(true);
-      const res = await fetch(`/api/volunteer/tasks?volunteer_id=${volId}`);
+      const res = await fetch(`/api/volunteer/tasks?volunteer_id=${volId}&email=${encodeURIComponent(email || '')}`);
       const data = await res.json();
       if (data.success && Array.isArray(data.tasks)) {
         setTasks(data.tasks);
@@ -246,7 +246,7 @@ export default function VolunteerProfilePage() {
         const parsed = JSON.parse(savedSession);
         setVolunteer(parsed);
         setIsLoggedIn(true);
-        fetchTasks(parsed.id);
+        fetchTasks(parsed.id, parsed.email);
         fetchVolunteerDonations(parsed.email, parsed.phone, parsed.name);
 
         // Fetch fresh details from server to keep database updates synced

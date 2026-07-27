@@ -32,10 +32,11 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const volunteerIdStr = searchParams.get('volunteer_id');
     const volunteerId = volunteerIdStr ? parseInt(volunteerIdStr, 10) : null;
+    const volunteerEmail = searchParams.get('email') ? searchParams.get('email')!.toLowerCase() : null;
 
     let tasks: any[] = [];
-    let useFallback = false;
 
+    // 1. Try Supabase
     try {
       let query = supabase.from('volunteer_tasks').select('*');
       if (volunteerId !== null) {
@@ -43,23 +44,27 @@ export async function GET(request: Request) {
       }
       const { data, error } = await query.order('id', { ascending: false });
 
-      if (error) {
-        useFallback = true;
-      } else {
-        tasks = data || [];
+      if (!error && Array.isArray(data)) {
+        tasks = data;
       }
-    } catch (err) {
-      useFallback = true;
-    }
+    } catch (err) {}
 
-    if (useFallback) {
-      const local = getLocalTasks();
-      if (volunteerId !== null) {
-        tasks = local.filter(t => t.volunteer_id === volunteerId);
-      } else {
-        tasks = local;
-      }
+    // 2. Always merge local fallback tasks to ensure offline/local tasks aren't missed
+    const local = getLocalTasks();
+    let filteredLocal = local;
+    if (volunteerId !== null) {
+      filteredLocal = local.filter(t => String(t.volunteer_id) === String(volunteerId) || (volunteerEmail && t.donor_email && t.donor_email.toLowerCase() === volunteerEmail));
     }
+    
+    // Combine both sets uniquely by id
+    filteredLocal.forEach(lt => {
+      if (!tasks.some(st => String(st.id) === String(lt.id))) {
+        tasks.push(lt);
+      }
+    });
+
+    // Sort descending by id or date
+    tasks.sort((a, b) => (b.id || 0) - (a.id || 0));
 
     return NextResponse.json({ success: true, tasks });
   } catch (err: any) {
