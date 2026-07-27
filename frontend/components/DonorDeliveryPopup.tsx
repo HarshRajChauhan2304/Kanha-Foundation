@@ -139,7 +139,7 @@ export default function DonorDeliveryPopup() {
                   KH
                 </div>
                 <span className="text-[10px] font-black uppercase tracking-wider text-emerald-400">
-                  Kanha Foundation • Impact Frame
+                  Kanha Foundation • Donation Successfully Proof
                 </span>
               </div>
               <span className="px-2 py-0.5 bg-emerald-950/60 text-emerald-400 border border-emerald-800/50 text-[9px] font-bold rounded-full">
@@ -193,7 +193,7 @@ export default function DonorDeliveryPopup() {
           {/* Social Media Share Actions */}
           <div className="space-y-3 mb-6">
             <p className="text-[11px] font-black uppercase tracking-wider text-emerald-400 text-center">
-              📲 Share Beneficiary Impact Card on Social Media
+              📲 Share Donation Successfully Proof on Social Media
             </p>
             <div className="grid grid-cols-3 gap-2">
               <a

@@ -75,16 +75,47 @@ export default function UserProfilePage() {
     // Fetch real donation history from server
     const fetchUserDonations = async () => {
       try {
+        let completedTasks: any[] = [];
+        try {
+          const tasksRes = await fetch('/api/volunteer/tasks', { cache: 'no-store' });
+          if (tasksRes.ok) {
+            const tasksData = await tasksRes.json();
+            if (tasksData.success && Array.isArray(tasksData.tasks)) {
+              completedTasks = tasksData.tasks.filter((t: any) => t.status === 'Completed' && t.proof_media);
+            }
+          }
+        } catch (e) {
+          console.error("Error fetching completed tasks:", e);
+        }
+
         const res = await fetch(`/api/donations/by-user?email=${encodeURIComponent(storedEmail)}&phone=${encodeURIComponent(storedPhone)}&name=${encodeURIComponent(storedName)}`, { cache: 'no-store' });
         if (res.ok && res.headers.get("content-type")?.includes("application/json")) {
           const data = await res.json();
           if (data.success && Array.isArray(data.donations) && data.donations.length > 0) {
-            const mapped: DonationItem[] = data.donations.map((d: any) => ({
-              title: d.donation_for || "General Support",
-              amount: d.amount || "₹0",
-              date: d.transaction_date || (d.created_at ? new Date(d.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : "Recently"),
-              status: d.payment_status === "SUCCESS" ? "Completed" : (d.payment_status || "Completed")
-            }));
+            const mapped: DonationItem[] = data.donations.map((d: any) => {
+              const numAmt = d.amount ? String(d.amount).replace(/[^0-9]/g, "") : "";
+              
+              // Find matching task specifically for this donation
+              const matchedTask = completedTasks.find((t: any) => {
+                if (t.donation_id && String(t.donation_id) === String(d.id)) return true;
+                if (numAmt && t.donation_amount && String(t.donation_amount).replace(/[^0-9]/g, "") === numAmt) return true;
+                if (numAmt && t.assigned_money && String(t.assigned_money) === numAmt) return true;
+                return false;
+              });
+
+              return {
+                id: d.id,
+                title: d.donation_for || "General Support",
+                amount: d.amount || "₹0",
+                date: d.transaction_date || (d.created_at ? new Date(d.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : "Recently"),
+                status: d.payment_status === "SUCCESS" ? "Completed" : (d.payment_status || "Completed"),
+                proof_media: matchedTask ? matchedTask.proof_media : undefined,
+                beneficiary_name: matchedTask ? matchedTask.beneficiary_name : undefined,
+                feedback: matchedTask ? matchedTask.feedback : undefined,
+                cause: matchedTask ? matchedTask.cause : undefined,
+                quantity: matchedTask ? matchedTask.quantity : undefined
+              };
+            });
             setDonations(mapped);
             return;
           }
@@ -457,48 +488,32 @@ export default function UserProfilePage() {
                     <div className="text-left sm:text-right flex flex-col items-start sm:items-end gap-2">
                       <span className="text-base font-black text-[#F3A61E]">{d.amount}</span>
                       
-                      <button
-                        onClick={async () => {
-                          if (d.proof_media) {
+                      {d.proof_media ? (
+                        <button
+                          onClick={() => {
                             window.dispatchEvent(new CustomEvent("open_donor_proof", {
                               detail: {
                                 id: d.id || index + 1,
                                 task_title: d.title,
                                 proof_media: d.proof_media,
                                 beneficiary_name: d.beneficiary_name || "Underprivileged Beneficiary",
-                                feedback: d.feedback || "Donation successfully delivered on-ground.",
+                                feedback: d.feedback || "Donation successfully delivered on-ground with full proof.",
                                 donor_name: name,
                                 cause: d.cause || d.title,
                                 quantity: d.quantity || "Relief Items",
                                 donation_amount: d.amount
                               }
                             }));
-                          } else {
-                            try {
-                              const res = await fetch('/api/volunteer/tasks');
-                              const data = await res.json();
-                              if (data.success && Array.isArray(data.tasks)) {
-                                const taskProof = data.tasks.find((t: any) => t.status === "Completed" && t.proof_media);
-                                if (taskProof) {
-                                  window.dispatchEvent(new CustomEvent("open_donor_proof", { 
-                                    detail: { 
-                                      ...taskProof, 
-                                      donor_name: name,
-                                      cause: d.title,
-                                      donation_amount: d.amount 
-                                    } 
-                                  }));
-                                  return;
-                                }
-                              }
-                            } catch (e) {}
-                            alert("On-ground field proof is being uploaded by our active volunteers for this campaign.");
-                          }
-                        }}
-                        className="px-3.5 py-1.5 bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-500/40 text-emerald-400 text-[11px] font-black rounded-xl cursor-pointer flex items-center gap-1.5 shadow-sm transition-all"
-                      >
-                        <span>📸 View Beneficiary Impact Frame</span>
-                      </button>
+                          }}
+                          className="px-3.5 py-1.5 bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-500/40 text-emerald-400 text-[11px] font-black rounded-xl cursor-pointer flex items-center gap-1.5 shadow-sm transition-all"
+                        >
+                          <span>📸 Donation Successfully Proof</span>
+                        </button>
+                      ) : (
+                        <span className="px-3 py-1 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-500 dark:text-zinc-400 text-[10px] font-bold rounded-xl flex items-center gap-1">
+                          <span>⏳ Field Proof In-Progress</span>
+                        </span>
+                      )}
                     </div>
                   </div>
                 ))}
