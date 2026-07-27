@@ -30,7 +30,7 @@ export default function DonorDeliveryPopup() {
         const res = await fetch('/api/volunteer/tasks');
         const data = await res.json();
         if (data.success && Array.isArray(data.tasks)) {
-          const proofs = data.tasks.filter((t: any) => t.status === 'Completed' && t.proof_media);
+          const proofs = data.tasks.filter((t: any) => t.status === 'Completed' && t.proof_media && t.admin_verified);
           if (proofs.length > 0) {
             // Check if donor hasn't seen this proof popup yet
             const seenIds = JSON.parse(localStorage.getItem('seen_donor_proof_ids') || '[]');
