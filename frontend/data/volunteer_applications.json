@@ -1,1 +1,60 @@
-[]
+[
+  {
+    "name": "Shubhrvarna Verma",
+    "email": "shubhrvarna@gmail.com",
+    "phone": "7599446700",
+    "city": "Noida ",
+    "motivation": "Helping Others is my passion for me ",
+    "skills": [
+      "Food Distribution & Relief Work",
+      "Animal Welfare & Rescue support",
+      "Tree Plantation & Nature Drives"
+    ],
+    "status": "Approved",
+    "profile_photo": "https://cwpfhfcxpeqiihiqxqtu.supabase.co/storage/v1/object/public/uploads/1785079092827_1000432580.jpg",
+    "gender": "Female",
+    "terms_accepted": true,
+    "aadhar_number": "334985357061",
+    "aadhar_upload_url": "https://cwpfhfcxpeqiihiqxqtu.supabase.co/storage/v1/object/public/uploads/1785079025416_IMG_20250203_WA0009.jpg",
+    "internship_duration": "12 Months",
+    "certificate_url": "",
+    "certificate_issue_date": "",
+    "internship_start_date": "2026-07-26",
+    "internship_end_date": "2027-07-26",
+    "certificate_text": "",
+    "certificate_signature_name": "",
+    "certificate_signature_title": "",
+    "certificate_seal_text": "",
+    "certificate_signature_image_url": "",
+    "certificate_seal_image_url": "",
+    "id": 27
+  },
+  {
+    "name": "Kashish yadav",
+    "email": "kashish2004yadav@gmail.com",
+    "phone": "+917037186266",
+    "city": "Ghaziabad",
+    "motivation": "\"Who plants a tree plants a hope. \"",
+    "skills": [
+      "Tree Plantation & Nature Drives"
+    ],
+    "status": "Approved",
+    "profile_photo": "https://cwpfhfcxpeqiihiqxqtu.supabase.co/storage/v1/object/public/uploads/1785171555182_1000097837.jpg",
+    "gender": "Female",
+    "terms_accepted": true,
+    "aadhar_number": "961678855133",
+    "aadhar_upload_url": "https://cwpfhfcxpeqiihiqxqtu.supabase.co/storage/v1/object/public/uploads/1785171594270_IMG_20260727_WA0004.jpg",
+    "internship_duration": "12 Months",
+    "certificate_url": "",
+    "certificate_issue_date": "",
+    "internship_start_date": "2026-07-28",
+    "internship_end_date": "2027-07-28",
+    "certificate_text": "",
+    "certificate_signature_name": "",
+    "certificate_signature_title": "",
+    "certificate_seal_text": "",
+    "certificate_signature_image_url": "",
+    "certificate_seal_image_url": "",
+    "id": 29
+  }
+]

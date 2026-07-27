@@ -582,6 +582,15 @@ export default function AdminPanelPage() {
         const volRes = await fetch('/api/volunteer');
         const volData = await volRes.json();
         setVolApps(Array.isArray(volData) ? volData.filter((a: any) => a.status === "Approved") : []);
+
+        // Also fetch recent donations so Add Task modal always has donor list available
+        try {
+          const donRes = await fetch('/api/donations', { cache: 'no-store' });
+          const donData = await donRes.json();
+          setDonations(Array.isArray(donData) ? donData : []);
+        } catch (e) {
+          console.error("Failed to load donations for Tasks tab:", e);
+        }
       } else if (activeTab === "StarVolunteers") {
         const res = await fetch('/api/volunteer/star');
         const data = await res.json();
@@ -3849,10 +3858,10 @@ export default function AdminPanelPage() {
                 )}
 
                 {activeTab === "Tasks" && (() => {
-                  const selectedVol = volApps.find(a => a.id === parseInt(taskFormVolunteerId, 10));
+                  const selectedVol = volApps.find(a => String(a.id) === String(taskFormVolunteerId));
                   const volCity = selectedVol?.city || "";
 
-                  // Filter recent donations based on volunteer location
+                  // Filter recent donations: location matched first, then all other recent donations up to 20
                   const locMatchedDonations = donations
                     .slice()
                     .sort((a, b) => (b.id || 0) - (a.id || 0))
@@ -3863,7 +3872,7 @@ export default function AdminPanelPage() {
                     .sort((a, b) => (b.id || 0) - (a.id || 0))
                     .filter(d => !(volCity && d.address && d.address.toLowerCase().includes(volCity.toLowerCase())));
 
-                  const recent10 = [...locMatchedDonations, ...otherRecentDonations].slice(0, 10);
+                  const recent20 = [...locMatchedDonations, ...otherRecentDonations].slice(0, 20);
 
                   return (
                     <>
@@ -3882,21 +3891,21 @@ export default function AdminPanelPage() {
                         </select>
                       </div>
 
-                      {/* Recent 10 Donations Section for selected volunteer location */}
+                      {/* Recent 20 Donations Section for selected volunteer location */}
                       {taskFormVolunteerId && (
                         <div className="bg-zinc-950/80 p-4 rounded-xl border border-emerald-800/40 space-y-2">
                           <div className="flex justify-between items-center">
                             <label className="block text-xs font-extrabold text-emerald-400 uppercase tracking-wider">
-                              📍 Recent 10 Donor Donations ({volCity ? `Location: ${volCity}` : 'All Locations'})
+                              📍 Recent 20 Donor Donations ({volCity ? `Volunteer Location: ${volCity}` : 'All Locations'})
                             </label>
                             <span className="text-[10px] text-zinc-400">Click a donation to auto-fill task</span>
                           </div>
                           
-                          {recent10.length === 0 ? (
-                            <p className="text-xs text-zinc-500 italic">No recent donations found.</p>
+                          {recent20.length === 0 ? (
+                            <p className="text-xs text-zinc-500 italic">No recent donations found. Please make sure donations exist in system.</p>
                           ) : (
-                            <div className="max-h-48 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
-                              {recent10.map((don) => {
+                            <div className="max-h-56 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+                              {recent20.map((don) => {
                                 const isMatched = volCity && don.address && don.address.toLowerCase().includes(volCity.toLowerCase());
                                 const isSelected = String(don.id) === taskSelectedDonationId;
                                 const qtyMatch = (don.donation_for || '').match(/Qty[:]?\s*(\d+)/i);

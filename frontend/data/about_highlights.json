@@ -15,5 +15,20 @@
       "quote": "Kindness is a chain reaction. Every small act of donation creates ripples of happiness in slum communities."
     }
   ],
-  "volunteers": []
+  "volunteers": [
+    {
+      "id": 28,
+      "name": "Shubhrvarna Verma",
+      "role": "Volunteer",
+      "image": "https://cwpfhfcxpeqiihiqxqtu.supabase.co/storage/v1/object/public/uploads/1785079092827_1000432580.jpg",
+      "quote": "Helping Others is my passion for me "
+    },
+    {
+      "id": 30,
+      "name": "Kashish yadav",
+      "role": "Volunteer",
+      "image": "https://cwpfhfcxpeqiihiqxqtu.supabase.co/storage/v1/object/public/uploads/1785171555182_1000097837.jpg",
+      "quote": "\"Who plants a tree plants a hope. \""
+    }
+  ]
 }
