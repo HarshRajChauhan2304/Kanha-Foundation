@@ -54,22 +54,29 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: "Application not found in database or local fallback." }, { status: 404 });
     }
 
-    // Calculate joining and completion dates based on internship duration
+    // Calculate joining and completion dates based on onboarding approval date and internship duration
     const today = new Date();
     const yyyy = today.getFullYear();
     const mm = String(today.getMonth() + 1).padStart(2, '0');
     const dd = String(today.getDate()).padStart(2, '0');
     const joiningDate = `${yyyy}-${mm}-${dd}`;
 
-    let durationMonths = 1;
-    if (app.internship_duration) {
-      const match = app.internship_duration.match(/\d+/);
-      if (match) {
-        durationMonths = parseInt(match[0], 10);
-      }
-    }
+    const durationStr = app.internship_duration || "1 Month";
+    const durationLower = durationStr.toLowerCase();
     const completionDateObj = new Date(today);
-    completionDateObj.setMonth(completionDateObj.getMonth() + durationMonths);
+    const matchNum = durationLower.match(/\d+/);
+    const num = matchNum ? parseInt(matchNum[0], 10) : 1;
+
+    if (durationLower.includes('day')) {
+      completionDateObj.setDate(completionDateObj.getDate() + num);
+    } else if (durationLower.includes('year')) {
+      completionDateObj.setFullYear(completionDateObj.getFullYear() + num);
+    } else if (durationLower.includes('week')) {
+      completionDateObj.setDate(completionDateObj.getDate() + num * 7);
+    } else {
+      completionDateObj.setMonth(completionDateObj.getMonth() + num);
+    }
+
     const compY = completionDateObj.getFullYear();
     const compM = String(completionDateObj.getMonth() + 1).padStart(2, '0');
     const compD = String(completionDateObj.getDate()).padStart(2, '0');

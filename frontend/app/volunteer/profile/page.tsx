@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface Volunteer {
@@ -39,8 +40,35 @@ const AVAILABLE_SKILLS = [
 ];
 
 export default function VolunteerProfilePage() {
+  const router = useRouter();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [volunteer, setVolunteer] = useState<Volunteer | null>(null);
+
+  const computeEndDate = (startDateStr: string, durationStr: string) => {
+    if (!startDateStr) return "";
+    let start = new Date(startDateStr);
+    if (isNaN(start.getTime())) return "";
+
+    const durationLower = (durationStr || '1 Month').toLowerCase();
+    const matchNum = durationLower.match(/\d+/);
+    const num = matchNum ? parseInt(matchNum[0], 10) : 1;
+
+    const end = new Date(start);
+    if (durationLower.includes('day')) {
+      end.setDate(end.getDate() + num);
+    } else if (durationLower.includes('year')) {
+      end.setFullYear(end.getFullYear() + num);
+    } else if (durationLower.includes('week')) {
+      end.setDate(end.getDate() + num * 7);
+    } else {
+      end.setMonth(end.getMonth() + num);
+    }
+
+    const yyyy = end.getFullYear();
+    const mm = String(end.getMonth() + 1).padStart(2, '0');
+    const dd = String(end.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  };
 
   // Login inputs
   const [emailInput, setEmailInput] = useState("");
@@ -96,6 +124,10 @@ export default function VolunteerProfilePage() {
   const [tasks, setTasks] = useState<any[]>([]);
   const [tasksLoading, setTasksLoading] = useState(false);
 
+  // Volunteer donation history state
+  const [volunteerDonations, setVolunteerDonations] = useState<any[]>([]);
+  const [donationsLoading, setDonationsLoading] = useState(false);
+
   // Task Completion Modal states
   const [isCompletionModalOpen, setIsCompletionModalOpen] = useState(false);
   const [completingTask, setCompletingTask] = useState<any | null>(null);
@@ -123,6 +155,23 @@ export default function VolunteerProfilePage() {
       console.error("Error loading volunteer tasks:", e);
     } finally {
       setTasksLoading(false);
+    }
+  };
+
+  const fetchVolunteerDonations = async (email: string, phone: string, name: string) => {
+    try {
+      setDonationsLoading(true);
+      const res = await fetch(`/api/donations/by-user?email=${encodeURIComponent(email || '')}&phone=${encodeURIComponent(phone || '')}&name=${encodeURIComponent(name || '')}`, { cache: 'no-store' });
+      if (res.ok && res.headers.get("content-type")?.includes("application/json")) {
+        const data = await res.json();
+        if (data.success && Array.isArray(data.donations)) {
+          setVolunteerDonations(data.donations);
+        }
+      }
+    } catch (e) {
+      console.error("Error loading volunteer donation history:", e);
+    } finally {
+      setDonationsLoading(false);
     }
   };
 
@@ -198,6 +247,7 @@ export default function VolunteerProfilePage() {
         setVolunteer(parsed);
         setIsLoggedIn(true);
         fetchTasks(parsed.id);
+        fetchVolunteerDonations(parsed.email, parsed.phone, parsed.name);
 
         // Fetch fresh details from server to keep database updates synced
         fetch('/api/volunteer')
@@ -605,11 +655,15 @@ export default function VolunteerProfilePage() {
                   </div>
                   <div>
                     <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest block">Internship Start Date</label>
-                    <p className="text-sm font-extrabold text-white mt-1">{volunteer?.internship_start_date || "N/A"}</p>
+                    <p className="text-sm font-extrabold text-white mt-1">
+                      {volunteer?.internship_start_date || (volunteer?.created_at ? volunteer.created_at.split('T')[0] : (volunteer?.status === 'Approved' ? new Date().toISOString().split('T')[0] : "Approval Pending"))}
+                    </p>
                   </div>
                   <div>
                     <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest block">Internship Completion Date</label>
-                    <p className="text-sm font-extrabold text-white mt-1">{volunteer?.internship_end_date || "N/A"}</p>
+                    <p className="text-sm font-extrabold text-emerald-400 mt-1">
+                      {volunteer?.internship_end_date || computeEndDate(volunteer?.internship_start_date || (volunteer?.created_at ? volunteer.created_at.split('T')[0] : (volunteer?.status === 'Approved' ? new Date().toISOString().split('T')[0] : "")), volunteer?.internship_duration || "1 Month") || (volunteer?.status === 'Approved' ? "Active" : "Approval Pending")}
+                    </p>
                   </div>
                 </div>
 
@@ -717,6 +771,52 @@ export default function VolunteerProfilePage() {
                                 View Submission Proof
                               </button>
                             )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Volunteer Personal Donation History */}
+                <div className="border-t border-zinc-800/80 pt-6 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-black uppercase tracking-wider text-[#F3A61E] flex items-center gap-2">
+                      <svg className="h-4 w-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      My Personal Donation History
+                    </h3>
+                    <span className="px-2.5 py-0.5 bg-amber-950/30 text-amber-400 border border-amber-900/40 rounded-full text-[10px] font-black">
+                      {volunteerDonations.length} Contributions
+                    </span>
+                  </div>
+
+                  {donationsLoading ? (
+                    <div className="flex items-center gap-2 py-4 text-xs text-zinc-500">
+                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-t-transparent border-amber-500" />
+                      Loading donation history...
+                    </div>
+                  ) : volunteerDonations.length === 0 ? (
+                    <p className="text-xs text-zinc-500 bg-zinc-950/40 p-4 rounded-xl border border-zinc-800 italic">
+                      No personal contributions logged under {volunteer?.email}. Whenever you make a donation, your transaction history will automatically show here!
+                    </p>
+                  ) : (
+                    <div className="space-y-3 max-h-[350px] overflow-y-auto pr-1">
+                      {volunteerDonations.map((d: any, idx: number) => (
+                        <div key={d.id || idx} className="bg-zinc-950/50 border border-zinc-800/80 p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                          <div>
+                            <h4 className="text-xs font-extrabold text-white">{d.donation_for || "General Cause Support"}</h4>
+                            <p className="text-[10px] text-zinc-400 mt-1 flex items-center gap-2">
+                              <span>📅 {d.transaction_date || (d.created_at ? new Date(d.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : "Recent")}</span>
+                              {d.receipt_id && <span>• Ref: {d.receipt_id}</span>}
+                            </p>
+                          </div>
+                          <div className="text-left sm:text-right flex sm:flex-col justify-between items-center sm:items-end">
+                            <span className="text-sm font-black text-[#F3A61E]">{d.amount || "₹0"}</span>
+                            <span className="px-2 py-0.5 rounded text-[8px] font-black uppercase bg-emerald-950/40 text-emerald-400 border border-emerald-900/40">
+                              {d.payment_status || "Completed"}
+                            </span>
                           </div>
                         </div>
                       ))}

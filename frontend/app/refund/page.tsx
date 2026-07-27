@@ -13,70 +13,86 @@ export default function RefundPolicy() {
         >
           {/* Header */}
           <div className="border-b border-zinc-200 dark:border-zinc-800 pb-6 mb-8 text-center sm:text-left">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-950/20 text-[#52c47c] border border-emerald-900/40 rounded-full text-[10px] font-black uppercase tracking-wider mb-3">
+              Section 8 Non-Profit Corporation • Financial Governance
+            </div>
             <h1 className="text-3xl sm:text-4xl font-black text-[#1E4D2B] dark:text-[#52c47c] tracking-tight">
-              Refund & Cancellation Policy
+              Return & Refund Policy
             </h1>
-            <p className="text-xs text-zinc-550 dark:text-zinc-400 mt-2 font-bold uppercase tracking-wider">
-              Last Updated: July 3, 2026
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-2 font-bold uppercase tracking-wider">
+              Last Updated: July 2026 • Kanha Foundation Financial Guidelines
             </p>
           </div>
 
           {/* Content */}
           <div className="space-y-6 text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed text-justify">
             <p>
-              At <strong>Kanha Foundation</strong>, Ranchi, Jharkhand, we are incredibly grateful for your generous contributions and support toward our relief works, education campaign drives, animal welfare, and eco-initiatives.
+              At <strong>Kanha Foundation</strong>, operating across <strong>Bihar, Jharkhand, Delhi NCR, Uttar Pradesh, and Pan-India</strong>, we are deeply grateful for your generous contributions supporting our relief campaigns, education kit distributions, menstrual hygiene drives, animal welfare, and tree plantations.
             </p>
             <p>
-              Since Kanha Foundation is a non-profit charity organization and funds are immediately allocated to public service operations and relief resource distribution, we have instituted a transparent and fair Refund Policy as detailed below.
-            </p>
-
-            <h2 className="text-lg font-black text-zinc-900 dark:text-white pt-4 uppercase tracking-wider">
-              1. Donations are Voluntary and Non-Refundable
-            </h2>
-            <p>
-              Generally, all online contributions and sponsorships made via <a href="https://kanhafoundation.org" className="text-[#1E4D2B] dark:text-[#52c47c] font-bold hover:underline">kanhafoundation.org</a> are considered final and non-refundable. 
-            </p>
-            <p>
-              Once a payment has been processed and a confirmation receipt has been sent, those funds are earmarked directly for active field projects (e.g. food distribution drives or tree plantations) and cannot be recalled.
+              Since Kanha Foundation is a Section 8 Non-Profit Organization and contributions are immediately allocated to active field operations and resource procurement, we maintain a transparent and structured Refund & Cancellation Policy.
             </p>
 
             <h2 className="text-lg font-black text-zinc-900 dark:text-white pt-4 uppercase tracking-wider">
-              2. Exceptional Circumstances for Refund Requests
+              1. Voluntary Donations are Non-Refundable
             </h2>
             <p>
-              We understand that administrative errors can occur during payment transfers. We will review refund requests under the following conditions:
+              Under Indian non-profit financial governance rules, all online contributions and sponsorships made via <a href="https://kanhafoundation.org" className="text-[#1E4D2B] dark:text-[#52c47c] font-bold hover:underline">kanhafoundation.org</a> are considered final and non-refundable once processed. 
+            </p>
+            <p>
+              Upon successful payment completion, funds are committed directly to ground distribution kits, logistics, and beneficiary outreach programs, making recalled fund processing infeasible.
+            </p>
+
+            <h2 className="text-lg font-black text-zinc-900 dark:text-white pt-4 uppercase tracking-wider">
+              2. Exceptional Refund Eligibility (Duplicate or Unauthorized Charges)
+            </h2>
+            <p>
+              We recognize that technical or payment gateway anomalies may occur. Kanha Foundation will evaluate refund claims strictly under the following conditions:
             </p>
             <ul className="list-disc pl-5 space-y-2">
-              <li><strong>Technical / Transaction Failures:</strong> If a donor experiences a network glitch and their credit card / UPI account is charged multiple times in error for a single contribution checkout.</li>
-              <li><strong>Unauthorized Activity:</strong> If card details or accounts were used fraudulently without the owner's authorization.</li>
+              <li><strong>Duplicate Transaction Glitch:</strong> If a donor is accidentally double-billed due to a network error during checkout processing.</li>
+              <li><strong>Unauthorized Payment Activity:</strong> If banking credentials or cards were compromised fraudulently.</li>
             </ul>
             <p>
-              Refund requests for double-charging or transaction duplicates must be submitted via email to <span className="font-bold text-zinc-800 dark:text-white">contact@kanhafoundation.org</span> within <span className="font-black text-[#F3A61E]">7 calendar days</span> of the payment date, containing the Transaction ID, payment reference receipt, and banking statement proof.
+              To file a claim for a duplicate payment, donors must send an email to <span className="font-bold text-zinc-800 dark:text-white">contact@kanhafoundation.org</span> within <span className="font-black text-[#F3A61E]">7 calendar days</span> of the transaction date. The email must include the Payment Reference ID, bank statement snippet proof, and transaction amount details.
             </p>
 
             <h2 className="text-lg font-black text-zinc-900 dark:text-white pt-4 uppercase tracking-wider">
-              3. Processing of Refund Requests
+              3. Processing Timelines & Original Payment Source Return
             </h2>
             <p>
-              All validated refund requests are evaluated by our administrative board. If approved, the refund will be credited back via the original payment source channel (bank card, net banking, or UPI wallet).
+              All refund requests are reviewed by our finance committee. Once approved:
             </p>
+            <ul className="list-disc pl-5 space-y-2">
+              <li>The refund amount will be credited back exclusively to the original payment source (bank account, credit card, or UPI wallet).</li>
+              <li>Processing timelines generally take <span className="font-black text-[#1E4D2B] dark:text-[#52c47c]">5 to 10 working days</span> depending on banking partner clearance cycles.</li>
+            </ul>
+
+            <h2 className="text-lg font-black text-zinc-900 dark:text-white pt-4 uppercase tracking-wider">
+              4. 80G Tax Receipt Nullification Notice
+            </h2>
             <p>
-              Please note that transaction processing times are subject to standard payment gateway clearance timelines and may take <span className="font-black text-[#1E4D2B] dark:text-[#52c47c]">5 to 10 working days</span> to reflect in your account.
+              If a refund is successfully issued for any transaction, the corresponding official tax exemption certificate generated under <strong>Section 80G of the Income Tax Act, 1961</strong> becomes null and void. Donors cannot submit cancelled receipt IDs for income tax exemption claims.
             </p>
 
             <h2 className="text-lg font-black text-zinc-900 dark:text-white pt-4 uppercase tracking-wider">
-              4. Tax Exemption Receipts
+              5. Contact Support
             </h2>
             <p>
-              If a refund request is successfully processed, any tax exemption receipt (Section 80G certificate) generated for the original transaction stands nullified and cancelled. Donors are advised not to submit cancelled contribution receipts for tax deduction benefits.
+              For refund status inquiries or payment assistance across any branch, contact our finance team:
             </p>
+            <div className="bg-zinc-100 dark:bg-zinc-900/60 p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 text-xs space-y-1">
+              <p className="font-bold text-zinc-900 dark:text-white">Kanha Foundation (Finance Section)</p>
+              <p className="text-zinc-500 dark:text-zinc-400">Multi-State Operations: Bihar • Jharkhand • Delhi NCR • Uttar Pradesh • Pan-India</p>
+              <p className="text-zinc-500 dark:text-zinc-400">Email: <span className="font-bold text-emerald-600 dark:text-emerald-400">contact@kanhafoundation.org</span></p>
+            </div>
           </div>
 
           {/* Footer Back Link */}
           <div className="mt-12 pt-6 border-t border-zinc-200 dark:border-zinc-800 flex justify-center">
             <a 
               href="/" 
-              className="px-6 py-2.5 bg-[#1E4D2B] hover:bg-[#15381E] text-white text-xs font-black uppercase tracking-wider rounded-xl transition-all cursor-pointer"
+              className="px-6 py-2.5 bg-[#1E4D2B] hover:bg-[#15381E] text-white text-xs font-black uppercase tracking-wider rounded-xl transition-all cursor-pointer shadow-md"
             >
               Back to Home
             </a>

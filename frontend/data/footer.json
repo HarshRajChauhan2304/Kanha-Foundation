@@ -19,17 +19,13 @@
     },
     {
       "label": "Disclaimer",
-      "href": "/privacy#disclaimer"
+      "href": "/disclaimer"
     }
   ],
   "quickLinks": [
     {
-      "label": "Knowledge",
-      "href": "/blog"
-    },
-    {
-      "label": "FAQs",
-      "href": "/causes"
+      "label": "Knowledge & FAQs",
+      "href": "/faqs"
     },
     {
       "label": "Return & Refund Policy",
@@ -37,7 +33,7 @@
     }
   ],
   "contact": {
-    "email": "kanhafoundation223@gmail.com",
+    "email": "contact@kanhafoundation.org",
     "ctaText": "Need help fast? Fill out our form or email"
   },
   "social": [

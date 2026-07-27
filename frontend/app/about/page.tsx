@@ -298,6 +298,65 @@ export default function AboutPage() {
         </div>
       </section>
 
+      {/* Our Core Values Section */}
+      <section id="values" className="bg-[#07100b] text-white py-20 px-4 md:px-8 border-t border-emerald-950/40">
+        <div className="mx-auto max-w-7xl">
+          <div className="text-center mb-14">
+            <span className="px-3.5 py-1 bg-emerald-950/40 text-[#52c47c] border border-emerald-900/40 rounded-full text-[10px] font-black uppercase tracking-widest inline-block mb-3">
+              Section 8 Non-Profit Core Pillars
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
+              Our Core Values
+            </h2>
+            <p className="mt-3 text-sm text-zinc-400 max-w-xl mx-auto font-medium">
+              The fundamental principles guiding Kanha Foundation's ground operations, donor relationships, and non-profit governance.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="bg-[#0e2617]/60 border border-emerald-900/30 p-6 rounded-3xl hover:border-emerald-500/40 transition-all shadow-md">
+              <div className="h-12 w-12 rounded-2xl bg-emerald-900/40 text-emerald-400 flex items-center justify-center text-xl font-black mb-4">
+                💎
+              </div>
+              <h3 className="text-base font-extrabold text-white mb-2">100% Transparency</h3>
+              <p className="text-xs text-zinc-300 leading-relaxed">
+                Every contribution is deployed on the ground with photo/video proof of delivery, ensuring zero ambiguity and complete donor trust.
+              </p>
+            </div>
+
+            <div className="bg-[#0e2617]/60 border border-emerald-900/30 p-6 rounded-3xl hover:border-emerald-500/40 transition-all shadow-md">
+              <div className="h-12 w-12 rounded-2xl bg-emerald-900/40 text-emerald-400 flex items-center justify-center text-xl font-black mb-4">
+                ❤️
+              </div>
+              <h3 className="text-base font-extrabold text-white mb-2">Compassion & Dignity</h3>
+              <p className="text-xs text-zinc-300 leading-relaxed">
+                We serve underprivileged children, women, and animals with deep respect, empowering communities with honor and care.
+              </p>
+            </div>
+
+            <div className="bg-[#0e2617]/60 border border-emerald-900/30 p-6 rounded-3xl hover:border-emerald-500/40 transition-all shadow-md">
+              <div className="h-12 w-12 rounded-2xl bg-emerald-900/40 text-emerald-400 flex items-center justify-center text-xl font-black mb-4">
+                🏛️
+              </div>
+              <h3 className="text-base font-extrabold text-white mb-2">Section 8 Compliance</h3>
+              <p className="text-xs text-zinc-300 leading-relaxed">
+                Strict adherence to the Indian Companies Act 2013 and 80G Tax Exemption laws, guaranteeing ethical non-profit governance.
+              </p>
+            </div>
+
+            <div className="bg-[#0e2617]/60 border border-emerald-900/30 p-6 rounded-3xl hover:border-emerald-500/40 transition-all shadow-md">
+              <div className="h-12 w-12 rounded-2xl bg-emerald-900/40 text-emerald-400 flex items-center justify-center text-xl font-black mb-4">
+                🌱
+              </div>
+              <h3 className="text-base font-extrabold text-white mb-2">Sustainable Impact</h3>
+              <p className="text-xs text-zinc-300 leading-relaxed">
+                Creating lasting transformation through education drives, menstrual health awareness, skills training, and tree plantations.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Directors Leadership block */}
       {directorsList.length > 0 && (
         <section className="bg-white dark:bg-[#07100b] text-gray-900 dark:text-white py-20 px-4 md:px-8 border-t border-gray-150 dark:border-zinc-800">

@@ -1,8 +1,8 @@
 [
   {
     "id": 1,
-    "title": "Registered Address",
-    "value": "Kanha Foundation Office,\n G 96,Block G,Gamma 2, Greater Noida,U.P. ,India",
+    "title": "Headquarters Address",
+    "value": "Kanha Foundation Head Office,\nG 96, Block G, Gamma 2, Greater Noida, U.P., India\n(Branches: Bihar, Jharkhand, Delhi NCR, Uttar Pradesh)",
     "type": "address",
     "icon": "map-pin"
   },

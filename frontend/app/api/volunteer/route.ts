@@ -55,48 +55,88 @@ export async function GET() {
     applications = localApps;
   }
 
+function calculateEndDate(startDateStr: string, durationStr: string): string {
+  const start = startDateStr ? new Date(startDateStr) : new Date();
+  if (isNaN(start.getTime())) {
+    const today = new Date();
+    return calculateEndDate(today.toISOString().split('T')[0], durationStr);
+  }
+
+  const durationLower = (durationStr || '1 Month').toLowerCase();
+  const end = new Date(start);
+
+  const matchNum = durationLower.match(/\d+/);
+  const num = matchNum ? parseInt(matchNum[0], 10) : 1;
+
+  if (durationLower.includes('day')) {
+    end.setDate(end.getDate() + num);
+  } else if (durationLower.includes('year')) {
+    end.setFullYear(end.getFullYear() + num);
+  } else if (durationLower.includes('week')) {
+    end.setDate(end.getDate() + num * 7);
+  } else {
+    end.setMonth(end.getMonth() + num);
+  }
+
+  const yyyy = end.getFullYear();
+  const mm = String(end.getMonth() + 1).padStart(2, '0');
+  const dd = String(end.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+}
+
   const todayStr = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
   applications = applications.map((newItem: any) => {
-    // Auto-generate certificate if completion date is reached and not already created
-    if (newItem.status === 'Approved' && (!newItem.certificate_url || newItem.certificate_url === '') && newItem.internship_end_date) {
-      if (todayStr >= newItem.internship_end_date) {
-        newItem.certificate_url = 'auto';
-        newItem.certificate_issue_date = newItem.internship_end_date;
+    if (newItem.status === 'Approved') {
+      if (!newItem.internship_start_date) {
+        newItem.internship_start_date = newItem.created_at ? newItem.created_at.split('T')[0] : todayStr;
+      }
+      if (!newItem.internship_end_date) {
+        newItem.internship_end_date = calculateEndDate(newItem.internship_start_date, newItem.internship_duration || '1 Month');
+      }
 
-        // Asynchronously update database and local file fallbacks
-        (async () => {
-          try {
-            // Update local JSON fallback file
-            const fallbackPath = getFallbackPath('volunteer_applications.json');
-            if (fs.existsSync(fallbackPath)) {
-              const fileContent = fs.readFileSync(fallbackPath, 'utf-8');
-              const currentData = JSON.parse(fileContent);
-              if (Array.isArray(currentData)) {
-                const idx = currentData.findIndex((item: any) => String(item.id) === String(newItem.id));
-                if (idx !== -1) {
-                  currentData[idx].certificate_url = 'auto';
-                  currentData[idx].certificate_issue_date = newItem.internship_end_date;
-                  fs.writeFileSync(fallbackPath, JSON.stringify(currentData, null, 2), 'utf-8');
+      // Auto-generate certificate if completion date is reached and not already created
+      if ((!newItem.certificate_url || newItem.certificate_url === '') && newItem.internship_end_date) {
+        if (todayStr >= newItem.internship_end_date) {
+          newItem.certificate_url = 'auto';
+          newItem.certificate_issue_date = newItem.internship_end_date;
+
+          // Asynchronously update local JSON fallback file and Supabase
+          (async () => {
+            try {
+              const fallbackPath = getFallbackPath('volunteer_applications.json');
+              if (fs.existsSync(fallbackPath)) {
+                const fileContent = fs.readFileSync(fallbackPath, 'utf-8');
+                const currentData = JSON.parse(fileContent);
+                if (Array.isArray(currentData)) {
+                  const idx = currentData.findIndex((item: any) => String(item.id) === String(newItem.id));
+                  if (idx !== -1) {
+                    currentData[idx].internship_start_date = newItem.internship_start_date;
+                    currentData[idx].internship_end_date = newItem.internship_end_date;
+                    currentData[idx].certificate_url = 'auto';
+                    currentData[idx].certificate_issue_date = newItem.internship_end_date;
+                    fs.writeFileSync(fallbackPath, JSON.stringify(currentData, null, 2), 'utf-8');
+                  }
                 }
               }
+            } catch (e) {
+              console.error("Auto-issue local JSON update failed:", e);
             }
-          } catch (e) {
-            console.error("Auto-issue local JSON update failed:", e);
-          }
 
-          try {
-            // Update Supabase DB
-            await supabaseAdmin
-              .from('volunteer_applications')
-              .update({
-                certificate_url: 'auto',
-                certificate_issue_date: newItem.internship_end_date
-              })
-              .eq('id', newItem.id);
-          } catch (dbErr) {
-            console.warn("Auto-issue Supabase update failed:", dbErr);
-          }
-        })();
+            try {
+              await supabaseAdmin
+                .from('volunteer_applications')
+                .update({
+                  internship_start_date: newItem.internship_start_date,
+                  internship_end_date: newItem.internship_end_date,
+                  certificate_url: 'auto',
+                  certificate_issue_date: newItem.internship_end_date
+                })
+                .eq('id', newItem.id);
+            } catch (dbErr) {
+              console.warn("Auto-issue Supabase update failed:", dbErr);
+            }
+          })();
+        }
       }
     }
     return newItem;

@@ -179,7 +179,7 @@ function ReceiptPageContent() {
           <div className="border-b border-gray-200 dark:border-zinc-800/80 pb-3.5 mb-3.5">
             <div className="text-center">
               <h2 className="text-sm font-black text-gray-900 dark:text-white tracking-tight uppercase">Kanha Foundation</h2>
-              <p className="text-[9px] text-gray-500 font-bold mt-0.5">Ranchi, Jharkhand, India</p>
+              <p className="text-[9px] text-gray-500 font-bold mt-0.5">Head Office: Greater Noida, U.P. • Branches: Bihar, Jharkhand, Delhi NCR, UP</p>
 
               <div className="flex justify-between mt-2">
                 <div className="text-left">

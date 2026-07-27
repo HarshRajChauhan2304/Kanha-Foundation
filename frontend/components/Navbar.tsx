@@ -644,7 +644,8 @@ export default function Navbar() {
                   <button
                     onClick={() => {
                       setIsCartOpen(false);
-                      if (!isUserLoggedIn) {
+                      const isAnyLoggedIn = isUserLoggedIn || isAdminLoggedIn || isVolunteerLoggedIn;
+                      if (!isAnyLoggedIn) {
                         router.push('/signin?redirect=/donate');
                       } else {
                         router.push('/donate');

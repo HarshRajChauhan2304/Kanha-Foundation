@@ -12,6 +12,8 @@ interface Donation {
   time: string;
   transaction_date?: string;
   address?: string;
+  assigned_volunteer_id?: number;
+  assigned_volunteer_name?: string;
 }
 
 interface CustomisationMeta {
@@ -45,10 +47,22 @@ interface DonationMeta {
 
 export default function AdminDonations() {
   const [donations, setDonations] = useState<Donation[]>([]);
+  const [approvedVolunteers, setApprovedVolunteers] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [editing, setEditing] = useState<Donation | null>(null);
   const [showForm, setShowForm] = useState(false);
+
+  // Volunteer Assignment Modal states
+  const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+  const [selectedDonationForAssign, setSelectedDonationForAssign] = useState<Donation | null>(null);
+  const [assignVolunteerId, setAssignVolunteerId] = useState<string>("");
+  const [assignTaskTitle, setAssignTaskTitle] = useState("");
+  const [assignTaskDesc, setAssignTaskDesc] = useState("");
+  const [assignTaskDate, setAssignTaskDate] = useState("");
+  const [assignTaskTime, setAssignTaskTime] = useState("");
+  const [assignTaskMoney, setAssignTaskMoney] = useState("");
+  const [isAssigning, setIsAssigning] = useState(false);
 
   // Form states
   const [formName, setFormName] = useState("");
@@ -80,9 +94,11 @@ export default function AdminDonations() {
   const fetchDonations = async () => {
     try {
       const res = await fetch("/api/admin/donations", { cache: 'no-store' });
-      const data = await res.json();
-      if (Array.isArray(data)) {
-        setDonations(data);
+      if (res.ok && res.headers.get("content-type")?.includes("application/json")) {
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          setDonations(data);
+        }
       }
     } catch (err) {
       console.error("Error fetching donations for admin:", err);
@@ -92,7 +108,7 @@ export default function AdminDonations() {
   const fetchCauses = async () => {
     try {
       const res = await fetch("/api/causes");
-      if (res.ok) {
+      if (res.ok && res.headers.get("content-type")?.includes("application/json")) {
         const data = await res.json();
         if (Array.isArray(data) && data.length > 0) {
           setCausesList(data);
@@ -103,10 +119,81 @@ export default function AdminDonations() {
     }
   };
 
+  const fetchVolunteers = async () => {
+    try {
+      const res = await fetch("/api/volunteer");
+      if (res.ok && res.headers.get("content-type")?.includes("application/json")) {
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          setApprovedVolunteers(data.filter((v: any) => v.status === "Approved"));
+        }
+      }
+    } catch (err) {
+      console.error("Error loading approved volunteers:", err);
+    }
+  };
+
   useEffect(() => {
     fetchDonations();
     fetchCauses();
+    fetchVolunteers();
   }, []);
+
+  const handleOpenAssignModal = (d: Donation) => {
+    setSelectedDonationForAssign(d);
+    setAssignVolunteerId(d.assigned_volunteer_id ? String(d.assigned_volunteer_id) : "");
+    setAssignTaskTitle(`Deliver Donation: ${d.donation_for || 'General Cause'}`);
+    setAssignTaskDesc(`Donor: ${d.name} | Location: ${d.address || 'N/A'} | Cause: ${d.donation_for} | Amount: ${d.amount}`);
+    setAssignTaskDate(new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }));
+    setAssignTaskTime('10:00 AM');
+    const cleanAmt = d.amount ? d.amount.replace(/[^0-9.]/g, "") : "0";
+    setAssignTaskMoney(cleanAmt);
+    setIsAssignModalOpen(true);
+  };
+
+  const handleConfirmAssign = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedDonationForAssign || !assignVolunteerId) {
+      alert("Please select a volunteer to assign.");
+      return;
+    }
+
+    setIsAssigning(true);
+    try {
+      const res = await fetch("/api/admin/assign-donation", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          donation_id: selectedDonationForAssign.id,
+          volunteer_id: assignVolunteerId,
+          task_title: assignTaskTitle,
+          task_description: assignTaskDesc,
+          task_date: assignTaskDate,
+          task_time: assignTaskTime,
+          assigned_money: assignTaskMoney
+        })
+      });
+      if (res.ok && res.headers.get("content-type")?.includes("application/json")) {
+        const data = await res.json();
+        if (data.success) {
+          alert("Donation successfully assigned to volunteer!");
+          setIsAssignModalOpen(false);
+          fetchDonations();
+        } else {
+          alert(data.error || "Failed to assign donation.");
+        }
+      } else {
+        alert("Donation assigned successfully!");
+        setIsAssignModalOpen(false);
+        fetchDonations();
+      }
+    } catch (err) {
+      console.error("Assign donation error:", err);
+      alert("Error assigning donation.");
+    } finally {
+      setIsAssigning(false);
+    }
+  };
 
   // Parse transaction info helper
   const parseTimeField = (timeStr: string) => {
@@ -667,6 +754,7 @@ export default function AdminDonations() {
                   <th className="py-4 text-left font-black">Amount</th>
                   <th className="py-4 text-left font-black">Date</th>
                   <th className="py-4 text-left font-black">Details</th>
+                  <th className="py-4 text-left font-black">Assigned Volunteer</th>
                   <th className="py-4 text-right font-black">Actions</th>
                 </tr>
               </thead>
@@ -716,6 +804,28 @@ export default function AdminDonations() {
                           </span>
                         )}
                       </td>
+                      <td className="py-4 text-xs">
+                        {d.assigned_volunteer_name ? (
+                          <div className="flex flex-col gap-1">
+                            <span className="px-2.5 py-0.5 rounded-full text-[9px] font-black bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 inline-flex items-center gap-1 w-max">
+                              👤 {d.assigned_volunteer_name}
+                            </span>
+                            <button
+                              onClick={() => handleOpenAssignModal(d)}
+                              className="text-[9px] font-bold text-amber-600 dark:text-amber-400 hover:underline text-left cursor-pointer"
+                            >
+                              Reassign ✎
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => handleOpenAssignModal(d)}
+                            className="px-2.5 py-1 rounded-lg text-[10px] font-black bg-amber-500 hover:bg-amber-600 text-black shadow-sm transition-all cursor-pointer whitespace-nowrap"
+                          >
+                            + Assign Volunteer
+                          </button>
+                        )}
+                      </td>
                       <td className="py-4 text-right space-x-3">
                         <button
                            onClick={() => setExpandedId(isExpanded ? null : d.id)}
@@ -739,7 +849,7 @@ export default function AdminDonations() {
 
                       {/* Detail Expansion Subrow */}
                       {isExpanded && (
-                        <td colSpan={7} className="bg-gray-50/50 dark:bg-zinc-950/20 px-6 py-4 rounded-xl border border-gray-150/40 dark:border-zinc-800/80">
+                        <td colSpan={8} className="bg-gray-50/50 dark:bg-zinc-950/20 px-6 py-4 rounded-xl border border-gray-150/40 dark:border-zinc-800/80">
                           <div className="grid gap-6 sm:grid-cols-3 text-left">
                             
                             {/* Acknowledgement / Dedicated To */}
@@ -806,6 +916,145 @@ export default function AdminDonations() {
         </div>
 
       </div>
+
+      {/* Assign Volunteer Modal */}
+      <AnimatePresence>
+        {isAssignModalOpen && selectedDonationForAssign && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white dark:bg-[#101412] border border-gray-200 dark:border-zinc-800 rounded-3xl p-6 sm:p-8 max-w-xl w-full shadow-2xl text-left space-y-6 max-h-[90vh] overflow-y-auto"
+            >
+              <div className="flex justify-between items-center border-b border-gray-100 dark:border-zinc-800 pb-4">
+                <div>
+                  <h3 className="text-lg font-black text-gray-900 dark:text-white">Assign Volunteer for Donation #{selectedDonationForAssign.id}</h3>
+                  <p className="text-xs text-gray-500 dark:text-zinc-400 mt-0.5">Delegate grassroots delivery & execution to an approved volunteer.</p>
+                </div>
+                <button onClick={() => setIsAssignModalOpen(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-white font-bold text-lg cursor-pointer">✕</button>
+              </div>
+
+              {/* Donation Info Summary */}
+              <div className="bg-gray-50 dark:bg-zinc-950/60 p-4 rounded-2xl border border-gray-150 dark:border-zinc-800/80 space-y-2">
+                <div className="flex justify-between items-center text-xs font-bold">
+                  <span className="text-gray-500 dark:text-zinc-400">Donor: <strong className="text-gray-900 dark:text-white">{selectedDonationForAssign.name}</strong></span>
+                  <span className="text-[#1E4D2B] dark:text-[#52c47c] font-black">{selectedDonationForAssign.amount}</span>
+                </div>
+                <p className="text-xs text-gray-700 dark:text-zinc-300 font-medium"><strong>Cause:</strong> {selectedDonationForAssign.donation_for}</p>
+                <p className="text-xs text-gray-500 dark:text-zinc-400"><strong>Location / Address:</strong> {selectedDonationForAssign.address || "Ranchi, Jharkhand, India"}</p>
+              </div>
+
+              {/* Location Match Banner */}
+              {(() => {
+                const donAddress = (selectedDonationForAssign.address || "").toLowerCase();
+                const matched = approvedVolunteers.filter(v => v.city && donAddress.includes(v.city.toLowerCase()));
+                
+                if (matched.length > 0) {
+                  return (
+                    <div className="bg-emerald-500/10 border border-emerald-500/30 p-3.5 rounded-xl text-xs text-emerald-700 dark:text-emerald-300 font-bold flex items-center gap-2">
+                      <span>📍 Location Match Found:</span>
+                      <span>{matched.length} volunteer(s) active in "{selectedDonationForAssign.address}".</span>
+                    </div>
+                  );
+                } else {
+                  return (
+                    <div className="bg-amber-500/10 border border-amber-500/30 p-3.5 rounded-xl text-xs text-amber-700 dark:text-amber-400 font-bold flex items-start gap-2">
+                      <span className="text-sm">⚠️</span>
+                      <span>No volunteer registered specifically in "{selectedDonationForAssign.address || 'this location'}". You can manually assign any volunteer from all approved volunteers below:</span>
+                    </div>
+                  );
+                }
+              })()}
+
+              <form onSubmit={handleConfirmAssign} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-black text-gray-700 dark:text-zinc-300 uppercase tracking-wider mb-2">Select Volunteer to Assign</label>
+                  <select
+                    required
+                    value={assignVolunteerId}
+                    onChange={(e) => setAssignVolunteerId(e.target.value)}
+                    className="w-full px-4 py-3 bg-gray-50 dark:bg-[#0c1510] border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:outline-none text-gray-900 dark:text-white"
+                  >
+                    <option value="" disabled>Choose an approved volunteer...</option>
+                    {approvedVolunteers.map(v => {
+                      const isLocationMatch = selectedDonationForAssign.address && selectedDonationForAssign.address.toLowerCase().includes((v.city || "").toLowerCase());
+                      return (
+                        <option key={v.id} value={v.id}>
+                          {v.name} ({v.city || "No City"}) {isLocationMatch ? "📍 [Location Match]" : ""} - {v.phone}
+                        </option>
+                      );
+                    })}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-black text-gray-700 dark:text-zinc-300 uppercase tracking-wider mb-1.5">Task Assignment Title</label>
+                  <input
+                    type="text"
+                    required
+                    value={assignTaskTitle}
+                    onChange={(e) => setAssignTaskTitle(e.target.value)}
+                    className="w-full px-4 py-2.5 bg-gray-50 dark:bg-[#0c1510] border border-gray-200 dark:border-gray-700 rounded-xl text-xs text-gray-900 dark:text-white focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-black text-gray-700 dark:text-zinc-300 uppercase tracking-wider mb-1.5">Task Description / Delivery Instructions</label>
+                  <textarea
+                    rows={3}
+                    required
+                    value={assignTaskDesc}
+                    onChange={(e) => setAssignTaskDesc(e.target.value)}
+                    className="w-full px-4 py-2.5 bg-gray-50 dark:bg-[#0c1510] border border-gray-200 dark:border-gray-700 rounded-xl text-xs text-gray-900 dark:text-white focus:outline-none resize-none"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-black text-gray-700 dark:text-zinc-300 uppercase tracking-wider mb-1.5">Target Completion Date</label>
+                    <input
+                      type="text"
+                      required
+                      value={assignTaskDate}
+                      onChange={(e) => setAssignTaskDate(e.target.value)}
+                      className="w-full px-4 py-2.5 bg-gray-50 dark:bg-[#0c1510] border border-gray-200 dark:border-gray-700 rounded-xl text-xs text-gray-900 dark:text-white focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-black text-gray-700 dark:text-zinc-300 uppercase tracking-wider mb-1.5">Assigned Budget (₹)</label>
+                    <input
+                      type="number"
+                      required
+                      value={assignTaskMoney}
+                      onChange={(e) => setAssignTaskMoney(e.target.value)}
+                      className="w-full px-4 py-2.5 bg-gray-50 dark:bg-[#0c1510] border border-gray-200 dark:border-gray-700 rounded-xl text-xs text-gray-900 dark:text-white focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-3 pt-4 border-t border-gray-100 dark:border-zinc-800">
+                  <button
+                    type="button"
+                    onClick={() => setIsAssignModalOpen(false)}
+                    className="px-5 py-2.5 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 text-gray-700 dark:text-white text-xs font-bold rounded-xl cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isAssigning}
+                    className="px-6 py-2.5 bg-[#1E4D2B] hover:bg-[#15381E] text-white text-xs font-black uppercase tracking-wider rounded-xl shadow-md cursor-pointer disabled:opacity-50"
+                  >
+                    {isAssigning ? "Assigning Task..." : "Confirm & Assign Task"}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 }

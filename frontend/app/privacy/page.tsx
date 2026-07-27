@@ -13,83 +13,99 @@ export default function PrivacyPolicy() {
         >
           {/* Header */}
           <div className="border-b border-zinc-200 dark:border-zinc-800 pb-6 mb-8 text-center sm:text-left">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-950/20 text-[#52c47c] border border-emerald-900/40 rounded-full text-[10px] font-black uppercase tracking-wider mb-3">
+              Section 8 NPO • Government of India MCA & NITI Aayog Regulated
+            </div>
             <h1 className="text-3xl sm:text-4xl font-black text-[#1E4D2B] dark:text-[#52c47c] tracking-tight">
-              Privacy Policy
+              Privacy Notice & Data Governance Policy
             </h1>
             <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-2 font-bold uppercase tracking-wider">
-              Last Updated: July 3, 2026
+              Last Updated: July 2026 • Government of India Statutory Compliances
             </p>
           </div>
 
           {/* Content */}
           <div className="space-y-6 text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed text-justify">
             <p>
-              At <strong>Kanha Foundation</strong>, accessible from <a href="https://kanhafoundation.org" className="text-[#1E4D2B] dark:text-[#52c47c] font-bold hover:underline">kanhafoundation.org</a>, one of our main priorities is the privacy of our visitors and donors. This Privacy Policy document contains types of information that is collected and recorded by Kanha Foundation and how we use it.
+              At <strong>Kanha Foundation</strong> (<a href="https://kanhafoundation.org" className="text-[#1E4D2B] dark:text-[#52c47c] font-bold hover:underline">kanhafoundation.org</a>), we strictly comply with all statutory regulations prescribed by the <strong>Central Government of India</strong> for Non-Governmental Organizations (NGOs). As a non-profit incorporated under <strong>Section 8 of the Companies Act, 2013 (Ministry of Corporate Affairs, Govt. of India)</strong>, registered on <strong>NITI Aayog (NGO Darpan)</strong>, and operating across Bihar, Jharkhand, Delhi NCR, Uttar Pradesh, and Pan-India, we uphold the highest standards of data safety.
             </p>
             <p>
-              If you have additional questions or require more information about our Privacy Policy, do not hesitate to contact us at <span className="font-bold text-zinc-800 dark:text-white">contact@kanhafoundation.org</span>.
+              Our data processing protocols comply with the <strong>Digital Personal Data Protection (DPDP) Act, 2023</strong> enacted by the Parliament of India, ensuring donor and volunteer data confidentiality across all operational branches.
             </p>
 
             <h2 className="text-lg font-black text-zinc-900 dark:text-white pt-4 uppercase tracking-wider">
-              1. Information We Collect
+              1. Information We Collect Under Central Norms
             </h2>
             <p>
-              The personal information that you are asked to provide, and the reasons why you are asked to provide it, will be made clear to you at the point we ask you to provide your personal information.
+              In compliance with Central Board of Direct Taxes (CBDT) and MCA regulations, we collect:
             </p>
             <ul className="list-disc pl-5 space-y-2">
-              <li><strong>Contact Information:</strong> Name, email address, phone number, and city provided during donation checkouts, contact forms, or volunteer applications.</li>
-              <li><strong>Financial Details:</strong> Payment receipts or verification records. All payments are securely processed by third-party gateways (e.g. Razorpay, Stripe) and we do not store raw card numbers.</li>
-              <li><strong>Volunteer Profiles:</strong> Selected skills, motivation statements, and task schedule details.</li>
+              <li><strong>Donor Verification Details:</strong> Full name, mobile number, email address, postal address, state, and Permanent Account Number (PAN) mandatory for issuing 80G tax exemption certificates under the Income Tax Act, 1961.</li>
+              <li><strong>Sponsorship Customization Data:</strong> Dedication notes, custom photos, or celebration messages provided for field distribution printed tags.</li>
+              <li><strong>Volunteer Identity Records:</strong> Skills, educational qualifications, Aadhaar identification numbers, motivation statements, and assigned schedule task logs.</li>
+              <li><strong>Technical Session Metadata:</strong> IP address, browser type, device identifiers, and session timestamps collected to ensure secure checkouts and prevent transaction fraud.</li>
             </ul>
 
             <h2 className="text-lg font-black text-zinc-900 dark:text-white pt-4 uppercase tracking-wider">
-              2. How We Use Your Information
+              2. Purpose of Processing & Central Statutory Reporting
             </h2>
             <p>
-              We use the information we collect in various ways, including to:
+              All personal data processed by Kanha Foundation is utilized strictly for non-commercial, charitable purpose execution:
             </p>
             <ul className="list-disc pl-5 space-y-2">
-              <li>Provide, operate, and maintain our charity contribution systems.</li>
-              <li>Improve, personalize, and expand our donation causes, outreach programs, and relief works.</li>
-              <li>Understand and analyze how you interact with our website to enhance usability.</li>
-              <li>Process your donations, generate tax exemption receipts, and compile administrative reports.</li>
-              <li>Communicate with you regarding your application status, volunteer duties, and schedule timings.</li>
-              <li>Send newsletters or project update emails (subject to your opt-in approval).</li>
+              <li>Generating official 80G Tax Exemption Certificates and Form 10BD filings with the Income Tax Department (Govt. of India).</li>
+              <li>Executing ground campaign distributions (food packets, study kits, plant saplings, menstrual packs) across multi-state field locations.</li>
+              <li>Communicating campaign delivery proof photos and video updates to donors.</li>
+              <li>Coordinating volunteer onboarding, schedule assignments, and issuing verified Internship Completion Certificates.</li>
+              <li>Submitting statutory audit filings required by the Ministry of Corporate Affairs (MCA), NITI Aayog Darpan, and Income Tax Department.</li>
             </ul>
 
             <h2 className="text-lg font-black text-zinc-900 dark:text-white pt-4 uppercase tracking-wider">
-              3. Data Protection Rights (GDPR / Indian DPDP Act)
+              3. Payment Gateway Security & Non-Storage of Card Data
             </h2>
             <p>
-              We would like to make sure you are fully aware of all of your data protection rights. Every user is entitled to the following:
+              Online contributions are processed through certified PCI-DSS compliant third-party payment gateway aggregators (Razorpay, Cashfree, UPI BHIM/Google Pay/PhonePe). Kanha Foundation <strong>does not store raw credit/debit card numbers or bank passwords</strong> on any server.
+            </p>
+
+            <h2 className="text-lg font-black text-zinc-900 dark:text-white pt-4 uppercase tracking-wider">
+              4. Rights Under Indian DPDP Act 2023
+            </h2>
+            <p>
+              In accordance with Central Government data protection regulations, users retain the following statutory rights:
             </p>
             <ul className="list-disc pl-5 space-y-2">
-              <li><strong>The right to access:</strong> You have the right to request copies of your personal data collected in our database.</li>
-              <li><strong>The right to rectification:</strong> You have the right to request that we correct any information you believe is inaccurate.</li>
-              <li><strong>The right to erasure:</strong> You have the right to request that we erase your personal data under certain conditions.</li>
-              <li><strong>The right to restrict processing:</strong> You have the right to request that we restrict the processing of your personal data.</li>
+              <li><strong>Right to Access & Summary:</strong> Donors can request copies of all past donation transactions and tax receipts.</li>
+              <li><strong>Right to Correction & Update:</strong> Users can update inaccurate contact details or profile info anytime via their User Profile dashboard.</li>
+              <li><strong>Right to Erasure:</strong> Donors can request account deletion (except records required to be retained under Income Tax Act 80G statutory audit rules).</li>
+              <li><strong>Right to Withdraw Marketing Consent:</strong> Users can opt out of promotional update emails or newsletters at any time.</li>
             </ul>
 
             <h2 className="text-lg font-black text-zinc-900 dark:text-white pt-4 uppercase tracking-wider">
-              4. Third-Party Privacy Policies
+              5. Non-Disclosure & Third-Party Sharing
             </h2>
             <p>
-              Kanha Foundation's Privacy Policy does not apply to other advertisers or websites. Thus, we are advising you to consult the respective Privacy Policies of these third-party payment gateways or analytics services for more detailed information.
+              Kanha Foundation <strong>never sells, rents, or commercializes donor databases</strong> to commercial third parties. Data is shared exclusively with certified payment processors or government regulatory authorities when mandatorily required under Indian law.
             </p>
 
             <h2 className="text-lg font-black text-zinc-900 dark:text-white pt-4 uppercase tracking-wider">
-              5. Consent
+              6. Data Grievance Officer & Central Contact Details
             </h2>
             <p>
-              By using our website, you hereby consent to our Privacy Policy and agree to its terms and conditions.
+              For data access requests, privacy concerns, or 80G receipt queries across any of our branches, please contact our Data Protection Officer:
             </p>
+            <div className="bg-zinc-100 dark:bg-zinc-900/60 p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 text-xs space-y-1">
+              <p className="font-bold text-zinc-900 dark:text-white">Kanha Foundation (Section 8 NPO • Govt. of India Regulated)</p>
+              <p className="text-zinc-500 dark:text-zinc-400">Head Office: G 96, Block G, Gamma 2, Greater Noida, U.P., India</p>
+              <p className="text-zinc-500 dark:text-zinc-400">Multi-State Branches: Bihar • Jharkhand • Delhi NCR • Uttar Pradesh • Pan-India</p>
+              <p className="text-zinc-500 dark:text-zinc-400">Email: <span className="font-bold text-emerald-600 dark:text-emerald-400">contact@kanhafoundation.org</span></p>
+            </div>
           </div>
 
           {/* Footer Back Link */}
           <div className="mt-12 pt-6 border-t border-zinc-200 dark:border-zinc-800 flex justify-center">
             <a 
               href="/" 
-              className="px-6 py-2.5 bg-[#1E4D2B] hover:bg-[#15381E] text-white text-xs font-black uppercase tracking-wider rounded-xl transition-all cursor-pointer"
+              className="px-6 py-2.5 bg-[#1E4D2B] hover:bg-[#15381E] text-white text-xs font-black uppercase tracking-wider rounded-xl transition-all cursor-pointer shadow-md"
             >
               Back to Home
             </a>

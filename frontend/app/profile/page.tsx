@@ -66,28 +66,51 @@ export default function UserProfilePage() {
     setEditGender(storedGender);
     setEditBio(storedBio);
 
-    // Load donation history
-    const historyKey = `user_donations_${storedEmail.trim().toLowerCase()}`;
-    const storedHistory = localStorage.getItem(historyKey);
-    if (storedHistory) {
+    // Fetch real donation history from server
+    const fetchUserDonations = async () => {
       try {
-        setDonations(JSON.parse(storedHistory));
+        const res = await fetch(`/api/donations/by-user?email=${encodeURIComponent(storedEmail)}&phone=${encodeURIComponent(storedPhone)}&name=${encodeURIComponent(storedName)}`, { cache: 'no-store' });
+        if (res.ok && res.headers.get("content-type")?.includes("application/json")) {
+          const data = await res.json();
+          if (data.success && Array.isArray(data.donations) && data.donations.length > 0) {
+            const mapped: DonationItem[] = data.donations.map((d: any) => ({
+              title: d.donation_for || "General Support",
+              amount: d.amount || "₹0",
+              date: d.transaction_date || (d.created_at ? new Date(d.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : "Recently"),
+              status: d.payment_status === "SUCCESS" ? "Completed" : (d.payment_status || "Completed")
+            }));
+            setDonations(mapped);
+            return;
+          }
+        }
       } catch (err) {
-        console.error("Error reading donations history:", err);
+        console.error("Error fetching user donations from server:", err);
       }
-    } else {
-      if (storedEmail === "user@example.com") {
-        // Set some beautiful fallback mock donation history for live view out of the box!
-        const defaults = [
-          { title: "Clean Water for Families Project", amount: "Rs. 500.00", date: "June 28, 2026", status: "Completed" },
-          { title: "Support Local Education Fund", amount: "Rs. 250.00", date: "May 14, 2026", status: "Completed" }
-        ];
-        setDonations(defaults);
-        localStorage.setItem(historyKey, JSON.stringify(defaults));
+
+      // Fallback to localStorage or defaults
+      const historyKey = `user_donations_${storedEmail.trim().toLowerCase()}`;
+      const storedHistory = localStorage.getItem(historyKey);
+      if (storedHistory) {
+        try {
+          setDonations(JSON.parse(storedHistory));
+        } catch (err) {
+          console.error("Error reading donations history:", err);
+        }
       } else {
-        setDonations([]);
+        if (storedEmail === "user@example.com") {
+          const defaults = [
+            { title: "Clean Water for Families Project", amount: "Rs. 500.00", date: "June 28, 2026", status: "Completed" },
+            { title: "Support Local Education Fund", amount: "Rs. 250.00", date: "May 14, 2026", status: "Completed" }
+          ];
+          setDonations(defaults);
+          localStorage.setItem(historyKey, JSON.stringify(defaults));
+        } else {
+          setDonations([]);
+        }
       }
-    }
+    };
+
+    fetchUserDonations();
   }, [router]);
 
   const triggerAlert = (msg: string) => {

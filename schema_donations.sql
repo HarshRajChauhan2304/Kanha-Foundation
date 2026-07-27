@@ -25,4 +25,7 @@ ADD COLUMN IF NOT EXISTS dedication_msg TEXT,
 ADD COLUMN IF NOT EXISTS receipt_id TEXT,
 ADD COLUMN IF NOT EXISTS transaction_date TEXT,
 ADD COLUMN IF NOT EXISTS payment_method TEXT,
-ADD COLUMN IF NOT EXISTS payment_status TEXT;
+ADD COLUMN IF NOT EXISTS payment_status TEXT,
+ADD COLUMN IF NOT EXISTS assigned_volunteer_id BIGINT,
+ADD COLUMN IF NOT EXISTS assigned_volunteer_name TEXT;
+

@@ -256,6 +256,32 @@ export default function AdminPanelPage() {
     });
   };
 
+  const computeEndDate = (startDateStr: string, durationStr: string) => {
+    if (!startDateStr) return "";
+    let start = new Date(startDateStr);
+    if (isNaN(start.getTime())) return "";
+
+    const durationLower = (durationStr || '1 Month').toLowerCase();
+    const matchNum = durationLower.match(/\d+/);
+    const num = matchNum ? parseInt(matchNum[0], 10) : 1;
+
+    const end = new Date(start);
+    if (durationLower.includes('day')) {
+      end.setDate(end.getDate() + num);
+    } else if (durationLower.includes('year')) {
+      end.setFullYear(end.getFullYear() + num);
+    } else if (durationLower.includes('week')) {
+      end.setDate(end.getDate() + num * 7);
+    } else {
+      end.setMonth(end.getMonth() + num);
+    }
+
+    const yyyy = end.getFullYear();
+    const mm = String(end.getMonth() + 1).padStart(2, '0');
+    const dd = String(end.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  };
+
   // Task Completion Proof View States for Admin
   const [isViewProofModalOpen, setIsViewProofModalOpen] = useState(false);
   const [viewingTaskProof, setViewingTaskProof] = useState<any | null>(null);
@@ -325,6 +351,7 @@ export default function AdminPanelPage() {
   const [formCertificateUrl, setFormCertificateUrl] = useState("");
   const [formCertificateIssueDate, setFormCertificateIssueDate] = useState("");
   const [formStartDate, setFormStartDate] = useState("");
+  const [formEndDate, setFormEndDate] = useState("");
   const [causesList, setCausesList] = useState<any[]>(causesDataFallback);
 
   const [alertMsg, setAlertMsg] = useState("");
@@ -951,6 +978,7 @@ export default function AdminPanelPage() {
       setFormCertificateUrl(item.certificate_url || "");
       setFormCertificateIssueDate(item.certificate_issue_date || "");
       setFormStartDate(item.internship_start_date || "");
+      setFormEndDate(item.internship_end_date || "");
     } else if (activeTab === "RoleManagement") {
       setFormTitle(item.name || "");
       setFormEmail(item.email || "");
@@ -1151,7 +1179,8 @@ export default function AdminPanelPage() {
         internship_duration: formInternshipDuration,
         certificate_url: formCertificateUrl,
         certificate_issue_date: formCertificateIssueDate,
-        internship_start_date: formStartDate
+        internship_start_date: formStartDate,
+        internship_end_date: formEndDate
       };
     } else if (activeTab === "Tasks") {
       if (!taskFormVolunteerId || !taskFormTitle.trim() || !taskFormDate.trim() || !taskFormTime.trim()) {
@@ -2230,6 +2259,7 @@ export default function AdminPanelPage() {
                     <th className="px-6 py-4">Applicant</th>
                     <th className="px-6 py-4">Gender</th>
                     <th className="px-6 py-4">Location</th>
+                    <th className="px-6 py-4">Internship Dates</th>
                     <th className="px-6 py-4">Areas of Interest</th>
                     <th className="px-6 py-4">Motivation statement</th>
                     <th className="px-6 py-4 text-right">Actions</th>
@@ -2276,6 +2306,25 @@ export default function AdminPanelPage() {
                       </td>
                       <td className="px-6 py-4">
                         <span className="px-2.5 py-0.5 rounded bg-zinc-800 text-gray-300 text-[10px] font-bold">{app.city}</span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex flex-col gap-0.5">
+                          <span className="px-2 py-0.5 rounded bg-amber-950/40 text-amber-400 border border-amber-900/40 text-[9px] font-black w-fit">
+                            {app.internship_duration || "1 Month"}
+                          </span>
+                          {app.internship_start_date ? (
+                            <p className="text-[10px] text-zinc-300 font-bold mt-1">
+                              Start: <span className="text-white">{app.internship_start_date}</span>
+                            </p>
+                          ) : (
+                            <p className="text-[10px] text-zinc-500 italic mt-1">Not Approved Yet</p>
+                          )}
+                          {app.internship_end_date && (
+                            <p className="text-[10px] text-emerald-400 font-bold">
+                              End: <span>{app.internship_end_date}</span>
+                            </p>
+                          )}
+                        </div>
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex flex-wrap gap-1 max-w-xs">
@@ -3712,11 +3761,21 @@ export default function AdminPanelPage() {
                       </div>
                     </div>
 
-                    {/* Internship Duration Section inside Applications */}
-                    <div className="grid grid-cols-2 gap-4 mb-4">
+                    {/* Internship Duration & Dates Section inside Applications */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
                       <div>
                         <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-1.5">Internship Duration</label>
-                        <select value={formInternshipDuration} onChange={(e) => setFormInternshipDuration(e.target.value)} className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white">
+                        <select 
+                          value={formInternshipDuration} 
+                          onChange={(e) => {
+                            const newDur = e.target.value;
+                            setFormInternshipDuration(newDur);
+                            if (formStartDate) {
+                              setFormEndDate(computeEndDate(formStartDate, newDur));
+                            }
+                          }} 
+                          className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white"
+                        >
                           <option value="1 Month">1 Month</option>
                           <option value="2 Months">2 Months</option>
                           <option value="3 Months">3 Months</option>
@@ -3727,12 +3786,25 @@ export default function AdminPanelPage() {
                         </select>
                       </div>
                       <div>
-                        <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-1.5">Internship Start Date</label>
+                        <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-1.5">Start Date (Approval Date)</label>
                         <input
                           type="date"
                           value={formStartDate}
-                          onChange={(e) => setFormStartDate(e.target.value)}
+                          onChange={(e) => {
+                            const newStart = e.target.value;
+                            setFormStartDate(newStart);
+                            setFormEndDate(computeEndDate(newStart, formInternshipDuration));
+                          }}
                           className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white focus:outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-emerald-400 uppercase tracking-wider mb-1.5">Completion Date (Auto/Manual)</label>
+                        <input
+                          type="date"
+                          value={formEndDate}
+                          onChange={(e) => setFormEndDate(e.target.value)}
+                          className="w-full px-4 py-2.5 bg-zinc-950 border border-emerald-900/50 rounded-xl text-sm text-emerald-300 focus:outline-none"
                         />
                       </div>
                     </div>
