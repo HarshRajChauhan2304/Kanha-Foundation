@@ -158,7 +158,7 @@ export async function PUT(request: Request) {
     const body = await request.json();
     const { 
       id, volunteer_id, task_title, task_description, task_date, task_time, status, assigned_money, 
-      money_received, money_spent, proof_media, feedback,
+      money_received, money_spent, proof_media, feedback, admin_verified,
       donor_name, donor_email, donation_id, cause, quantity, donation_amount, is_premium, premium_file, beneficiary_name
     } = body;
 
@@ -179,6 +179,7 @@ export async function PUT(request: Request) {
         ...(task_date && { task_date }),
         ...(task_time && { task_time }),
         ...(status && { status }),
+        ...(admin_verified !== undefined && { admin_verified }),
         ...(assigned_money !== undefined && { assigned_money: parseFloat(assigned_money) || 0 }),
         ...(money_received !== undefined && { money_received: parseFloat(money_received) || 0 }),
         ...(money_spent !== undefined && { money_spent: parseFloat(money_spent) || 0 }),
@@ -209,6 +210,7 @@ export async function PUT(request: Request) {
           ...(task_date && { task_date }),
           ...(task_time && { task_time }),
           ...(status && { status }),
+          ...(admin_verified !== undefined && { admin_verified }),
           ...(assigned_money !== undefined && { assigned_money: parseFloat(assigned_money) || 0 }),
           ...(money_received !== undefined && { money_received: parseFloat(money_received) || 0 }),
           ...(money_spent !== undefined && { money_spent: parseFloat(money_spent) || 0 }),

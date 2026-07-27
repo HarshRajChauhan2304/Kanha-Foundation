@@ -6,7 +6,7 @@
     "task_description": "Donor Name: Harsh Raj Chauhan\nCause: Sponsor a Wholesome Thali for Underpriviled Children (Qty: 1)\nQuantity: 1\nAmount: ₹800\nDonor Address: Greater Noida\nDate: 27 July 2026 at 11:37 pm",
     "task_date": "2026-07-29",
     "task_time": "10:30",
-    "status": "Pending",
+    "status": "Completed",
     "assigned_money": 800,
     "donor_name": "Harsh Raj Chauhan",
     "donor_email": "harshrajchauhan9419@gmail.com",
@@ -16,6 +16,10 @@
     "donation_amount": "₹800",
     "is_premium": false,
     "premium_file": "",
-    "created_at": "2026-07-27T20:13:23.544Z"
+    "created_at": "2026-07-27T20:13:23.544Z",
+    "money_received": 800,
+    "money_spent": 800,
+    "proof_media": "https://cwpfhfcxpeqiihiqxqtu.supabase.co/storage/v1/object/public/uploads/1785183580377_Screenshot_2026_07_26_012734.png",
+    "feedback": "best"
   }
 ]

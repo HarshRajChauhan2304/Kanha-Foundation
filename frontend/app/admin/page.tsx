@@ -111,6 +111,7 @@ interface VolunteerTask {
   money_spent?: number;
   proof_media?: string;
   feedback?: string;
+  admin_verified?: boolean;
 }
 
 type TabType = "Causes" | "Reviews" | "Blogs" | "Stories" | "DetailedStories" | "SuccessStories" | "Donations" | "Beneficiaries" | "Highlights" | "Applications" | "Tasks" | "AssignTask" | "PageMedia" | "PageTexts" | "StatsCards" | "Categories" | "RoleManagement" | "Navbar" | "Footer" | "AdminProfile" | "StarVolunteers" | "ContactInfo" | "ContactSubmissions" | "WhatsAppCommunity";
@@ -1667,6 +1668,48 @@ export default function AdminPanelPage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Real-time Admin Notification Banner for Volunteer Task Completion Proofs */}
+      {(() => {
+        const pendingProofs = Array.isArray(tasks)
+          ? tasks.filter(t => t.status === "Completed" && t.proof_media && !t.admin_verified)
+          : [];
+        if (pendingProofs.length === 0) return null;
+        const latestPending = pendingProofs[0];
+        const vol = volApps.find(a => String(a.id) === String(latestPending.volunteer_id));
+
+        return (
+          <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-full max-w-xl px-4 animate-bounce">
+            <div className="bg-zinc-950 border-2 border-emerald-500 text-white p-4 rounded-2xl shadow-2xl backdrop-blur-md flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3 text-left">
+                <div className="h-10 w-10 rounded-xl bg-emerald-950 border border-emerald-500/50 flex items-center justify-center text-xl shrink-0">
+                  🔔
+                </div>
+                <div>
+                  <h4 className="text-xs font-black text-emerald-400 uppercase tracking-wider">
+                    New Task Proof Submitted ({pendingProofs.length})
+                  </h4>
+                  <p className="text-xs font-extrabold text-white mt-0.5">
+                    {vol ? vol.name : `Volunteer ID: ${latestPending.volunteer_id}`} • {latestPending.task_title}
+                  </p>
+                  <p className="text-[10px] text-zinc-400">
+                    Budget: ₹{latestPending.assigned_money || 0} • Spent: ₹{latestPending.money_spent || 0}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setViewingTaskProof(latestPending);
+                  setIsViewProofModalOpen(true);
+                }}
+                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black uppercase tracking-wider rounded-xl cursor-pointer shadow-md transition-all border border-emerald-500/40 shrink-0"
+              >
+                Review & Approve 🚀
+              </button>
+            </div>
+          </div>
+        );
+      })()}
 
       <div className="mx-auto max-w-7xl">
         
@@ -4788,12 +4831,38 @@ export default function AdminPanelPage() {
                 </div>
               </div>
 
-              <div className="flex justify-end pt-4 border-t border-zinc-850 mt-6">
+              <div className="flex justify-end gap-3 pt-4 border-t border-zinc-850 mt-6">
                 <button
                   onClick={() => setIsViewProofModalOpen(false)}
-                  className="px-6 py-2.5 bg-[#1E4D2B] hover:bg-[#15381E] text-white text-xs font-black uppercase tracking-wider rounded-full transition-all cursor-pointer font-bold"
+                  className="px-5 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-bold rounded-xl transition-all cursor-pointer font-bold"
                 >
                   Close Window
+                </button>
+                <button
+                  onClick={async () => {
+                    try {
+                      const res = await fetch('/api/volunteer/tasks', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          id: viewingTaskProof.id,
+                          status: "Completed",
+                          admin_verified: true
+                        })
+                      });
+                      const data = await res.json();
+                      if (data.success) {
+                        alert("✅ Task completion approved! Delivery notification & social impact frame released to donor.");
+                        setIsViewProofModalOpen(false);
+                        fetchData();
+                      }
+                    } catch (e) {
+                      alert("Error approving task proof.");
+                    }
+                  }}
+                  className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black uppercase tracking-wider rounded-xl transition-all cursor-pointer shadow-lg border border-emerald-500/40"
+                >
+                  {viewingTaskProof.admin_verified ? "✅ Approved & Released" : "Approve & Release to Donor 🚀"}
                 </button>
               </div>
             </motion.div>
