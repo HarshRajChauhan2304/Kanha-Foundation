@@ -104,18 +104,18 @@ export default function AboutPage() {
   useEffect(() => {
     // 1. Fetch Dynamic Leadership/Volunteers
     fetch('/api/about-highlights', { cache: 'no-store' })
-      .then(res => res.json())
+      .then(res => (res.ok && res.headers.get("content-type")?.includes("application/json")) ? res.json() : null)
       .then(data => {
         if (data) {
           setDirectorsList(data.directors || []);
           setVolunteersList(data.volunteers || []);
         }
       })
-      .catch(err => console.error("Error loading dynamic highlights:", err));
+      .catch(() => {});
 
     // 2. Fetch Dynamic Page Media
     fetch('/api/page-media', { cache: 'no-store' })
-      .then(res => res.json())
+      .then(res => (res.ok && res.headers.get("content-type")?.includes("application/json")) ? res.json() : null)
       .then(data => {
         if (Array.isArray(data)) {
           const mapping: Record<string, string> = {};
@@ -125,11 +125,11 @@ export default function AboutPage() {
           setMediaSettings(prev => ({ ...prev, ...mapping }));
         }
       })
-      .catch(err => console.error("Error fetching about media details:", err));
+      .catch(() => {});
 
     // 3. Fetch Dynamic Page Texts
     fetch('/api/page-texts')
-      .then(res => res.json())
+      .then(res => (res.ok && res.headers.get("content-type")?.includes("application/json")) ? res.json() : null)
       .then(data => {
         if (Array.isArray(data)) {
           const mapping: Record<string, string> = {};
@@ -139,21 +139,22 @@ export default function AboutPage() {
           setTextSettings(prev => ({ ...prev, ...mapping }));
         }
       })
-      .catch(err => console.error("Error loading about text layouts:", err));
-    const fetchStatsAndDonations = () => {
-      // 4. Fetch stats cards configuration
-      fetch('/api/stats-cards')
-        .then(res => res.json())
-        .then(data => {
+      .catch(() => {});
+
+    const fetchStatsAndDonations = async () => {
+      try {
+        const res = await fetch('/api/stats-cards');
+        if (res.ok && res.headers.get("content-type")?.includes("application/json")) {
+          const data = await res.json();
           if (Array.isArray(data)) {
             setStats(data);
           }
-        })
-        .catch(err => console.error("Error fetching stats cards configuration:", err));
+        }
+      } catch (_) {}
     };
 
     fetchStatsAndDonations();
-    const statsInterval = setInterval(fetchStatsAndDonations, 5000); // Poll stats every 5 seconds for real-time updates
+    const statsInterval = setInterval(fetchStatsAndDonations, 10000);
 
     return () => {
       clearInterval(statsInterval);
