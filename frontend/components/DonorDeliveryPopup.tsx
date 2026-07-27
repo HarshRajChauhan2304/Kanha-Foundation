@@ -47,6 +47,17 @@ export default function DonorDeliveryPopup() {
     };
 
     fetchProofs();
+
+    const handleCustomOpen = (e: CustomEvent) => {
+      if (e.detail) {
+        setCurrentProof(e.detail);
+        setIsOpen(true);
+      }
+    };
+    window.addEventListener("open_donor_proof" as any, handleCustomOpen as any);
+    return () => {
+      window.removeEventListener("open_donor_proof" as any, handleCustomOpen as any);
+    };
   }, []);
 
   const handleClose = () => {

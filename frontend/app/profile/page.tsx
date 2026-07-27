@@ -4,10 +4,16 @@ import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface DonationItem {
+  id?: number;
   title: string;
   amount: string;
   date: string;
   status: string;
+  proof_media?: string;
+  beneficiary_name?: string;
+  feedback?: string;
+  cause?: string;
+  quantity?: string;
 }
 
 export default function UserProfilePage() {
@@ -448,8 +454,51 @@ export default function UserProfilePage() {
                       </p>
                     </div>
 
-                    <div className="text-left sm:text-right">
+                    <div className="text-left sm:text-right flex flex-col items-start sm:items-end gap-2">
                       <span className="text-base font-black text-[#F3A61E]">{d.amount}</span>
+                      
+                      <button
+                        onClick={async () => {
+                          if (d.proof_media) {
+                            window.dispatchEvent(new CustomEvent("open_donor_proof", {
+                              detail: {
+                                id: d.id || index + 1,
+                                task_title: d.title,
+                                proof_media: d.proof_media,
+                                beneficiary_name: d.beneficiary_name || "Underprivileged Beneficiary",
+                                feedback: d.feedback || "Donation successfully delivered on-ground.",
+                                donor_name: name,
+                                cause: d.cause || d.title,
+                                quantity: d.quantity || "Relief Items",
+                                donation_amount: d.amount
+                              }
+                            }));
+                          } else {
+                            try {
+                              const res = await fetch('/api/volunteer/tasks');
+                              const data = await res.json();
+                              if (data.success && Array.isArray(data.tasks)) {
+                                const taskProof = data.tasks.find((t: any) => t.status === "Completed" && t.proof_media);
+                                if (taskProof) {
+                                  window.dispatchEvent(new CustomEvent("open_donor_proof", { 
+                                    detail: { 
+                                      ...taskProof, 
+                                      donor_name: name,
+                                      cause: d.title,
+                                      donation_amount: d.amount 
+                                    } 
+                                  }));
+                                  return;
+                                }
+                              }
+                            } catch (e) {}
+                            alert("On-ground field proof is being uploaded by our active volunteers for this campaign.");
+                          }
+                        }}
+                        className="px-3.5 py-1.5 bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-500/40 text-emerald-400 text-[11px] font-black rounded-xl cursor-pointer flex items-center gap-1.5 shadow-sm transition-all"
+                      >
+                        <span>📸 View Beneficiary Impact Frame</span>
+                      </button>
                     </div>
                   </div>
                 ))}

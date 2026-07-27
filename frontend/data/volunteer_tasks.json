@@ -20,6 +20,7 @@
     "money_received": 800,
     "money_spent": 800,
     "proof_media": "https://cwpfhfcxpeqiihiqxqtu.supabase.co/storage/v1/object/public/uploads/1785183580377_Screenshot_2026_07_26_012734.png",
-    "feedback": "best"
+    "feedback": "best",
+    "admin_verified": true
   }
 ]
