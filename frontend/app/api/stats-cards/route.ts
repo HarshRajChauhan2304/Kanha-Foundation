@@ -170,11 +170,19 @@ export async function GET() {
     // Save updated cards to cache file
     saveLocalCards(updatedCards);
 
-    return NextResponse.json(updatedCards);
+    return NextResponse.json(updatedCards, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=10, stale-while-revalidate=60'
+      }
+    });
 
   } catch (error: any) {
     console.error("Error dynamically aggregating stats cards:", error);
-    return NextResponse.json(getLocalCards());
+    return NextResponse.json(getLocalCards(), {
+      headers: {
+        'Cache-Control': 'public, s-maxage=10, stale-while-revalidate=60'
+      }
+    });
   }
 }
 
