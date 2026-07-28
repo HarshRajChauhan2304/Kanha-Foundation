@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { compressImage } from '@/lib/compress-image';
 
 export default function VolunteerRegistrationPage() {
   // Form states
@@ -40,9 +41,10 @@ export default function VolunteerRegistrationPage() {
     if (!file) return;
     setIsPhotoUploading(true);
     setErrorMsg("");
-    const formData = new FormData();
-    formData.append("file", file);
     try {
+      const fileToUpload = await compressImage(file);
+      const formData = new FormData();
+      formData.append("file", fileToUpload);
       const res = await fetch('/api/upload', { method: 'POST', body: formData });
       const data = await res.json();
       if (data.success) {
@@ -52,7 +54,7 @@ export default function VolunteerRegistrationPage() {
         setErrorMsg(data.error || "Failed to upload photo.");
       }
     } catch (err) {
-      setErrorMsg("Error uploading photo.");
+      setErrorMsg("Error uploading photo. Please try a smaller image.");
     } finally {
       setIsPhotoUploading(false);
     }
@@ -63,9 +65,10 @@ export default function VolunteerRegistrationPage() {
     if (!file) return;
     setIsAadharUploading(true);
     setErrorMsg("");
-    const formData = new FormData();
-    formData.append("file", file);
     try {
+      const fileToUpload = await compressImage(file);
+      const formData = new FormData();
+      formData.append("file", fileToUpload);
       const res = await fetch('/api/upload', { method: 'POST', body: formData });
       const data = await res.json();
       if (data.success) {
@@ -75,7 +78,7 @@ export default function VolunteerRegistrationPage() {
         setErrorMsg(data.error || "Failed to upload Aadhaar card.");
       }
     } catch (err) {
-      setErrorMsg("Error uploading Aadhaar card.");
+      setErrorMsg("Error uploading Aadhaar card. Please try a smaller image.");
     } finally {
       setIsAadharUploading(false);
     }

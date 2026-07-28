@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
+import { compressImage } from '@/lib/compress-image';
 
 interface Volunteer {
   id: number;
@@ -863,9 +864,10 @@ export default function VolunteerProfilePage() {
                         const file = e.target.files?.[0];
                         if (!file) return;
                         setIsFormPhotoUploading(true);
-                        const formData = new FormData();
-                        formData.append("file", file);
                         try {
+                          const fileToUpload = await compressImage(file);
+                          const formData = new FormData();
+                          formData.append("file", fileToUpload);
                           const res = await fetch('/api/upload', { method: 'POST', body: formData });
                           const data = await res.json();
                           if (data.success) setFormProfilePhoto(data.url);
@@ -968,9 +970,10 @@ export default function VolunteerProfilePage() {
                           const file = e.target.files?.[0];
                           if (!file) return;
                           setIsFormAadharUploading(true);
-                          const formData = new FormData();
-                          formData.append("file", file);
                           try {
+                            const fileToUpload = await compressImage(file);
+                            const formData = new FormData();
+                            formData.append("file", fileToUpload);
                             const res = await fetch('/api/upload', { method: 'POST', body: formData });
                             const data = await res.json();
                             if (data.success) setFormAadharUploadUrl(data.url);

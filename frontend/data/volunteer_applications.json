@@ -56,5 +56,37 @@
     "certificate_signature_image_url": "",
     "certificate_seal_image_url": "",
     "id": 29
+  },
+  {
+    "name": "Harsh Raj Chauhan",
+    "email": "harshrajchauhan2399@gmail.com",
+    "phone": "+917488164529",
+    "city": "Greater Noida",
+    "motivation": "I WANT TO JOIN",
+    "skills": [
+      "Food Distribution & Relief Work",
+      "Children Education & Mentoring",
+      "Animal Welfare & Rescue support",
+      "Tree Plantation & Nature Drives"
+    ],
+    "status": "Pending",
+    "password": "Harsh@123",
+    "profile_photo": "https://cwpfhfcxpeqiihiqxqtu.supabase.co/storage/v1/object/public/uploads/1785252237754_harsh_pic_removebg_preview.png",
+    "gender": "Male",
+    "terms_accepted": true,
+    "aadhar_number": "665589796701",
+    "aadhar_upload_url": "https://cwpfhfcxpeqiihiqxqtu.supabase.co/storage/v1/object/public/uploads/1785252251641_HARSH_AADHAR_CARD.pdf",
+    "internship_duration": "12 Months",
+    "certificate_url": "",
+    "certificate_issue_date": "",
+    "internship_start_date": "",
+    "internship_end_date": "",
+    "certificate_text": "",
+    "certificate_signature_name": "",
+    "certificate_signature_title": "",
+    "certificate_seal_text": "",
+    "certificate_signature_image_url": "",
+    "certificate_seal_image_url": "",
+    "id": 31
   }
 ]
