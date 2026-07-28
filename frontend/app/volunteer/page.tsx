@@ -46,6 +46,18 @@ export default function VolunteerRegistrationPage() {
       const formData = new FormData();
       formData.append("file", fileToUpload);
       const res = await fetch('/api/upload', { method: 'POST', body: formData });
+      if (!res.ok) {
+        const text = await res.text();
+        let errMsg = "Upload failed";
+        try {
+          const parsed = JSON.parse(text);
+          errMsg = parsed.error || errMsg;
+        } catch {
+          if (res.status === 413) errMsg = "File is too large (max 10MB).";
+        }
+        setErrorMsg(errMsg);
+        return;
+      }
       const data = await res.json();
       if (data.success) {
         setProfilePhoto(data.url);
@@ -53,8 +65,9 @@ export default function VolunteerRegistrationPage() {
       } else {
         setErrorMsg(data.error || "Failed to upload photo.");
       }
-    } catch (err) {
-      setErrorMsg("Error uploading photo. Please try a smaller image.");
+    } catch (err: any) {
+      console.error("Photo upload error:", err);
+      setErrorMsg(err?.message || "Error uploading photo. Please try again.");
     } finally {
       setIsPhotoUploading(false);
     }
@@ -66,10 +79,26 @@ export default function VolunteerRegistrationPage() {
     setIsAadharUploading(true);
     setErrorMsg("");
     try {
+      if (file.size > 10 * 1024 * 1024 && (file.type === 'application/pdf' || file.name.endsWith('.pdf'))) {
+        setErrorMsg("PDF file is too large (max 10MB). Please select a smaller PDF.");
+        return;
+      }
       const fileToUpload = await compressImage(file);
       const formData = new FormData();
       formData.append("file", fileToUpload);
       const res = await fetch('/api/upload', { method: 'POST', body: formData });
+      if (!res.ok) {
+        const text = await res.text();
+        let errMsg = "Upload failed";
+        try {
+          const parsed = JSON.parse(text);
+          errMsg = parsed.error || errMsg;
+        } catch {
+          if (res.status === 413) errMsg = "File is too large (max 10MB).";
+        }
+        setErrorMsg(errMsg);
+        return;
+      }
       const data = await res.json();
       if (data.success) {
         setAadharPhoto(data.url);
@@ -77,8 +106,9 @@ export default function VolunteerRegistrationPage() {
       } else {
         setErrorMsg(data.error || "Failed to upload Aadhaar card.");
       }
-    } catch (err) {
-      setErrorMsg("Error uploading Aadhaar card. Please try a smaller image.");
+    } catch (err: any) {
+      console.error("Aadhaar upload error:", err);
+      setErrorMsg(err?.message || "Error uploading Aadhaar card. Please try again.");
     } finally {
       setIsAadharUploading(false);
     }
