@@ -209,11 +209,25 @@ function DonateCheckoutPageContent() {
   const [errorMsg, setErrorMsg] = useState("");
 
   // Sum calculations based on chosen local selection
-  const totalAmount = localCart.reduce((sum, item) => {
+  const baseCartTotal = localCart.reduce((sum, item) => {
     const clean = item.amount ? item.amount.replace(/[a-zA-Z]+\.?/g, "").trim() : "0";
     const numericStr = clean.replace(/[^0-9.]/g, "");
     return sum + (parseFloat(numericStr) || 0);
   }, 0);
+
+  // Dynamic +₹100 top-up per 600 or 1200 Birthday Cause when NOT anonymous (customization requested)
+  const birthdayTopup = localCart.reduce((acc, item) => {
+    const isBirthday = item.category === "Birthday Giving" || item.title?.toLowerCase().includes("birthday");
+    if (isBirthday && !isAnonymous) {
+      const cleanNum = parseFloat((item.amount || "").replace(/[^0-9.]/g, "")) || 0;
+      if (cleanNum === 600 || cleanNum === 1200) {
+        return acc + 100;
+      }
+    }
+    return acc;
+  }, 0);
+
+  const totalAmount = baseCartTotal + birthdayTopup;
 
   const handleCashfreePayment = async (amountToSend: number) => {
     try {
@@ -514,7 +528,7 @@ function DonateCheckoutPageContent() {
                 >
                   <option value="">-- Choose a cause to support --</option>
                   {cartItems.length > 0 && (
-                    <option value="cart">Items in your cart ({cartItems.length} items)</option>
+                    <option value="cart">Selected Cause from Cart ({cartItems[0]?.title || '1 Item'})</option>
                   )}
                   {causesList.map((c) => (
                     <option key={c.id} value={c.id.toString()}>
@@ -548,26 +562,40 @@ function DonateCheckoutPageContent() {
                 Add the details (optional premium field unlock at ₹700+).
               </p>
 
-              <div className="grid gap-6 md:grid-cols-12 items-start mt-4">
-                {/* Anonymous Box - Col 5 */}
-                <div className="md:col-span-5 bg-gray-50/75 dark:bg-zinc-950/40 border border-zinc-200 dark:border-zinc-800 p-5 rounded-2xl flex flex-col justify-start text-left min-h-[160px]">
-                  <label className="flex items-start gap-3 cursor-pointer select-none">
-                    <input
-                      type="checkbox"
-                      checked={isAnonymous}
-                      onChange={(e) => handleAnonymousChange(e.target.checked)}
-                      className="h-4.5 w-4.5 mt-0.5 rounded border-gray-300 dark:border-gray-700 text-[#5850ec] focus:ring-[#5850ec]"
-                    />
-                    <div className="space-y-1">
-                      <span className="text-xs font-black text-gray-900 dark:text-white">
-                        Make my donation anonymous <span className="text-[10px] text-zinc-555 dark:text-zinc-500 font-medium">(skip all customisation)</span>
-                      </span>
-                      <p className="text-[10px] text-gray-500 dark:text-zinc-500 leading-normal font-bold">
-                        If selected, we will process your donation without printed name, wishes, or special requests.
-                      </p>
+              {(() => {
+                const isBirthdayCartCause = localCart.some(item => item.category === "Birthday Giving" || item.title?.toLowerCase().includes("birthday"));
+                return (
+                  <div className="grid gap-6 md:grid-cols-12 items-start mt-4">
+                    {/* Anonymous Box - Col 5 (Exclusive to Birthday Causes) */}
+                    <div className="md:col-span-5 bg-gray-50/75 dark:bg-zinc-950/40 border border-zinc-200 dark:border-zinc-800 p-5 rounded-2xl flex flex-col justify-start text-left min-h-[160px]">
+                      {isBirthdayCartCause ? (
+                        <label className="flex items-start gap-3 cursor-pointer select-none">
+                          <input
+                            type="checkbox"
+                            checked={isAnonymous}
+                            onChange={(e) => handleAnonymousChange(e.target.checked)}
+                            className="h-4.5 w-4.5 mt-0.5 rounded border-gray-300 dark:border-gray-700 text-[#5850ec] focus:ring-[#5850ec]"
+                          />
+                          <div className="space-y-1">
+                            <span className="text-xs font-black text-gray-900 dark:text-white">
+                              Make my donation anonymous <span className="text-[10px] text-zinc-555 dark:text-zinc-500 font-medium">(skip all customisation)</span>
+                            </span>
+                            <p className="text-[10px] text-gray-500 dark:text-zinc-500 leading-normal font-bold">
+                              If selected, we will process your donation without printed name, wishes, or special requests.
+                            </p>
+                          </div>
+                        </label>
+                      ) : (
+                        <div className="space-y-1 my-auto">
+                          <span className="text-xs font-black text-[#1E4D2B] dark:text-[#52c47c] flex items-center gap-1">
+                            <span>🎂 Birthday Anonymous Option</span>
+                          </span>
+                          <p className="text-[10px] text-gray-500 dark:text-zinc-400 leading-normal font-bold mt-1">
+                            Anonymous donation option is applicable exclusively for Birthday Giving causes.
+                          </p>
+                        </div>
+                      )}
                     </div>
-                  </label>
-                </div>
 
                 {/* Customisation inputs - Col 7 */}
                 <div className="md:col-span-7 space-y-4 text-left">
@@ -621,6 +649,8 @@ function DonateCheckoutPageContent() {
                   )}
                 </div>
               </div>
+            );
+          })()}
 
               {/* Premium Fields Subsection */}
               {!isAnonymous && totalAmount >= 700 && (

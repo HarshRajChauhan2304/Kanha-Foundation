@@ -27,7 +27,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const addToCart = (item: Omit<CartItem, "id">) => {
     const newItem = {
       ...item,
-      id: Date.now(),
+      id: Date.now() + Math.floor(Math.random() * 1000),
     };
     setCartItems((prev) => [...prev, newItem]);
     setIsCartOpen(true); // Auto-open cart to show success!

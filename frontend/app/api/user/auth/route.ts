@@ -126,7 +126,7 @@ export async function POST(request: Request) {
       // 2. Save to Supabase
       try {
         const supabasePhone = phone ? `${phone}__GENDER:${gender || ''}` : `__GENDER:${gender || ''}`;
-        const { data, error } = await supabaseAdmin
+        let { data, error } = await supabaseAdmin
           .from('users')
           .insert([{
             username,
@@ -138,6 +138,22 @@ export async function POST(request: Request) {
           }])
           .select()
           .single();
+
+        if (error && error.message?.includes('dob')) {
+          const retry = await supabaseAdmin
+            .from('users')
+            .insert([{
+              username,
+              email: email.trim().toLowerCase(),
+              phone: supabasePhone,
+              gender: gender || "",
+              password
+            }])
+            .select()
+            .single();
+          data = retry.data;
+          error = retry.error;
+        }
 
         if (!error && data) {
           // Replace temp id with Supabase id locally
@@ -171,20 +187,34 @@ export async function POST(request: Request) {
 
       // 1. Try to update in Supabase
       try {
-        const { data, error } = await supabaseAdmin
+        let updatePayload: any = {
+          username: newUsername,
+          email: newEmail ? newEmail.trim().toLowerCase() : undefined,
+          phone: newPhone,
+          avatar: newAvatar,
+          gender: newGender,
+          bio: newBio,
+          dob: newDob
+        };
+
+        let { data, error } = await supabaseAdmin
           .from('users')
-          .update({
-            username: newUsername,
-            email: newEmail ? newEmail.trim().toLowerCase() : undefined,
-            phone: newPhone,
-            avatar: newAvatar,
-            gender: newGender,
-            bio: newBio,
-            dob: newDob
-          })
+          .update(updatePayload)
           .eq('email', currentEmail.trim().toLowerCase())
           .select()
           .single();
+
+        if (error && error.message?.includes('dob')) {
+          delete updatePayload.dob;
+          const retry = await supabaseAdmin
+            .from('users')
+            .update(updatePayload)
+            .eq('email', currentEmail.trim().toLowerCase())
+            .select()
+            .single();
+          data = retry.data;
+          error = retry.error;
+        }
 
         if (error) {
           console.error("Supabase users update error:", error);

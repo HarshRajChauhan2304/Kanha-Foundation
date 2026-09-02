@@ -89,11 +89,24 @@ export async function resilientPost({
       delete supabaseData.terms_accepted;
     }
 
-    const { data, error } = await supabaseAdmin
+    let { data, error } = await supabaseAdmin
       .from(table)
       .insert([supabaseData])
       .select()
       .single();
+
+    if (error && error.message?.includes('dob')) {
+      // Retry without dob column if remote Supabase schema cache does not have dob column
+      const retryData = { ...supabaseData };
+      delete retryData.dob;
+      const retry = await supabaseAdmin
+        .from(table)
+        .insert([retryData])
+        .select()
+        .single();
+      data = retry.data;
+      error = retry.error;
+    }
 
     if (error) {
       dbErrorMsg = error.message;
@@ -178,12 +191,25 @@ export async function resilientPut({
       delete supabaseData.terms_accepted;
     }
 
-    const { data, error } = await supabaseAdmin
+    let { data, error } = await supabaseAdmin
       .from(table)
       .update(supabaseData)
       .eq(idField, idOrKey)
       .select()
       .single();
+
+    if (error && error.message?.includes('dob')) {
+      const retryData = { ...supabaseData };
+      delete retryData.dob;
+      const retry = await supabaseAdmin
+        .from(table)
+        .update(retryData)
+        .eq(idField, idOrKey)
+        .select()
+        .single();
+      data = retry.data;
+      error = retry.error;
+    }
 
     if (error) {
       dbErrorMsg = error.message;
