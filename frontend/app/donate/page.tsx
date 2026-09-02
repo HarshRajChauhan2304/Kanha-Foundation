@@ -131,15 +131,53 @@ function DonateCheckoutPageContent() {
     }
   };
 
+  const toggleCauseSelection = (cause: any) => {
+    setLocalCart((prev) => {
+      const exists = prev.some((item) => String(item.id) === String(cause.id));
+      if (exists) {
+        return prev.filter((item) => String(item.id) !== String(cause.id));
+      } else {
+        return [
+          ...prev,
+          {
+            id: cause.id,
+            title: cause.title,
+            amount: cause.price,
+            category: cause.category,
+          },
+        ];
+      }
+    });
+  };
+
+  const isCustomSelected = localCart.some((item) => item.id === "custom");
+
+  const toggleCustomAmount = (checked: boolean) => {
+    setLocalCart((prev) => {
+      if (checked) {
+        const filtered = prev.filter((item) => item.id !== "custom");
+        return [
+          ...filtered,
+          {
+            id: "custom",
+            title: "General Support",
+            amount: `₹${customAmount}`,
+            category: "Giving To The Needy",
+          },
+        ];
+      } else {
+        return prev.filter((item) => item.id !== "custom");
+      }
+    });
+  };
+
   const handleCustomAmountChange = (val: string) => {
     setCustomAmount(val);
-    if (selectedCauseId === "custom") {
-      setLocalCart([{
-        id: "custom",
-        title: "General Support",
-        amount: `₹${val}`
-      }]);
-    }
+    setLocalCart((prev) =>
+      prev.map((item) =>
+        item.id === "custom" ? { ...item, amount: `₹${val}` } : item
+      )
+    );
   };
   const [receiveMarketing, setReceiveMarketing] = useState(true);
   const [marketingPhone, setMarketingPhone] = useState("+91");
@@ -512,47 +550,90 @@ function DonateCheckoutPageContent() {
               </AnimatePresence>
             </div>
 
-            {/* Step 2: Choose Cause / Product to Support */}
-            <div className="space-y-4 border-t border-gray-100 dark:border-zinc-800/80 pt-6">
-              <h2 className="text-lg font-black text-gray-900 dark:text-white flex items-center gap-2">
-                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#1E4D2B] text-white text-xs font-black">2</span>
-                Choose Cause to Support
-              </h2>
-
-              <div>
-                <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Select Donation Target</label>
-                <select
-                  value={selectedCauseId}
-                  onChange={(e) => handleCauseChange(e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-50 dark:bg-[#0c1510] border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-gray-800 dark:text-white font-semibold focus:outline-none focus:ring-1 focus:ring-[#1E4D2B]"
-                >
-                  <option value="">-- Choose a cause to support --</option>
-                  {cartItems.length > 0 && (
-                    <option value="cart">Selected Cause from Cart ({cartItems[0]?.title || '1 Item'})</option>
-                  )}
-                  {causesList.map((c) => (
-                    <option key={c.id} value={c.id.toString()}>
-                      {c.title} ({c.price})
-                    </option>
-                  ))}
-                  <option value="custom">General Support / Custom Amount</option>
-                </select>
+            {/* Step 2: Choose Cause / Product to Support (Multi-Cause Checkbox List) */}
+            <div className="space-y-4 border-t border-gray-100 dark:border-zinc-800/80 pt-6 text-left">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <h2 className="text-lg font-black text-gray-900 dark:text-white flex items-center gap-2">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#1E4D2B] text-white text-xs font-black">2</span>
+                  Choose Causes to Support <span className="text-xs font-bold text-[#52c47c]">(Select Multiple)</span>
+                </h2>
+                <span className="px-3 py-1 bg-emerald-950/20 text-[#52c47c] border border-emerald-900/35 rounded-full text-[10px] font-black uppercase tracking-wider">
+                  {localCart.length} {localCart.length === 1 ? 'Cause' : 'Causes'} Selected
+                </span>
               </div>
 
-              {selectedCauseId === "custom" && (
-                <div className="mt-3">
-                  <label className="block text-[10px] font-black text-gray-555 dark:text-gray-400 uppercase tracking-wider mb-2">Enter Custom Amount (₹)</label>
+              <p className="text-xs text-gray-500 dark:text-gray-400 font-bold -mt-1">
+                Check one or multiple causes to combine them in your single donation transaction.
+              </p>
+
+              {/* Multi-Select Causes Grid */}
+              <div className="grid gap-3.5 sm:grid-cols-2 mt-4">
+                {causesList.map((c) => {
+                  const isChecked = localCart.some((item) => String(item.id) === String(c.id));
+                  return (
+                    <div
+                      key={c.id}
+                      onClick={() => toggleCauseSelection(c)}
+                      className={`p-4 rounded-2xl border transition-all duration-200 cursor-pointer flex items-start gap-3.5 select-none ${
+                        isChecked
+                          ? 'bg-emerald-950/20 border-emerald-500/60 shadow-sm ring-1 ring-emerald-500/30'
+                          : 'bg-gray-50/70 dark:bg-[#0c1510] border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700'
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={() => {}} // Handled by container onClick
+                        className="h-5 w-5 mt-0.5 rounded border-gray-300 dark:border-gray-700 text-[#1E4D2B] focus:ring-[#1E4D2B] cursor-pointer"
+                      />
+                      <div className="flex-1 min-w-0 space-y-1.5 text-left">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-[9px] font-black uppercase tracking-wider text-[#52c47c]">
+                            {c.category}
+                          </span>
+                          <span className="text-xs font-black text-[#1E4D2B] dark:text-[#52c47c]">
+                            {c.price}
+                          </span>
+                        </div>
+                        <p className="text-xs font-extrabold text-gray-900 dark:text-white line-clamp-2 leading-snug">
+                          {c.title}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Custom Amount Checkbox Option */}
+              <div className="mt-4 bg-gray-50/70 dark:bg-[#0c1510] border border-gray-200 dark:border-gray-800 p-4 rounded-2xl space-y-3 text-left">
+                <label className="flex items-center gap-3 cursor-pointer select-none">
                   <input
-                    type="number"
-                    min="10"
-                    required
-                    value={customAmount}
-                    onChange={(e) => handleCustomAmountChange(e.target.value)}
-                    placeholder="e.g. 1000"
-                    className="w-full px-4 py-3 bg-gray-50 dark:bg-[#0c1510] border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-gray-900 dark:text-white font-bold focus:outline-none focus:ring-1 focus:ring-[#1E4D2B]"
+                    type="checkbox"
+                    checked={isCustomSelected}
+                    onChange={(e) => toggleCustomAmount(e.target.checked)}
+                    className="h-5 w-5 rounded border-gray-300 dark:border-gray-700 text-[#1E4D2B] focus:ring-[#1E4D2B]"
                   />
-                </div>
-              )}
+                  <span className="text-xs font-black text-gray-900 dark:text-white">
+                    General Support / Enter Custom Amount (₹)
+                  </span>
+                </label>
+
+                {isCustomSelected && (
+                  <div className="pt-2">
+                    <input
+                      type="number"
+                      min="10"
+                      required
+                      value={customAmount}
+                      onChange={(e) => {
+                        handleCustomAmountChange(e.target.value);
+                      }}
+                      placeholder="e.g. 1000"
+                      className="w-full px-4 py-3 bg-white dark:bg-[#101412] border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-gray-900 dark:text-white font-bold focus:outline-none focus:ring-1 focus:ring-[#1E4D2B]"
+                    />
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Review & Customise Block */}
