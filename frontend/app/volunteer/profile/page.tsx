@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { compressImage } from '@/lib/compress-image';
+import BirthdayWishModal from "@/components/BirthdayWishModal";
 
 interface Volunteer {
   id: number;
@@ -16,6 +17,7 @@ interface Volunteer {
   created_at: string;
   profile_photo?: string;
   gender?: string;
+  dob?: string;
   terms_accepted?: boolean;
   aadhar_number?: string;
   aadhar_upload_url?: string;
@@ -44,6 +46,7 @@ export default function VolunteerProfilePage() {
   const router = useRouter();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [volunteer, setVolunteer] = useState<Volunteer | null>(null);
+  const [showBirthdayModal, setShowBirthdayModal] = useState(false);
 
   const computeEndDate = (startDateStr: string, durationStr: string) => {
     if (!startDateStr) return "";
@@ -86,6 +89,7 @@ export default function VolunteerProfilePage() {
   const [formMotivation, setFormMotivation] = useState("");
   const [formSkills, setFormSkills] = useState<string[]>([]);
   const [formGender, setFormGender] = useState("");
+  const [formDob, setFormDob] = useState("");
   const [formProfilePhoto, setFormProfilePhoto] = useState("");
   const [isFormPhotoUploading, setIsFormPhotoUploading] = useState(false);
   const [formAadharNumber, setFormAadharNumber] = useState("");
@@ -269,6 +273,28 @@ export default function VolunteerProfilePage() {
     }
   }, []);
 
+  // Check DOB for Birthday Popup Modal
+  useEffect(() => {
+    if (volunteer && volunteer.dob) {
+      const today = new Date();
+      const todayMMDD = `${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
+      let dobMMDD = "";
+      if (volunteer.dob.includes("-")) {
+        const parts = volunteer.dob.split("-");
+        if (parts.length === 3) {
+          if (parts[0].length === 4) dobMMDD = `${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
+          else if (parts[2].length === 4) dobMMDD = `${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+        }
+      }
+
+      if (dobMMDD === todayMMDD) {
+        setShowBirthdayModal(true);
+        fetch('/api/cron/birthday', { method: 'POST' }).catch(() => {});
+      }
+    }
+  }, [volunteer]);
+
   // Check if a certificate is available and show the celebration popup
   useEffect(() => {
     if (volunteer && volunteer.certificate_url) {
@@ -348,6 +374,7 @@ export default function VolunteerProfilePage() {
     setFormMotivation(volunteer.motivation || "");
     setFormSkills(volunteer.skills || []);
     setFormGender(volunteer.gender || "");
+    setFormDob(volunteer.dob || "");
     setFormProfilePhoto(volunteer.profile_photo || "");
     setFormAadharNumber(volunteer.aadhar_number || "");
     setFormAadharUploadUrl(volunteer.aadhar_upload_url || "");
@@ -376,9 +403,10 @@ export default function VolunteerProfilePage() {
           city: formCity,
           motivation: formMotivation,
           skills: formSkills,
-           status: volunteer.status,
+          status: volunteer.status,
           profile_photo: formProfilePhoto,
           gender: formGender,
+          dob: formDob,
           aadhar_number: formAadharNumber,
           aadhar_upload_url: formAadharUploadUrl
         })
@@ -408,6 +436,14 @@ export default function VolunteerProfilePage() {
   return (
     <div className={`bg-zinc-950 text-white min-h-screen px-4 flex flex-col items-center justify-center font-sans relative overflow-hidden ${isLoggedIn ? "pt-28 pb-12" : "py-24"}`}>
       
+      {/* Birthday Celebration Wish Modal */}
+      <BirthdayWishModal
+        isOpen={showBirthdayModal}
+        onClose={() => setShowBirthdayModal(false)}
+        userName={volunteer?.name || 'Volunteer'}
+        userType="volunteer"
+      />
+
       {/* Decorative Floating Glassmorphic Blobs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
         <div className="absolute top-[15%] left-[5%] w-[380px] h-[380px] rounded-full bg-[#1E4D2B]/15 blur-[90px] animate-pulse duration-[8000ms]" />
@@ -618,6 +654,10 @@ export default function VolunteerProfilePage() {
                   <div>
                     <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest block">Gender</label>
                     <p className="text-sm font-extrabold text-white mt-1">{volunteer?.gender || "Not Specified"}</p>
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest block">Date of Birth (DOB)</label>
+                    <p className="text-sm font-extrabold text-white mt-1">{volunteer?.dob || "Not Specified"}</p>
                   </div>
                   <div>
                     <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest block">Email Address</label>
@@ -1151,28 +1191,44 @@ export default function VolunteerProfilePage() {
 
                     {/* Previews with Delete button */}
                     {proofMediaList.length > 0 && (
-                      <div className="grid grid-cols-4 gap-2 bg-zinc-950 p-2.5 rounded-xl border border-zinc-800">
-                        {proofMediaList.map((url, pIdx) => {
-                          const isVideo = url.endsWith(".mp4") || url.endsWith(".mov") || url.includes("video");
-                          return (
-                            <div key={pIdx} className="relative aspect-video rounded-lg overflow-hidden border border-zinc-800 group shadow-inner">
-                              {isVideo ? (
-                                <video src={url} className="object-cover w-full h-full" />
-                              ) : (
-                                <img src={url} alt="proof thumbnail preview" className="object-cover w-full h-full" />
-                              )}
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setProofMediaList(prev => prev.filter((_, idx) => idx !== pIdx));
-                                }}
-                                className="absolute inset-0 bg-red-650/80 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-[9px] font-black uppercase cursor-pointer"
-                              >
-                                Delete
-                              </button>
-                            </div>
-                          );
-                        })}
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between text-[10px] text-zinc-400 font-bold px-1">
+                          <span>Uploaded Files ({proofMediaList.length})</span>
+                          <span className="text-emerald-400 font-extrabold">Ready for submission</span>
+                        </div>
+                        <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 bg-zinc-950 p-2.5 rounded-xl border border-zinc-800">
+                          {proofMediaList.map((url, pIdx) => {
+                            const isVid = url.endsWith(".mp4") || url.endsWith(".mov") || url.endsWith(".webm") || url.includes("video");
+                            return (
+                              <div key={pIdx} className="relative aspect-video rounded-lg overflow-hidden border border-zinc-800 group shadow-inner">
+                                {isVid ? (
+                                  <div className="w-full h-full bg-zinc-900 relative">
+                                    <video src={url} className="object-cover w-full h-full" />
+                                    <span className="absolute bottom-1 right-1 bg-black/80 text-[7px] text-emerald-400 px-1 py-0.2 rounded font-extrabold uppercase">
+                                      VIDEO
+                                    </span>
+                                  </div>
+                                ) : (
+                                  <div className="w-full h-full relative">
+                                    <img src={url} alt="proof thumbnail preview" className="object-cover w-full h-full" />
+                                    <span className="absolute bottom-1 right-1 bg-black/80 text-[7px] text-zinc-300 px-1 py-0.2 rounded font-extrabold uppercase">
+                                      PIC
+                                    </span>
+                                  </div>
+                                )}
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setProofMediaList(prev => prev.filter((_, idx) => idx !== pIdx));
+                                  }}
+                                  className="absolute inset-0 bg-red-600/90 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-[10px] font-black uppercase cursor-pointer"
+                                >
+                                  Remove 🗑️
+                                </button>
+                              </div>
+                            );
+                          })}
+                        </div>
                       </div>
                     )}
                   </div>

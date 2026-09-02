@@ -32,7 +32,7 @@ const saveLocalUsers = (users: any[]) => {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { action, username, email, phone, password, gender } = body;
+    const { action, username, email, phone, password, gender, dob } = body;
 
     const localUsers = getLocalUsers();
 
@@ -86,6 +86,7 @@ export async function POST(request: Request) {
           email: user.email,
           phone: displayPhone,
           gender: parsedGender || user.gender || "",
+          dob: user.dob || "",
           avatar: user.avatar || "",
           bio: user.bio || ""
         }
@@ -113,6 +114,7 @@ export async function POST(request: Request) {
         email: email.trim().toLowerCase(),
         phone: phone || "",
         gender: gender || "",
+        dob: dob || "",
         password,
         created_at: new Date().toISOString()
       };
@@ -131,6 +133,7 @@ export async function POST(request: Request) {
             email: email.trim().toLowerCase(),
             phone: supabasePhone,
             gender: gender || "",
+            dob: dob || "",
             password
           }])
           .select()
@@ -141,7 +144,8 @@ export async function POST(request: Request) {
           const parsedData = {
             ...data,
             phone: phone || "",
-            gender: gender || ""
+            gender: gender || "",
+            dob: dob || ""
           };
           const updatedLocal = localUsers.map(u => u.id === newUser.id ? parsedData : u);
           saveLocalUsers(updatedLocal);
@@ -157,7 +161,7 @@ export async function POST(request: Request) {
     }
 
     if (action === "update") {
-      const { currentEmail, username: newUsername, email: newEmail, phone: newPhone, avatar: newAvatar, gender: newGender, bio: newBio } = body;
+      const { currentEmail, username: newUsername, email: newEmail, phone: newPhone, avatar: newAvatar, gender: newGender, bio: newBio, dob: newDob } = body;
       if (!currentEmail) {
         return NextResponse.json({ success: false, error: "Missing currentEmail identifier." }, { status: 400 });
       }
@@ -175,7 +179,8 @@ export async function POST(request: Request) {
             phone: newPhone,
             avatar: newAvatar,
             gender: newGender,
-            bio: newBio
+            bio: newBio,
+            dob: newDob
           })
           .eq('email', currentEmail.trim().toLowerCase())
           .select()
@@ -202,7 +207,8 @@ export async function POST(request: Request) {
             phone: newPhone !== undefined ? newPhone : u.phone,
             avatar: newAvatar !== undefined ? newAvatar : u.avatar,
             gender: newGender !== undefined ? newGender : u.gender,
-            bio: newBio !== undefined ? newBio : u.bio
+            bio: newBio !== undefined ? newBio : u.bio,
+            dob: newDob !== undefined ? newDob : u.dob
           };
         }
         return u;

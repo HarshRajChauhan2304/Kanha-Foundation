@@ -4809,18 +4809,33 @@ export default function AdminPanelPage() {
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-2">Uploaded Proof Media</label>
-                  <div className="border border-zinc-800 rounded-2xl overflow-hidden bg-black/40 h-56 flex items-center justify-center">
-                    {viewingTaskProof.proof_media ? (
-                      viewingTaskProof.proof_media.endsWith(".mp4") || viewingTaskProof.proof_media.endsWith(".mov") ? (
-                        <video src={viewingTaskProof.proof_media} className="h-full w-full object-cover animate-fade-in" controls />
-                      ) : (
-                        <img src={viewingTaskProof.proof_media} alt="Proof Submission" className="h-full w-full object-cover animate-fade-in" />
-                      )
-                    ) : (
+                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-2">Uploaded Proof Media (Photos & Videos)</label>
+                  {viewingTaskProof.proof_media ? (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-60 overflow-y-auto pr-1">
+                      {viewingTaskProof.proof_media.split(",").filter(Boolean).map((url: string, idx: number) => {
+                        const cleanUrl = url.trim();
+                        const isVid = cleanUrl.endsWith(".mp4") || cleanUrl.endsWith(".mov") || cleanUrl.endsWith(".webm") || cleanUrl.includes("video");
+                        return (
+                          <div key={idx} className="relative border border-zinc-800 rounded-xl overflow-hidden bg-black/60 aspect-video flex items-center justify-center group">
+                            {isVid ? (
+                              <video src={cleanUrl} className="h-full w-full object-cover" controls />
+                            ) : (
+                              <a href={cleanUrl} target="_blank" rel="noreferrer" className="w-full h-full block">
+                                <img src={cleanUrl} alt={`Proof Media ${idx + 1}`} className="h-full w-full object-cover hover:scale-105 transition-transform" />
+                              </a>
+                            )}
+                            <span className="absolute top-1 left-1 bg-black/80 text-[8px] text-white px-1.5 py-0.5 rounded font-black uppercase pointer-events-none">
+                              {isVid ? '🎬 Video' : '📷 Photo'}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="border border-zinc-800 rounded-2xl overflow-hidden bg-black/40 h-32 flex items-center justify-center">
                       <span className="text-xs text-zinc-550 italic">No media uploaded by volunteer</span>
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </div>
 
                 <div>

@@ -15,6 +15,7 @@ export default function SignUp() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [dob, setDob] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -47,7 +48,7 @@ export default function SignUp() {
       const res = await fetch("/api/user/auth", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "signup", username, email, phone, password, gender })
+        body: JSON.stringify({ action: "signup", username, email, phone, password, gender, dob })
       });
       const data = await res.json();
       setIsSubmitting(false);
@@ -57,6 +58,8 @@ export default function SignUp() {
         localStorage.setItem("user_name", data.user.username);
         localStorage.setItem("user_email", data.user.email);
         localStorage.setItem("user_phone", data.user.phone || "");
+        localStorage.setItem("user_gender", data.user.gender || "");
+        localStorage.setItem("user_dob", data.user.dob || dob || "");
         router.push("/causes");
       } else {
         setError(data.error || "Failed to register.");
@@ -121,6 +124,20 @@ export default function SignUp() {
               onChange={e => setPhone(e.target.value)}
               className="w-full px-4 py-3 bg-gray-50 dark:bg-[#0c1510] border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#1E4D2B] transition-all"
               placeholder="e.g. +91 9876543210"
+              required
+            />
+          </div>
+
+          {/* Date of Birth (DOB) */}
+          <div>
+            <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2" htmlFor="dob">Date of Birth (DOB)</label>
+            <input
+              id="dob"
+              type="date"
+              value={dob}
+              disabled={isEmailVerified && isSubmitting}
+              onChange={e => setDob(e.target.value)}
+              className="w-full px-4 py-3 bg-gray-50 dark:bg-[#0c1510] border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#1E4D2B] transition-all"
               required
             />
           </div>

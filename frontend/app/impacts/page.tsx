@@ -99,7 +99,8 @@ export default function OurImpactsPage() {
   const [isVideoOpen, setIsVideoOpen] = useState(false);
   const [tutorialVideo, setTutorialVideo] = useState("/DIL%20KAHTA%20HAI.mp4");
   const [mediaSettings, setMediaSettings] = useState<Record<string, string>>({
-    impacts_header: getFallbackMedia("impacts_header", "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=1600&auto=format&fit=crop&q=80")
+    impacts_header: getFallbackMedia("impacts_header", "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=1600&auto=format&fit=crop&q=80"),
+    impacts_timeline_bg: getFallbackMedia("impacts_timeline_bg", "/uploads/1783629553026_volunteer.png")
   });
   const [textSettings, setTextSettings] = useState<Record<string, string>>({
     impacts_banner_title_prefix: "1394+",
@@ -234,14 +235,15 @@ export default function OurImpactsPage() {
       </section>
 
       {/* HOW IT WORKS Vertical Timeline Section */}
-      <section className="mx-auto max-w-5xl px-4 py-20 relative overflow-hidden rounded-[2.5rem]">
-        {/* Transparent watermark picture background */}
-        <div className="absolute inset-0 opacity-[0.04] dark:opacity-[0.02] pointer-events-none">
+      <section className="mx-auto max-w-5xl px-4 py-20 relative overflow-hidden rounded-[2.5rem] bg-white/60 dark:bg-[#0c1410]/70 border border-gray-200/80 dark:border-zinc-800/80 backdrop-blur-sm shadow-xl">
+        {/* Visible Background Picture with elegant overlay */}
+        <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
           <img
-            src="https://images.unsplash.com/photo-1593113598332-cd288d649433?w=1200&auto=format&fit=crop&q=80"
-            alt="Timeline Background Watermark"
-            className="w-full h-full object-cover"
+            src={mediaSettings.impacts_timeline_bg || getFallbackMedia("impacts_timeline_bg", "/uploads/1783629553026_volunteer.png")}
+            alt="Timeline Background Picture"
+            className="w-full h-full object-cover opacity-25 dark:opacity-20 scale-105 filter saturate-[1.1]"
           />
+          <div className="absolute inset-0 bg-gradient-to-b from-white/90 via-white/70 to-white/90 dark:from-[#07100b]/90 dark:via-[#07100b]/75 dark:to-[#07100b]/90" />
         </div>
         <div className="text-center mb-16 relative z-10">
           <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#1E4D2B] dark:text-[#52c47c]">
@@ -300,10 +302,10 @@ export default function OurImpactsPage() {
         </div>
 
         {/* Bottom Explore Causes action button */}
-        <div className="mt-16 text-center">
+        <div className="mt-16 text-center relative z-10">
           <button
             onClick={() => window.location.href = "/causes"}
-            className="inline-flex items-center px-10 py-4 bg-[#F3A61E] hover:bg-[#e0981b] text-black font-extrabold rounded-full transition-all duration-300 active:scale-98 shadow-xl shadow-yellow-500/10 cursor-pointer"
+            className="inline-flex items-center px-10 py-4 bg-[#1E4D2B] hover:bg-[#153a20] text-white font-extrabold text-base rounded-full transition-all duration-300 active:scale-95 shadow-xl shadow-green-900/20 hover:shadow-2xl hover:scale-105 cursor-pointer border border-green-700/30"
           >
             Explore Causes &rarr;
           </button>

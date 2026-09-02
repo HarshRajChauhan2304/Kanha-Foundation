@@ -14,6 +14,7 @@ export default function VolunteerRegistrationPage() {
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [profilePhoto, setProfilePhoto] = useState("");
   const [gender, setGender] = useState("");
+  const [dob, setDob] = useState("");
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [isPhotoUploading, setIsPhotoUploading] = useState(false);
   const [hasScrolledToBottom, setHasScrolledToBottom] = useState(false);
@@ -149,6 +150,11 @@ export default function VolunteerRegistrationPage() {
       return;
     }
 
+    if (!dob) {
+      setErrorMsg("Please select your Date of Birth.");
+      return;
+    }
+
     if (!aadharNumber.trim() || aadharNumber.length !== 12) {
       setErrorMsg("Please enter a valid 12-digit Aadhaar Card number.");
       return;
@@ -184,6 +190,7 @@ export default function VolunteerRegistrationPage() {
         password,
         profile_photo: profilePhoto,
         gender,
+        dob,
         terms_accepted: termsAccepted,
         aadhar_number: aadharNumber,
         aadhar_upload_url: aadharPhoto,
@@ -379,7 +386,7 @@ export default function VolunteerRegistrationPage() {
               </div>
             </div>
 
-            {/* Gender and Password */}
+            {/* Gender and Date of Birth */}
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label className="block text-[10px] font-black text-gray-550 dark:text-gray-400 uppercase tracking-wider mb-2">Gender</label>
@@ -396,8 +403,21 @@ export default function VolunteerRegistrationPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-[10px] font-black text-gray-550 dark:text-gray-400 uppercase tracking-wider mb-2">Choose Password (for profile access)</label>
-                <div className="relative">
+                <label className="block text-[10px] font-black text-gray-550 dark:text-gray-400 uppercase tracking-wider mb-2">Date of Birth (DOB) *</label>
+                <input
+                  type="date"
+                  required
+                  value={dob}
+                  onChange={(e) => setDob(e.target.value)}
+                  className="w-full px-4 py-3 bg-gray-50 dark:bg-[#0c1510] border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-[#1E4D2B]"
+                />
+              </div>
+            </div>
+
+            {/* Password */}
+            <div>
+              <label className="block text-[10px] font-black text-gray-550 dark:text-gray-400 uppercase tracking-wider mb-2">Choose Password (for profile access)</label>
+              <div className="relative">
                   <input
                     type={showPassword ? "text" : "password"}
                     required
@@ -426,7 +446,6 @@ export default function VolunteerRegistrationPage() {
                   )}
                 </div>
               </div>
-            </div>
 
             {/* Aadhaar Card Number and Upload */}
             <div className="grid gap-4 sm:grid-cols-2">

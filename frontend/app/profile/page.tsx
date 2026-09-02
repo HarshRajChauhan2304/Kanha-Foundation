@@ -4,6 +4,8 @@ import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import DonorDeliveryPopup from "@/components/DonorDeliveryPopup";
+import BirthdayWishModal from "@/components/BirthdayWishModal";
+
 interface DonationItem {
   id?: number;
   title: string;
@@ -25,6 +27,7 @@ export default function UserProfilePage() {
   const [email, setEmail] = useState("user@example.com");
   const [phone, setPhone] = useState("+91 98765 43210");
   const [gender, setGender] = useState("Male");
+  const [dob, setDob] = useState("");
   const [bio, setBio] = useState("Proud donor. Believer in direct grassroots impact.");
   const [avatar, setAvatar] = useState("https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80");
 
@@ -33,12 +36,14 @@ export default function UserProfilePage() {
   const [donations, setDonations] = useState<DonationItem[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [alertMsg, setAlertMsg] = useState("");
+  const [showBirthdayModal, setShowBirthdayModal] = useState(false);
   
   // Form input binding states
   const [editName, setEditName] = useState("");
   const [editEmail, setEditEmail] = useState("");
   const [editPhone, setEditPhone] = useState("");
   const [editGender, setEditGender] = useState("Male");
+  const [editDob, setEditDob] = useState("");
   const [editBio, setEditBio] = useState("");
   
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -56,6 +61,7 @@ export default function UserProfilePage() {
     const storedName = localStorage.getItem("user_name") || "Vikram Singh";
     const storedPhone = localStorage.getItem("user_phone") || "+91 98765 43210";
     const storedGender = localStorage.getItem("user_gender") || "Male";
+    const storedDob = localStorage.getItem("user_dob") || "";
     const storedBio = localStorage.getItem("user_bio") || "Proud donor. Believer in direct grassroots impact.";
     const storedAvatar = localStorage.getItem("user_avatar") || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80";
 
@@ -63,6 +69,7 @@ export default function UserProfilePage() {
     setEmail(storedEmail);
     setPhone(storedPhone);
     setGender(storedGender);
+    setDob(storedDob);
     setBio(storedBio);
     setAvatar(storedAvatar);
 
@@ -71,7 +78,29 @@ export default function UserProfilePage() {
     setEditEmail(storedEmail);
     setEditPhone(storedPhone);
     setEditGender(storedGender);
+    setEditDob(storedDob);
     setEditBio(storedBio);
+
+    // Analyze DOB for Birthday Popup
+    if (storedDob) {
+      const today = new Date();
+      const todayMMDD = `${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+      
+      let dobMMDD = "";
+      if (storedDob.includes("-")) {
+        const parts = storedDob.split("-");
+        if (parts.length === 3) {
+          if (parts[0].length === 4) dobMMDD = `${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
+          else if (parts[2].length === 4) dobMMDD = `${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+        }
+      }
+
+      if (dobMMDD === todayMMDD) {
+        setShowBirthdayModal(true);
+        // Call cron API to process notifications
+        fetch('/api/cron/birthday', { method: 'POST' }).catch(() => {});
+      }
+    }
 
     // Fetch real donation history from server
     const fetchUserDonations = async () => {
@@ -236,6 +265,7 @@ export default function UserProfilePage() {
           phone: editPhone,
           avatar: avatar,
           gender: editGender,
+          dob: editDob,
           bio: editBio
         })
       });
@@ -245,12 +275,14 @@ export default function UserProfilePage() {
         setEmail(editEmail);
         setPhone(editPhone);
         setGender(editGender);
+        setDob(editDob);
         setBio(editBio);
 
         localStorage.setItem("user_name", editName);
         localStorage.setItem("user_email", editEmail);
         localStorage.setItem("user_phone", editPhone);
         localStorage.setItem("user_gender", editGender);
+        localStorage.setItem("user_dob", editDob);
         localStorage.setItem("user_bio", editBio);
         localStorage.setItem("user_avatar", avatar);
 
@@ -269,6 +301,14 @@ export default function UserProfilePage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-[#07100b] py-16 px-4 md:px-8 font-sans">
       
+      {/* Birthday Celebration Wish Modal */}
+      <BirthdayWishModal
+        isOpen={showBirthdayModal}
+        onClose={() => setShowBirthdayModal(false)}
+        userName={name}
+        userType="user"
+      />
+
       {/* Toast Alert Indicator */}
       <AnimatePresence>
         {alertMsg && (
@@ -345,6 +385,10 @@ export default function UserProfilePage() {
                       <span className="text-sm font-bold text-gray-800 dark:text-zinc-200">{phone}</span>
                     </div>
                     <div>
+                      <span className="block text-[10px] font-black text-gray-400 uppercase tracking-wider">Date of Birth (DOB)</span>
+                      <span className="text-sm font-bold text-gray-800 dark:text-zinc-200">{dob || "Not specified"}</span>
+                    </div>
+                    <div>
                       <span className="block text-[10px] font-black text-gray-400 uppercase tracking-wider">Gender</span>
                       <span className="text-sm font-bold text-gray-800 dark:text-zinc-200">{gender}</span>
                     </div>
@@ -401,6 +445,15 @@ export default function UserProfilePage() {
                       required
                       value={editPhone}
                       onChange={(e) => setEditPhone(e.target.value)}
+                      className="w-full px-4 py-2.5 bg-gray-50 dark:bg-[#0c1510] border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-wider mb-1.5">Date of Birth (DOB)</label>
+                    <input
+                      type="date"
+                      value={editDob}
+                      onChange={(e) => setEditDob(e.target.value)}
                       className="w-full px-4 py-2.5 bg-gray-50 dark:bg-[#0c1510] border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:outline-none"
                     />
                   </div>

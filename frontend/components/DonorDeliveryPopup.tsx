@@ -18,10 +18,17 @@ interface CompletedTaskProof {
   admin_verified?: boolean;
 }
 
+const isVideo = (url: string) => {
+  if (!url) return false;
+  const clean = url.toLowerCase();
+  return clean.includes('.mp4') || clean.includes('.mov') || clean.includes('.webm') || clean.includes('.m4v') || clean.includes('video/') || clean.startsWith('data:video');
+};
+
 export default function DonorDeliveryPopup() {
   const [currentProof, setCurrentProof] = useState<CompletedTaskProof | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
+  const [activeMediaIndex, setActiveMediaIndex] = useState(0);
 
   useEffect(() => {
     // Check for verified completed volunteer tasks with proof media
@@ -32,11 +39,11 @@ export default function DonorDeliveryPopup() {
         if (data.success && Array.isArray(data.tasks)) {
           const proofs = data.tasks.filter((t: any) => t.status === 'Completed' && t.proof_media && t.admin_verified);
           if (proofs.length > 0) {
-            // Check if donor hasn't seen this proof popup yet
             const seenIds = JSON.parse(localStorage.getItem('seen_donor_proof_ids') || '[]');
             const unseen = proofs.find((p: any) => !seenIds.includes(p.id));
             if (unseen) {
               setCurrentProof(unseen);
+              setActiveMediaIndex(0);
               setIsOpen(true);
             }
           }
@@ -51,6 +58,7 @@ export default function DonorDeliveryPopup() {
     const handleCustomOpen = (e: CustomEvent) => {
       if (e.detail) {
         setCurrentProof(e.detail);
+        setActiveMediaIndex(0);
         setIsOpen(true);
       }
     };
@@ -76,7 +84,15 @@ export default function DonorDeliveryPopup() {
   const causeName = currentProof.cause || currentProof.task_title || "Relief Drive";
   const donorDisplayName = currentProof.donor_name || "Valued Supporter";
   const beneficiaryDisplayName = currentProof.beneficiary_name || "Underprivileged Beneficiary";
-  const proofImage = currentProof.proof_media ? currentProof.proof_media.split(',')[0] : "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=800&auto=format&fit=crop&q=80";
+
+  const rawMedia = currentProof.proof_media ? currentProof.proof_media.split(',').map(s => s.trim()).filter(Boolean) : [];
+  const mediaUrls = rawMedia.length > 0 ? rawMedia : ["https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=800&auto=format&fit=crop&q=80"];
+
+  const currentMediaUrl = mediaUrls[activeMediaIndex] || mediaUrls[0];
+  const isCurrentVideo = isVideo(currentMediaUrl);
+
+  const videoCount = mediaUrls.filter(u => isVideo(u)).length;
+  const photoCount = mediaUrls.length - videoCount;
 
   const shareText = `❤️ I sponsored a life with Kanha Foundation!\n\n` +
     `✨ Beneficiary: ${beneficiaryDisplayName}\n` +
@@ -109,7 +125,7 @@ export default function DonorDeliveryPopup() {
           {/* Close button */}
           <button 
             onClick={handleClose}
-            className="absolute top-5 right-5 text-zinc-400 hover:text-white bg-zinc-900 hover:bg-zinc-800 p-2 rounded-full transition-all cursor-pointer border border-zinc-800"
+            className="absolute top-5 right-5 text-zinc-400 hover:text-white bg-zinc-900 hover:bg-zinc-800 p-2 rounded-full transition-all cursor-pointer border border-zinc-800 z-20"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -139,28 +155,98 @@ export default function DonorDeliveryPopup() {
                   KH
                 </div>
                 <span className="text-[10px] font-black uppercase tracking-wider text-emerald-400">
-                  Kanha Foundation • Donation Successfully Proof
+                  Kanha Foundation • On-Ground Proof
                 </span>
               </div>
               <span className="px-2 py-0.5 bg-emerald-950/60 text-emerald-400 border border-emerald-800/50 text-[9px] font-bold rounded-full">
-                Verified On-Ground
+                {mediaUrls.length > 1 ? `${mediaUrls.length} Proof Files` : "Verified On-Ground"}
               </span>
             </div>
 
-            {/* Beneficiary Photo Box */}
-            <div className="relative rounded-2xl overflow-hidden border border-emerald-500/30 bg-zinc-950 mb-3 max-h-64 flex justify-center items-center shadow-lg">
-              <img 
-                src={proofImage} 
-                alt="Beneficiary Delivery Proof" 
-                className="w-full h-full object-cover max-h-64 rounded-2xl"
-              />
-              <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black via-black/60 to-transparent p-3.5 text-left">
+            {/* Beneficiary Media Box (Main Viewer) */}
+            <div className="relative rounded-2xl overflow-hidden border border-emerald-500/30 bg-zinc-950 mb-3 h-64 flex justify-center items-center shadow-lg group">
+              {isCurrentVideo ? (
+                <video 
+                  key={currentMediaUrl}
+                  src={currentMediaUrl} 
+                  controls 
+                  autoPlay 
+                  loop
+                  className="w-full h-full object-contain bg-black rounded-2xl" 
+                />
+              ) : (
+                <img 
+                  key={currentMediaUrl}
+                  src={currentMediaUrl} 
+                  alt="Beneficiary Delivery Proof" 
+                  className="w-full h-full object-cover max-h-64 rounded-2xl"
+                />
+              )}
+
+              {/* Prev / Next Arrows if multiple media */}
+              {mediaUrls.length > 1 && (
+                <>
+                  <button
+                    onClick={() => setActiveMediaIndex(prev => (prev === 0 ? mediaUrls.length - 1 : prev - 1))}
+                    className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/70 hover:bg-black text-white p-2 rounded-full border border-white/20 transition-all cursor-pointer z-10 text-sm font-bold"
+                    aria-label="Previous Media"
+                  >
+                    ‹
+                  </button>
+                  <button
+                    onClick={() => setActiveMediaIndex(prev => (prev === mediaUrls.length - 1 ? 0 : prev + 1))}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/70 hover:bg-black text-white p-2 rounded-full border border-white/20 transition-all cursor-pointer z-10 text-sm font-bold"
+                    aria-label="Next Media"
+                  >
+                    ›
+                  </button>
+                </>
+              )}
+
+              <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black via-black/60 to-transparent p-3.5 text-left pointer-events-none">
                 <span className="text-[9px] font-extrabold uppercase tracking-widest text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-800/60 inline-block mb-1">
                   Beneficiary
                 </span>
                 <p className="text-base font-black text-white tracking-wide">{beneficiaryDisplayName}</p>
               </div>
             </div>
+
+            {/* Thumbnail Carousel Bar for Multiple Photos/Videos */}
+            {mediaUrls.length > 1 && (
+              <div className="mb-3 space-y-1.5">
+                <div className="flex items-center justify-between text-[10px] text-zinc-400 font-bold px-1">
+                  <span>📸 {photoCount} Photos {videoCount > 0 ? `• 🎬 ${videoCount} Videos` : ''}</span>
+                  <span className="text-emerald-400 font-black">{activeMediaIndex + 1} / {mediaUrls.length}</span>
+                </div>
+                <div className="flex gap-2 overflow-x-auto pb-1.5 scrollbar-thin">
+                  {mediaUrls.map((url, idx) => {
+                    const isVid = isVideo(url);
+                    const isActive = idx === activeMediaIndex;
+                    return (
+                      <button
+                        key={idx}
+                        onClick={() => setActiveMediaIndex(idx)}
+                        className={`relative h-14 w-20 flex-shrink-0 rounded-xl overflow-hidden border-2 transition-all cursor-pointer ${isActive ? 'border-emerald-400 ring-2 ring-emerald-500/40 scale-105' : 'border-zinc-800 opacity-60 hover:opacity-100'}`}
+                      >
+                        {isVid ? (
+                          <div className="w-full h-full bg-zinc-900 flex items-center justify-center relative">
+                            <video src={url} className="w-full h-full object-cover" />
+                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                              <span className="text-white text-xs font-bold">▶</span>
+                            </div>
+                          </div>
+                        ) : (
+                          <img src={url} alt={`Proof thumbnail ${idx + 1}`} className="w-full h-full object-cover" />
+                        )}
+                        <span className="absolute bottom-0.5 right-0.5 bg-black/80 px-1 py-0.2 text-[8px] text-white font-bold rounded">
+                          {isVid ? 'VIDEO' : 'PIC'}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* Impact Details inside frame */}
             <div className="bg-zinc-950/80 p-3.5 rounded-xl border border-zinc-800/80 text-xs space-y-1.5 text-left">
