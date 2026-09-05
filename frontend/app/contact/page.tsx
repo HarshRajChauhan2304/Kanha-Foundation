@@ -61,7 +61,7 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#07100b] font-sans py-16 px-4 md:px-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-[#07100b] font-sans pt-28 pb-16 md:pt-32 md:pb-20 px-4 md:px-8">
       <div className="mx-auto max-w-6xl">
         
         {/* Header Hero Section */}
@@ -148,7 +148,7 @@ export default function ContactPage() {
               };
 
               return (
-                <div key={card.id} className="bg-white dark:bg-[#101412] p-8 rounded-[2rem] border border-gray-150/45 dark:border-zinc-800/80 shadow-sm flex items-start gap-4 text-left">
+                <div key={card.id} className="bg-white dark:bg-[#101412] p-8 rounded-[2rem] border border-gray-200 dark:border-zinc-800 shadow-sm flex items-start gap-4 text-left">
                   <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 dark:bg-emerald-950/20 text-[#1E4D2B] dark:text-[#52c47c] shadow-inner flex-shrink-0">
                     {renderCardIcon(card.icon)}
                   </div>
@@ -162,8 +162,8 @@ export default function ContactPage() {
           </div>
 
           {/* Right Column: Contact message form (Col 7) */}
-          <div className="lg:col-span-7 bg-white dark:bg-[#101412] p-8 sm:p-10 rounded-[2.5rem] border border-gray-150/45 dark:border-zinc-800/80 shadow-sm text-left">
-            <h2 className="text-xl font-black text-gray-900 dark:text-white mb-6 border-b border-gray-50 dark:border-zinc-800/80 pb-3">
+          <div className="lg:col-span-7 bg-white dark:bg-[#101412] p-8 sm:p-10 rounded-[2.5rem] border border-gray-200 dark:border-zinc-800 shadow-md text-left">
+            <h2 className="text-xl font-black text-gray-900 dark:text-white mb-6 border-b border-gray-100 dark:border-zinc-800 pb-3">
               Send Us a Message
             </h2>
 
@@ -175,7 +175,7 @@ export default function ContactPage() {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
-                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Name</label>
+                    <label className="block text-[10px] font-extrabold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">Name *</label>
                     <input
                       type="text"
                       name="name"
@@ -183,24 +183,24 @@ export default function ContactPage() {
                       value={formData.name}
                       onChange={handleChange}
                       placeholder="e.g. Vikram Singh"
-                      className="w-full px-4 py-3 bg-gray-50 dark:bg-[#0c1510] border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-[#1E4D2B]"
+                      className="w-full px-4 py-3 bg-gray-50 dark:bg-[#0c1510] border border-gray-300 dark:border-gray-700 rounded-xl text-sm text-gray-900 dark:text-white font-semibold focus:outline-none focus:border-[#1E4D2B] dark:focus:border-[#52c47c] focus:ring-1 focus:ring-[#1E4D2B]"
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Phone Number</label>
+                    <label className="block text-[10px] font-extrabold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">Phone Number</label>
                     <input
                       type="tel"
                       name="phone"
                       value={formData.phone}
                       onChange={handleChange}
                       placeholder="e.g. +91 98765 43210"
-                      className="w-full px-4 py-3 bg-gray-50 dark:bg-[#0c1510] border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-[#1E4D2B]"
+                      className="w-full px-4 py-3 bg-gray-50 dark:bg-[#0c1510] border border-gray-300 dark:border-gray-700 rounded-xl text-sm text-gray-900 dark:text-white font-semibold focus:outline-none focus:border-[#1E4D2B] dark:focus:border-[#52c47c] focus:ring-1 focus:ring-[#1E4D2B]"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Email Address</label>
+                  <label className="block text-[10px] font-extrabold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">Email Address *</label>
                   <input
                     type="email"
                     name="email"
@@ -208,12 +208,12 @@ export default function ContactPage() {
                     value={formData.email}
                     onChange={handleChange}
                     placeholder="name@example.com"
-                    className="w-full px-4 py-3 bg-gray-50 dark:bg-[#0c1510] border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-[#1E4D2B]"
+                    className="w-full px-4 py-3 bg-gray-50 dark:bg-[#0c1510] border border-gray-300 dark:border-gray-700 rounded-xl text-sm text-gray-900 dark:text-white font-semibold focus:outline-none focus:border-[#1E4D2B] dark:focus:border-[#52c47c] focus:ring-1 focus:ring-[#1E4D2B]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Message Description</label>
+                  <label className="block text-[10px] font-extrabold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">Message Description *</label>
                   <textarea
                     name="message"
                     required
@@ -221,7 +221,7 @@ export default function ContactPage() {
                     value={formData.message}
                     onChange={handleChange}
                     placeholder="Type your message details here..."
-                    className="w-full px-4 py-3 bg-gray-50 dark:bg-[#0c1510] border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-[#1E4D2B] resize-none"
+                    className="w-full px-4 py-3 bg-gray-50 dark:bg-[#0c1510] border border-gray-300 dark:border-gray-700 rounded-xl text-sm text-gray-900 dark:text-white font-semibold focus:outline-none focus:border-[#1E4D2B] dark:focus:border-[#52c47c] focus:ring-1 focus:ring-[#1E4D2B] resize-none"
                   />
                 </div>
 

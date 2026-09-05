@@ -385,7 +385,7 @@ function DonateCheckoutPageContent() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#07100b] font-sans py-16 px-4 md:px-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-[#07100b] font-sans pt-28 pb-16 md:pt-32 md:pb-20 px-4 md:px-8">
       
       {/* Loading Overlay */}
       {isProcessing && (
@@ -412,7 +412,7 @@ function DonateCheckoutPageContent() {
         <div className="grid gap-8 lg:grid-cols-12 items-start">
           
           {/* Left Form: Col 7 */}
-          <form onSubmit={handleSubmit} className="lg:col-span-7 bg-white dark:bg-[#101412] p-6 sm:p-10 rounded-[2rem] border border-gray-150/40 dark:border-zinc-800/80 shadow-sm space-y-8">
+          <form onSubmit={handleSubmit} className="lg:col-span-7 bg-white dark:bg-[#101412] p-6 sm:p-10 rounded-[2rem] border border-gray-200 dark:border-zinc-800 shadow-md space-y-8">
             
             {/* Logged in User Profile Info Banner */}
             <div className="bg-emerald-950/20 border border-emerald-900/35 p-5 rounded-2xl flex items-center justify-between mb-6">
@@ -451,49 +451,49 @@ function DonateCheckoutPageContent() {
               
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Full Name</label>
+                  <label className="block text-[10px] font-extrabold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">Full Name *</label>
                   <input
                     type="text"
                     required
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     placeholder="e.g. Vikram Singh"
-                    className="w-full px-4 py-3 bg-gray-50 dark:bg-[#0c1510] border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#1E4D2B]"
+                    className="w-full px-4 py-3 bg-gray-50 dark:bg-[#0c1510] border border-gray-300 dark:border-gray-700 rounded-xl text-sm text-gray-900 dark:text-white font-semibold focus:outline-none focus:border-[#1E4D2B] dark:focus:border-[#52c47c] focus:ring-1 focus:ring-[#1E4D2B]"
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">WhatsApp Number (For Proofs)</label>
+                  <label className="block text-[10px] font-extrabold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">WhatsApp Number (For Proofs) *</label>
                   <input
                     type="tel"
                     required
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="e.g. +91 98765 43210"
-                    className="w-full px-4 py-3 bg-gray-50 dark:bg-[#0c1510] border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#1E4D2B]"
+                    className="w-full px-4 py-3 bg-gray-50 dark:bg-[#0c1510] border border-gray-300 dark:border-gray-700 rounded-xl text-sm text-gray-900 dark:text-white font-semibold focus:outline-none focus:border-[#1E4D2B] dark:focus:border-[#52c47c] focus:ring-1 focus:ring-[#1E4D2B]"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Email Address (For Tax Receipt)</label>
+                <label className="block text-[10px] font-extrabold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">Email Address (For Tax Receipt) *</label>
                 <input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@example.com"
-                  className="w-full px-4 py-3 bg-gray-50 dark:bg-[#0c1510] border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#1E4D2B]"
+                  className="w-full px-4 py-3 bg-gray-50 dark:bg-[#0c1510] border border-gray-300 dark:border-gray-700 rounded-xl text-sm text-gray-900 dark:text-white font-semibold focus:outline-none focus:border-[#1E4D2B] dark:focus:border-[#52c47c] focus:ring-1 focus:ring-[#1E4D2B]"
                 />
               </div>
 
               <div>
-                <label className="block text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Residential Address / Location (Optional)</label>
+                <label className="block text-[10px] font-extrabold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">Residential Address / Location (Optional)</label>
                 <input
                   type="text"
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
                   placeholder="e.g. Ranchi, Jharkhand, India"
-                  className="w-full px-4 py-3 bg-gray-50 dark:bg-[#0c1510] border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#1E4D2B]"
+                  className="w-full px-4 py-3 bg-gray-50 dark:bg-[#0c1510] border border-gray-300 dark:border-gray-700 rounded-xl text-sm text-gray-900 dark:text-white font-semibold focus:outline-none focus:border-[#1E4D2B] dark:focus:border-[#52c47c] focus:ring-1 focus:ring-[#1E4D2B]"
                 />
               </div>
             </div>

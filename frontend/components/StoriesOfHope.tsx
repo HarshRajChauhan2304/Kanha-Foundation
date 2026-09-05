@@ -27,7 +27,7 @@ export default function StoriesOfHope() {
   const displayStories = storiesList.length > 0 ? storiesList : storiesDataFallback;
 
   const scroll = (direction: 'left' | 'right') => {
-    if (scrollRef.current) {
+    if (scrollRef.current && displayStories.length > 0) {
       const { scrollLeft, clientWidth } = scrollRef.current;
       const cardWidth = scrollRef.current.scrollWidth / displayStories.length;
       const step = clientWidth > 640 ? cardWidth * 2 : cardWidth;
@@ -40,7 +40,7 @@ export default function StoriesOfHope() {
   };
 
   const handleScroll = () => {
-    if (scrollRef.current) {
+    if (scrollRef.current && displayStories.length > 0) {
       const { scrollLeft } = scrollRef.current;
       const cardWidth = scrollRef.current.scrollWidth / displayStories.length;
       const index = Math.round(scrollLeft / cardWidth);

@@ -192,6 +192,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: true, message: `Role for ${cleanEmail} updated to ${newRole} successfully!` });
   } catch (error: any) {
     console.error("Promote role update error:", error);
-    return NextResponse.json({ success: false, error: error.message }, { status: 550 });
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }

@@ -254,13 +254,13 @@ export default function VolunteerRegistrationPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#07100b] font-sans py-12 flex items-center justify-center">
+    <div className="min-h-screen bg-gray-50 dark:bg-[#07100b] font-sans pt-28 pb-16 md:pt-32 md:pb-20 flex items-center justify-center">
       
       {/* Main Registration Form Block */}
       <section className="mx-auto max-w-3xl w-full px-4">
         
         {/* Form Container */}
-        <div className="bg-white dark:bg-[#101412] p-8 sm:p-12 rounded-[2.5rem] border border-gray-150/45 dark:border-zinc-800/80 shadow-sm relative">
+        <div className="bg-white dark:bg-[#101412] p-8 sm:p-12 rounded-[2.5rem] border border-gray-200 dark:border-zinc-800 shadow-md relative">
           
           {/* Close/Cross Button to Home */}
           <button 
