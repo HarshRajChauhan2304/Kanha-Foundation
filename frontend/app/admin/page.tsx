@@ -774,6 +774,7 @@ export default function AdminPanelPage() {
       const data = await res.json();
       if (data && !data.error) {
         triggerAlert("Navbar configuration updated successfully!");
+        window.dispatchEvent(new Event("navbar_update"));
         fetchData();
       } else {
         triggerAlert(data.error || "Failed to update Navbar.");

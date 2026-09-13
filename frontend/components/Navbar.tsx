@@ -66,14 +66,21 @@ export default function Navbar() {
   const pathname = usePathname();
 
   useEffect(() => {
-    fetch('/api/navbar', { cache: 'no-store' })
-      .then(res => res.json())
-      .then(data => {
-        if (data && !data.error) {
-          setNavbarData(data);
-        }
-      })
-      .catch(err => console.error("Navbar config fetch error:", err));
+    const fetchNavbar = () => {
+      fetch('/api/navbar', { cache: 'no-store' })
+        .then(res => res.json())
+        .then(data => {
+          if (data && !data.error) {
+            setNavbarData(data);
+          }
+        })
+        .catch(err => console.error("Navbar config fetch error:", err));
+    };
+
+    fetchNavbar();
+
+    window.addEventListener("navbar_update", fetchNavbar);
+    return () => window.removeEventListener("navbar_update", fetchNavbar);
   }, []);
 
   // Dynamic Login session states
@@ -238,7 +245,7 @@ export default function Navbar() {
             <a href="/" className="flex items-center space-x-2 group">
                 <img
                   src={navbarData.logo}
-                  alt={`${navbarData.name} Logo`}
+                  alt={navbarData.name ? `${navbarData.name} Logo` : "Kanha Foundation Logo"}
                   className="navbar-logo w-auto object-contain drop-shadow-sm -mt-0.5"
                   style={{ 
                     backgroundColor: "transparent",
@@ -246,15 +253,17 @@ export default function Navbar() {
                   } as React.CSSProperties}
                   onError={(e)=>{(e.target as HTMLImageElement).src="/kanha_logo_round.png"}}
                 />
-                <span 
-                  className="text-white font-semibold uppercase tracking-wider hidden sm:inline"
-                  style={{
-                    fontFamily: navbarData.fontFamily,
-                    fontSize: `${navbarData.fontSize}px`
-                  }}
-                >
-                  {navbarData.name}
-                </span>
+                {navbarData.name && navbarData.name.trim() !== "" && (
+                  <span 
+                    className="text-white font-semibold uppercase tracking-wider hidden sm:inline"
+                    style={{
+                      fontFamily: navbarData.fontFamily,
+                      fontSize: `${navbarData.fontSize}px`
+                    }}
+                  >
+                    {navbarData.name}
+                  </span>
+                )}
             </a>
           </div>
 
