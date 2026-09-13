@@ -2,6 +2,9 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 const navbarPath = path.join(process.cwd(), 'data', 'navbar.json');
 
 export async function GET() {
@@ -10,7 +13,7 @@ export async function GET() {
     const json = JSON.parse(data);
     return NextResponse.json(json, {
       headers: {
-        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300'
+        'Cache-Control': 'no-store, max-age=0'
       }
     });
   } catch (error) {
@@ -22,17 +25,16 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const payload = await req.json();
-    const { logo, name, fontFamily, fontSize, logoSize } = payload;
-    if (!logo || !name || !fontFamily || typeof fontSize !== 'number') {
-      return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
-    }
+    const { logo, name, fontFamily, fontSize, logoSize } = payload || {};
+
     const newConfig = { 
-      logo, 
-      name, 
-      fontFamily, 
-      fontSize, 
+      logo: typeof logo === 'string' ? logo : '', 
+      name: typeof name === 'string' ? name : '', 
+      fontFamily: typeof fontFamily === 'string' ? fontFamily : 'Outfit', 
+      fontSize: typeof fontSize === 'number' ? fontSize : 20, 
       logoSize: typeof logoSize === 'number' ? logoSize : 104 
     };
+
     await fs.writeFile(navbarPath, JSON.stringify(newConfig, null, 2), 'utf-8');
     return NextResponse.json(newConfig);
   } catch (error) {

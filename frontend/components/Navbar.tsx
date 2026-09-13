@@ -66,7 +66,7 @@ export default function Navbar() {
   const pathname = usePathname();
 
   useEffect(() => {
-    fetch('/api/navbar')
+    fetch('/api/navbar', { cache: 'no-store' })
       .then(res => res.json())
       .then(data => {
         if (data && !data.error) {
@@ -242,7 +242,7 @@ export default function Navbar() {
                   className="navbar-logo w-auto object-contain drop-shadow-sm -mt-0.5"
                   style={{ 
                     backgroundColor: "transparent",
-                    "--logo-size": navbarData.logoSize ? `${navbarData.logoSize * 0.75}px` : "78px"
+                    "--logo-size": navbarData.logoSize ? `${navbarData.logoSize}px` : "104px"
                   } as React.CSSProperties}
                   onError={(e)=>{(e.target as HTMLImageElement).src="/kanha_logo_round.png"}}
                 />

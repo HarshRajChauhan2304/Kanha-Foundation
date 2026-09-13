@@ -644,7 +644,7 @@ export default function AdminPanelPage() {
         }
       } else if (activeTab === "Navbar") {
         try {
-          const res = await fetch('/api/navbar');
+          const res = await fetch('/api/navbar', { cache: 'no-store' });
           const data = await res.json();
           if (data && !data.error) {
             setNavbarConfig(data);
@@ -2794,8 +2794,7 @@ export default function AdminPanelPage() {
                       <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">Foundation Name</label>
                       <input
                         type="text"
-                        required
-                        value={navbarConfig.name || ""}
+                        value={navbarConfig.name ?? ""}
                         onChange={(e) => setNavbarConfig({ ...navbarConfig, name: e.target.value })}
                         placeholder="Kanha Foundation"
                         className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-white focus:outline-none focus:ring-1 focus:ring-[#F3A61E]"
