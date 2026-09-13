@@ -785,18 +785,19 @@ export default function AdminPanelPage() {
     }
   };
 
-  const handleSaveFooter = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSaveFooter = async (e?: React.FormEvent, customPayload?: any, successMsg: string = "Footer configuration updated successfully!") => {
+    if (e) e.preventDefault();
+    const dataToSend = customPayload || footerConfig;
     try {
       const res = await fetch('/api/footer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(footerConfig),
+        body: JSON.stringify(dataToSend),
         cache: 'no-store'
       });
       const data = await res.json();
       if (data && !data.error) {
-        triggerAlert("Footer configuration updated successfully!");
+        triggerAlert(successMsg);
         setFooterConfig(data);
         fetchData();
       } else {
@@ -2862,16 +2863,34 @@ export default function AdminPanelPage() {
             {activeTab === "Footer" && (
               <div className="space-y-6 p-6 text-left">
                 <form onSubmit={handleSaveFooter} className="bg-zinc-900/40 border border-zinc-800/85 rounded-2xl p-6 space-y-6">
-                  <div>
-                    <h3 className="text-lg font-bold text-white">Footer Settings</h3>
-                    <p className="text-xs text-zinc-400 mt-1">Configure footer content overview links, quick links, contact info, and social integration.</p>
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-zinc-800/60">
+                    <div>
+                      <h3 className="text-lg font-bold text-white">Footer Settings</h3>
+                      <p className="text-xs text-zinc-400 mt-1">Configure footer content overview links, quick links, contact info, and social integration independently.</p>
+                    </div>
+                    <button
+                      type="submit"
+                      className="px-5 py-2 bg-[#1E4D2B] hover:bg-[#15381E] text-white text-xs font-black uppercase tracking-wider rounded-xl transition-all cursor-pointer border border-emerald-800/40 shrink-0 self-start md:self-auto"
+                    >
+                      Save All Footer Settings
+                    </button>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     {/* Left Column: General info, email, social */}
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2 font-black">Footer Logo Image</label>
+                    <div className="space-y-6">
+                      {/* Footer Logo Section */}
+                      <div className="border border-zinc-800/50 p-4 rounded-xl space-y-3 bg-zinc-950/20">
+                        <div className="flex justify-between items-center">
+                          <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider font-black">Footer Logo Image</label>
+                          <button
+                            type="button"
+                            onClick={() => handleSaveFooter(undefined, footerConfig, "Footer Logo updated successfully!")}
+                            className="px-3 py-1.5 bg-emerald-950/40 hover:bg-emerald-900/60 text-[#52c47c] border border-emerald-800/50 rounded-xl text-xs font-bold uppercase transition-all cursor-pointer shrink-0"
+                          >
+                            Update Logo
+                          </button>
+                        </div>
                         <div className="flex items-center gap-4 bg-zinc-950/40 border border-zinc-800/80 p-3 rounded-xl">
                           {footerConfig.logo && (
                             <div className="h-12 w-12 rounded-lg bg-zinc-950 border border-zinc-800 flex items-center justify-center p-1 overflow-hidden shrink-0">
@@ -2898,73 +2917,167 @@ export default function AdminPanelPage() {
                         </div>
                       </div>
 
+                      {/* Contact Details Section */}
                       <div className="border border-zinc-800/50 p-4 rounded-xl space-y-4 bg-zinc-950/20">
-                        <h4 className="text-xs font-black text-[#F3A61E] uppercase tracking-wider">Contact Details</h4>
+                        <div className="flex justify-between items-center">
+                          <h4 className="text-xs font-black text-[#F3A61E] uppercase tracking-wider">Contact Details</h4>
+                          <button
+                            type="button"
+                            onClick={() => handleSaveFooter(undefined, footerConfig, "Contact details updated successfully!")}
+                            className="px-2.5 py-1 bg-emerald-950/40 hover:bg-emerald-900/60 text-[#52c47c] border border-emerald-800/50 rounded-lg text-[10px] font-black uppercase transition-all cursor-pointer"
+                          >
+                            Update Section
+                          </button>
+                        </div>
                         <div>
                           <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-1">Email</label>
-                          <input
-                            type="email"
-                            required
-                            value={footerConfig.contact?.email || ""}
-                            onChange={(e) => setFooterConfig({
-                              ...footerConfig,
-                              contact: { ...footerConfig.contact, email: e.target.value }
-                            })}
-                            className="w-full px-4 py-2 bg-zinc-950 border border-zinc-800 rounded-xl text-xs text-white"
-                          />
+                          <div className="flex gap-2 items-center">
+                            <input
+                              type="email"
+                              required
+                              value={footerConfig.contact?.email || ""}
+                              onChange={(e) => setFooterConfig({
+                                ...footerConfig,
+                                contact: { ...footerConfig.contact, email: e.target.value }
+                              })}
+                              className="flex-1 px-4 py-2 bg-zinc-950 border border-zinc-800 rounded-xl text-xs text-white"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => handleSaveFooter(undefined, footerConfig, "Contact Email updated successfully!")}
+                              className="px-3 py-2 bg-emerald-950/40 hover:bg-emerald-900/60 text-[#52c47c] border border-emerald-800/50 rounded-xl text-xs font-bold uppercase transition-all cursor-pointer shrink-0"
+                            >
+                              Update Email
+                            </button>
+                          </div>
                         </div>
                         <div>
                           <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-1">Call to Action (CTA) Text</label>
-                          <input
-                            type="text"
-                            required
-                            value={footerConfig.contact?.ctaText || ""}
-                            onChange={(e) => setFooterConfig({
-                              ...footerConfig,
-                              contact: { ...footerConfig.contact, ctaText: e.target.value }
-                            })}
-                            className="w-full px-4 py-2 bg-zinc-950 border border-zinc-800 rounded-xl text-xs text-white"
-                          />
+                          <div className="flex gap-2 items-center">
+                            <input
+                              type="text"
+                              required
+                              value={footerConfig.contact?.ctaText || ""}
+                              onChange={(e) => setFooterConfig({
+                                ...footerConfig,
+                                contact: { ...footerConfig.contact, ctaText: e.target.value }
+                              })}
+                              className="flex-1 px-4 py-2 bg-zinc-950 border border-zinc-800 rounded-xl text-xs text-white"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => handleSaveFooter(undefined, footerConfig, "Contact CTA Text updated successfully!")}
+                              className="px-3 py-2 bg-emerald-950/40 hover:bg-emerald-900/60 text-[#52c47c] border border-emerald-800/50 rounded-xl text-xs font-bold uppercase transition-all cursor-pointer shrink-0"
+                            >
+                              Update CTA
+                            </button>
+                          </div>
                         </div>
                       </div>
 
+                      {/* Social Integrations Section */}
                       <div className="border border-zinc-800/50 p-4 rounded-xl space-y-4 bg-zinc-950/20">
-                        <h4 className="text-xs font-black text-[#F3A61E] uppercase tracking-wider">Social Integrations</h4>
-                        {(footerConfig.social || []).map((s: any, idx: number) => (
-                          <div key={idx} className="flex gap-2 items-center">
-                            <span className="w-20 text-xs font-bold text-zinc-400">{s.platform}:</span>
-                            <input
-                              type="text"
-                              value={s.href}
-                              onChange={(e) => {
-                                const newSocial = [...footerConfig.social];
-                                newSocial[idx] = { ...s, href: e.target.value };
+                        <div className="flex justify-between items-center flex-wrap gap-2">
+                          <h4 className="text-xs font-black text-[#F3A61E] uppercase tracking-wider">Social Integrations</h4>
+                          <div className="flex gap-2">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const newSocial = [...(footerConfig.social || []), { platform: "New Social", href: "https://" }];
                                 setFooterConfig({ ...footerConfig, social: newSocial });
                               }}
-                              className="flex-1 px-4 py-1.5 bg-zinc-950 border border-zinc-800 rounded-xl text-xs text-white"
-                            />
+                              className="px-2.5 py-1 bg-emerald-950/30 hover:bg-emerald-900/50 text-[#52c47c] border border-emerald-900/30 rounded text-[10px] font-black uppercase cursor-pointer"
+                            >
+                              + Add Social
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleSaveFooter(undefined, footerConfig, "All social integrations updated successfully!")}
+                              className="px-2.5 py-1 bg-emerald-950/40 hover:bg-emerald-900/60 text-[#52c47c] border border-emerald-800/50 rounded text-[10px] font-black uppercase transition-all cursor-pointer"
+                            >
+                              Update Section
+                            </button>
                           </div>
-                        ))}
+                        </div>
+                        <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+                          {(footerConfig.social || []).map((s: any, idx: number) => (
+                            <div key={idx} className="flex gap-2 items-center">
+                              <input
+                                type="text"
+                                value={s.platform}
+                                onChange={(e) => {
+                                  const newSocial = [...footerConfig.social];
+                                  newSocial[idx] = { ...s, platform: e.target.value };
+                                  setFooterConfig({ ...footerConfig, social: newSocial });
+                                }}
+                                placeholder="Platform"
+                                className="w-24 px-3 py-1.5 bg-zinc-950 border border-zinc-800 rounded-xl text-xs text-white font-bold"
+                              />
+                              <input
+                                type="text"
+                                value={s.href}
+                                onChange={(e) => {
+                                  const newSocial = [...footerConfig.social];
+                                  newSocial[idx] = { ...s, href: e.target.value };
+                                  setFooterConfig({ ...footerConfig, social: newSocial });
+                                }}
+                                placeholder="Link URL"
+                                className="flex-1 px-3 py-1.5 bg-zinc-950 border border-zinc-800 rounded-xl text-xs text-white"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => handleSaveFooter(undefined, footerConfig, `${s.platform || 'Social link'} updated successfully!`)}
+                                className="px-2.5 py-1.5 bg-emerald-950/40 hover:bg-emerald-900/60 text-[#52c47c] border border-emerald-800/50 rounded-xl text-xs font-bold uppercase cursor-pointer shrink-0"
+                                title="Update this social link"
+                              >
+                                Update
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const newSocial = footerConfig.social.filter((_: any, i: number) => i !== idx);
+                                  const updated = { ...footerConfig, social: newSocial };
+                                  setFooterConfig(updated);
+                                  handleSaveFooter(undefined, updated, `${s.platform || 'Social link'} removed successfully!`);
+                                }}
+                                className="px-2 py-1.5 bg-red-950/30 hover:bg-red-900/50 text-red-400 border border-red-900/35 rounded-xl text-xs cursor-pointer shrink-0"
+                                title="Remove link"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     </div>
 
                     {/* Right Column: Company Overview and Quick Links lists */}
                     <div className="space-y-6">
+                      {/* Company Overview Links */}
                       <div className="border border-zinc-800/50 p-4 rounded-xl bg-zinc-950/20">
-                        <div className="flex justify-between items-center mb-3">
+                        <div className="flex justify-between items-center mb-3 flex-wrap gap-2">
                           <h4 className="text-xs font-black text-[#F3A61E] uppercase tracking-wider">Company Overview Links</h4>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const newLinks = [...(footerConfig.companyOverview || []), { label: "New Link", href: "/" }];
-                              setFooterConfig({ ...footerConfig, companyOverview: newLinks });
-                            }}
-                            className="px-2.5 py-1 bg-emerald-950/30 text-[#52c47c] border border-emerald-900/30 rounded text-[10px] font-black uppercase cursor-pointer"
-                          >
-                            + Add Link
-                          </button>
+                          <div className="flex gap-2">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const newLinks = [...(footerConfig.companyOverview || []), { label: "New Link", href: "/" }];
+                                setFooterConfig({ ...footerConfig, companyOverview: newLinks });
+                              }}
+                              className="px-2.5 py-1 bg-emerald-950/30 hover:bg-emerald-900/50 text-[#52c47c] border border-emerald-900/30 rounded text-[10px] font-black uppercase cursor-pointer"
+                            >
+                              + Add Link
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleSaveFooter(undefined, footerConfig, "Company Overview links updated successfully!")}
+                              className="px-2.5 py-1 bg-emerald-950/40 hover:bg-emerald-900/60 text-[#52c47c] border border-emerald-800/50 rounded text-[10px] font-black uppercase transition-all cursor-pointer"
+                            >
+                              Update Section
+                            </button>
+                          </div>
                         </div>
-                        <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+                        <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
                           {(footerConfig.companyOverview || []).map((link: any, idx: number) => (
                             <div key={idx} className="flex gap-2 items-center">
                               <input
@@ -2991,11 +3104,22 @@ export default function AdminPanelPage() {
                               />
                               <button
                                 type="button"
+                                onClick={() => handleSaveFooter(undefined, footerConfig, `"${link.label || 'Link'}" updated successfully!`)}
+                                className="px-2.5 py-1.5 bg-emerald-950/40 hover:bg-emerald-900/60 text-[#52c47c] border border-emerald-800/50 rounded-xl text-xs font-bold uppercase cursor-pointer shrink-0"
+                                title="Update this link"
+                              >
+                                Update
+                              </button>
+                              <button
+                                type="button"
                                 onClick={() => {
                                   const newLinks = footerConfig.companyOverview.filter((_: any, i: number) => i !== idx);
-                                  setFooterConfig({ ...footerConfig, companyOverview: newLinks });
+                                  const updated = { ...footerConfig, companyOverview: newLinks };
+                                  setFooterConfig(updated);
+                                  handleSaveFooter(undefined, updated, `"${link.label || 'Link'}" deleted successfully!`);
                                 }}
-                                className="px-2 py-1 bg-red-950/30 text-red-400 border border-red-900/35 rounded text-xs"
+                                className="px-2 py-1.5 bg-red-950/30 hover:bg-red-900/50 text-red-400 border border-red-900/35 rounded-xl text-xs cursor-pointer shrink-0"
+                                title="Delete link"
                               >
                                 ✕
                               </button>
@@ -3004,21 +3128,31 @@ export default function AdminPanelPage() {
                         </div>
                       </div>
 
+                      {/* Quick Links */}
                       <div className="border border-zinc-800/50 p-4 rounded-xl bg-zinc-950/20">
-                        <div className="flex justify-between items-center mb-3">
+                        <div className="flex justify-between items-center mb-3 flex-wrap gap-2">
                           <h4 className="text-xs font-black text-[#F3A61E] uppercase tracking-wider">Quick Links</h4>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const newLinks = [...(footerConfig.quickLinks || []), { label: "New Link", href: "/" }];
-                              setFooterConfig({ ...footerConfig, quickLinks: newLinks });
-                            }}
-                            className="px-2.5 py-1 bg-emerald-950/30 text-[#52c47c] border border-emerald-900/30 rounded text-[10px] font-black uppercase cursor-pointer"
-                          >
-                            + Add Link
-                          </button>
+                          <div className="flex gap-2">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const newLinks = [...(footerConfig.quickLinks || []), { label: "New Link", href: "/" }];
+                                setFooterConfig({ ...footerConfig, quickLinks: newLinks });
+                              }}
+                              className="px-2.5 py-1 bg-emerald-950/30 hover:bg-emerald-900/50 text-[#52c47c] border border-emerald-900/30 rounded text-[10px] font-black uppercase cursor-pointer"
+                            >
+                              + Add Link
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleSaveFooter(undefined, footerConfig, "Quick Links updated successfully!")}
+                              className="px-2.5 py-1 bg-emerald-950/40 hover:bg-emerald-900/60 text-[#52c47c] border border-emerald-800/50 rounded text-[10px] font-black uppercase transition-all cursor-pointer"
+                            >
+                              Update Section
+                            </button>
+                          </div>
                         </div>
-                        <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+                        <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
                           {(footerConfig.quickLinks || []).map((link: any, idx: number) => (
                             <div key={idx} className="flex gap-2 items-center">
                               <input
@@ -3045,11 +3179,22 @@ export default function AdminPanelPage() {
                               />
                               <button
                                 type="button"
+                                onClick={() => handleSaveFooter(undefined, footerConfig, `"${link.label || 'Link'}" updated successfully!`)}
+                                className="px-2.5 py-1.5 bg-emerald-950/40 hover:bg-emerald-900/60 text-[#52c47c] border border-emerald-800/50 rounded-xl text-xs font-bold uppercase cursor-pointer shrink-0"
+                                title="Update this link"
+                              >
+                                Update
+                              </button>
+                              <button
+                                type="button"
                                 onClick={() => {
                                   const newLinks = footerConfig.quickLinks.filter((_: any, i: number) => i !== idx);
-                                  setFooterConfig({ ...footerConfig, quickLinks: newLinks });
+                                  const updated = { ...footerConfig, quickLinks: newLinks };
+                                  setFooterConfig(updated);
+                                  handleSaveFooter(undefined, updated, `"${link.label || 'Link'}" deleted successfully!`);
                                 }}
-                                className="px-2 py-1 bg-red-950/30 text-red-400 border border-red-900/35 rounded text-xs"
+                                className="px-2 py-1.5 bg-red-950/30 hover:bg-red-900/50 text-red-400 border border-red-900/35 rounded-xl text-xs cursor-pointer shrink-0"
+                                title="Delete link"
                               >
                                 ✕
                               </button>
@@ -3065,7 +3210,7 @@ export default function AdminPanelPage() {
                       type="submit"
                       className="px-6 py-2.5 bg-[#1E4D2B] hover:bg-[#15381E] text-white text-xs font-black uppercase tracking-wider rounded-xl transition-all cursor-pointer border border-emerald-800/40"
                     >
-                      Save Footer Settings
+                      Save All Footer Settings
                     </button>
                   </div>
                 </form>
