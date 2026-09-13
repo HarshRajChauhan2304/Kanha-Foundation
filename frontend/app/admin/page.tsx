@@ -654,7 +654,7 @@ export default function AdminPanelPage() {
         }
       } else if (activeTab === "Footer") {
         try {
-          const res = await fetch('/api/footer');
+          const res = await fetch('/api/footer', { cache: 'no-store' });
           const data = await res.json();
           if (data && !data.error) {
             setFooterConfig(data);
@@ -791,11 +791,13 @@ export default function AdminPanelPage() {
       const res = await fetch('/api/footer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(footerConfig)
+        body: JSON.stringify(footerConfig),
+        cache: 'no-store'
       });
       const data = await res.json();
       if (data && !data.error) {
         triggerAlert("Footer configuration updated successfully!");
+        setFooterConfig(data);
         fetchData();
       } else {
         triggerAlert(data.error || "Failed to update Footer.");

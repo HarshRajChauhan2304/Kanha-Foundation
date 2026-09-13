@@ -10,7 +10,7 @@ export default function Footer() {
   const [whatsappLink, setWhatsappLink] = useState("");
 
   useEffect(() => {
-    fetch('/api/footer')
+    fetch('/api/footer', { cache: 'no-store' })
       .then(res => res.json())
       .then(data => {
         if (data && !data.error && data.companyOverview && data.quickLinks) {
@@ -19,7 +19,7 @@ export default function Footer() {
       })
       .catch(err => console.error('Footer fetch error', err));
 
-    fetch('/api/page-texts')
+    fetch('/api/page-texts', { cache: 'no-store' })
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {
@@ -45,8 +45,8 @@ export default function Footer() {
               Company Overview
             </h3>
             <div className="space-y-1.5 text-[9px] sm:text-xs font-bold text-white">
-              {(footerData?.companyOverview || []).map((link: any) => (
-                <a key={link.href} href={link.href} className="hover:text-emerald-350 block transition-colors">{link.label}</a>
+              {(footerData?.companyOverview || []).map((link: any, idx: number) => (
+                <a key={`${link.href}-${idx}`} href={link.href} className="hover:text-emerald-350 block transition-colors">{link.label}</a>
               ))}
             </div>
           </div>
@@ -58,8 +58,8 @@ export default function Footer() {
                 Quick Links
               </h3>
               <div className="space-y-1.5 text-[9px] sm:text-xs font-bold text-white">
-                {(footerData?.quickLinks || []).map((link: any) => (
-                  <a key={link.href} href={link.href} className="hover:text-emerald-350 block transition-colors">{link.label}</a>
+                {(footerData?.quickLinks || []).map((link: any, idx: number) => (
+                  <a key={`${link.href}-${idx}`} href={link.href} className="hover:text-emerald-350 block transition-colors">{link.label}</a>
                 ))}
               </div>
             </div>
@@ -88,10 +88,11 @@ export default function Footer() {
 
               {/* Social Icons horizontal row */}
               <div className="flex items-center justify-center md:justify-end gap-3 sm:gap-5 pt-3">
-                {(footerData?.social || []).map((s: any) => {
-                  if (s.platform.toLowerCase() === 'instagram') {
+                {(footerData?.social || []).map((s: any, idx: number) => {
+                  const platform = s?.platform?.toLowerCase() || '';
+                  if (platform === 'instagram') {
                     return (
-                      <a key={s.platform} href={s.href} target="_blank" rel="noopener noreferrer" className="text-white hover:text-emerald-350 transition-colors" aria-label="Instagram">
+                      <a key={`social-${s.platform}-${idx}`} href={s.href} target="_blank" rel="noopener noreferrer" className="text-white hover:text-emerald-350 transition-colors" aria-label="Instagram">
                         <svg className="h-3.5 w-3.5 sm:h-5 sm:w-5 fill-none stroke-current" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
                           <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
                           <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
@@ -100,27 +101,27 @@ export default function Footer() {
                       </a>
                     );
                   }
-                  if (s.platform.toLowerCase() === 'facebook') {
+                  if (platform === 'facebook') {
                     return (
-                      <a key={s.platform} href={s.href} target="_blank" rel="noopener noreferrer" className="text-white hover:text-emerald-350 transition-colors" aria-label="Facebook">
+                      <a key={`social-${s.platform}-${idx}`} href={s.href} target="_blank" rel="noopener noreferrer" className="text-white hover:text-emerald-350 transition-colors" aria-label="Facebook">
                         <svg className="h-3.5 w-3.5 sm:h-5 sm:w-5 fill-current" viewBox="0 0 24 24">
                           <path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c4.56-.93 8-4.96 8-9.75z"/>
                         </svg>
                       </a>
                     );
                   }
-                  if (s.platform.toLowerCase() === 'youtube') {
+                  if (platform === 'youtube') {
                     return (
-                      <a key={s.platform} href={s.href} target="_blank" rel="noopener noreferrer" className="text-white hover:text-emerald-350 transition-colors" aria-label="YouTube">
+                      <a key={`social-${s.platform}-${idx}`} href={s.href} target="_blank" rel="noopener noreferrer" className="text-white hover:text-emerald-350 transition-colors" aria-label="YouTube">
                         <svg className="h-3.5 w-3.5 sm:h-5 sm:w-5 fill-current" viewBox="0 0 24 24">
                           <path d="M23.498 6.163a3.003 3.003 0 00-2.11-2.108C19.53 3.5 12 3.5 12 3.5s-7.53 0-9.388.555A3.003 3.003 0 00.502 6.163C0 8.07 0 12 0 12s0 3.93.502 5.837a3.003 3.003 0 002.11 2.108C4.47 20.5 12 20.5 12 20.5s7.53 0 9.388-.555a3.003 3.003 0 002.11-2.108C24 15.93 24 12 24 12s0-3.93-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
                         </svg>
                       </a>
                     );
                   }
-                  if (s.platform.toLowerCase() === 'linkedin') {
+                  if (platform === 'linkedin') {
                     return (
-                      <a key={s.platform} href={s.href} target="_blank" rel="noopener noreferrer" className="text-white hover:text-emerald-350 transition-colors" aria-label="LinkedIn">
+                      <a key={`social-${s.platform}-${idx}`} href={s.href} target="_blank" rel="noopener noreferrer" className="text-white hover:text-emerald-350 transition-colors" aria-label="LinkedIn">
                         <svg className="h-3.5 w-3.5 sm:h-5 sm:w-5 fill-current" viewBox="0 0 24 24">
                           <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.779-1.75-1.75s.784-1.75 1.75-1.75 1.75.779 1.75 1.75-.784 1.75-1.75 1.75zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
                         </svg>
