@@ -2862,7 +2862,7 @@ export default function AdminPanelPage() {
 
             {activeTab === "Footer" && (
               <div className="space-y-6 p-6 text-left">
-                <form onSubmit={handleSaveFooter} className="bg-zinc-900/40 border border-zinc-800/85 rounded-2xl p-6 space-y-6">
+                <form onSubmit={(e) => handleSaveFooter(e)} className="bg-zinc-900/40 border border-zinc-800/85 rounded-2xl p-6 space-y-6">
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-zinc-800/60">
                     <div>
                       <h3 className="text-lg font-bold text-white">Footer Settings</h3>
@@ -2885,7 +2885,7 @@ export default function AdminPanelPage() {
                           <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider font-black">Footer Logo Image</label>
                           <button
                             type="button"
-                            onClick={() => handleSaveFooter(undefined, footerConfig, "Footer Logo updated successfully!")}
+                            onClick={() => handleSaveFooter(undefined, { logo: footerConfig.logo }, "Footer Logo updated successfully!")}
                             className="px-3 py-1.5 bg-emerald-950/40 hover:bg-emerald-900/60 text-[#52c47c] border border-emerald-800/50 rounded-xl text-xs font-bold uppercase transition-all cursor-pointer shrink-0"
                           >
                             Update Logo
@@ -2923,7 +2923,7 @@ export default function AdminPanelPage() {
                           <h4 className="text-xs font-black text-[#F3A61E] uppercase tracking-wider">Contact Details</h4>
                           <button
                             type="button"
-                            onClick={() => handleSaveFooter(undefined, footerConfig, "Contact details updated successfully!")}
+                            onClick={() => handleSaveFooter(undefined, { contact: footerConfig.contact }, "Contact details updated successfully!")}
                             className="px-2.5 py-1 bg-emerald-950/40 hover:bg-emerald-900/60 text-[#52c47c] border border-emerald-800/50 rounded-lg text-[10px] font-black uppercase transition-all cursor-pointer"
                           >
                             Update Section
@@ -2934,7 +2934,6 @@ export default function AdminPanelPage() {
                           <div className="flex gap-2 items-center">
                             <input
                               type="email"
-                              required
                               value={footerConfig.contact?.email || ""}
                               onChange={(e) => setFooterConfig({
                                 ...footerConfig,
@@ -2944,7 +2943,7 @@ export default function AdminPanelPage() {
                             />
                             <button
                               type="button"
-                              onClick={() => handleSaveFooter(undefined, footerConfig, "Contact Email updated successfully!")}
+                              onClick={() => handleSaveFooter(undefined, { contact: { ...footerConfig.contact, email: footerConfig.contact?.email } }, "Contact Email updated successfully!")}
                               className="px-3 py-2 bg-emerald-950/40 hover:bg-emerald-900/60 text-[#52c47c] border border-emerald-800/50 rounded-xl text-xs font-bold uppercase transition-all cursor-pointer shrink-0"
                             >
                               Update Email
@@ -2956,7 +2955,6 @@ export default function AdminPanelPage() {
                           <div className="flex gap-2 items-center">
                             <input
                               type="text"
-                              required
                               value={footerConfig.contact?.ctaText || ""}
                               onChange={(e) => setFooterConfig({
                                 ...footerConfig,
@@ -2966,7 +2964,7 @@ export default function AdminPanelPage() {
                             />
                             <button
                               type="button"
-                              onClick={() => handleSaveFooter(undefined, footerConfig, "Contact CTA Text updated successfully!")}
+                              onClick={() => handleSaveFooter(undefined, { contact: { ...footerConfig.contact, ctaText: footerConfig.contact?.ctaText } }, "Contact CTA Text updated successfully!")}
                               className="px-3 py-2 bg-emerald-950/40 hover:bg-emerald-900/60 text-[#52c47c] border border-emerald-800/50 rounded-xl text-xs font-bold uppercase transition-all cursor-pointer shrink-0"
                             >
                               Update CTA
@@ -2992,7 +2990,7 @@ export default function AdminPanelPage() {
                             </button>
                             <button
                               type="button"
-                              onClick={() => handleSaveFooter(undefined, footerConfig, "All social integrations updated successfully!")}
+                              onClick={() => handleSaveFooter(undefined, { social: footerConfig.social }, "All social integrations updated successfully!")}
                               className="px-2.5 py-1 bg-emerald-950/40 hover:bg-emerald-900/60 text-[#52c47c] border border-emerald-800/50 rounded text-[10px] font-black uppercase transition-all cursor-pointer"
                             >
                               Update Section
@@ -3026,7 +3024,7 @@ export default function AdminPanelPage() {
                               />
                               <button
                                 type="button"
-                                onClick={() => handleSaveFooter(undefined, footerConfig, `${s.platform || 'Social link'} updated successfully!`)}
+                                onClick={() => handleSaveFooter(undefined, { social: footerConfig.social }, `${s.platform || 'Social link'} updated successfully!`)}
                                 className="px-2.5 py-1.5 bg-emerald-950/40 hover:bg-emerald-900/60 text-[#52c47c] border border-emerald-800/50 rounded-xl text-xs font-bold uppercase cursor-pointer shrink-0"
                                 title="Update this social link"
                               >
@@ -3038,7 +3036,7 @@ export default function AdminPanelPage() {
                                   const newSocial = footerConfig.social.filter((_: any, i: number) => i !== idx);
                                   const updated = { ...footerConfig, social: newSocial };
                                   setFooterConfig(updated);
-                                  handleSaveFooter(undefined, updated, `${s.platform || 'Social link'} removed successfully!`);
+                                  handleSaveFooter(undefined, { social: newSocial }, `${s.platform || 'Social link'} removed successfully!`);
                                 }}
                                 className="px-2 py-1.5 bg-red-950/30 hover:bg-red-900/50 text-red-400 border border-red-900/35 rounded-xl text-xs cursor-pointer shrink-0"
                                 title="Remove link"
@@ -3070,7 +3068,7 @@ export default function AdminPanelPage() {
                             </button>
                             <button
                               type="button"
-                              onClick={() => handleSaveFooter(undefined, footerConfig, "Company Overview links updated successfully!")}
+                              onClick={() => handleSaveFooter(undefined, { companyOverview: footerConfig.companyOverview }, "Company Overview links updated successfully!")}
                               className="px-2.5 py-1 bg-emerald-950/40 hover:bg-emerald-900/60 text-[#52c47c] border border-emerald-800/50 rounded text-[10px] font-black uppercase transition-all cursor-pointer"
                             >
                               Update Section
@@ -3104,7 +3102,7 @@ export default function AdminPanelPage() {
                               />
                               <button
                                 type="button"
-                                onClick={() => handleSaveFooter(undefined, footerConfig, `"${link.label || 'Link'}" updated successfully!`)}
+                                onClick={() => handleSaveFooter(undefined, { companyOverview: footerConfig.companyOverview }, `"${link.label || 'Link'}" updated successfully!`)}
                                 className="px-2.5 py-1.5 bg-emerald-950/40 hover:bg-emerald-900/60 text-[#52c47c] border border-emerald-800/50 rounded-xl text-xs font-bold uppercase cursor-pointer shrink-0"
                                 title="Update this link"
                               >
@@ -3116,7 +3114,7 @@ export default function AdminPanelPage() {
                                   const newLinks = footerConfig.companyOverview.filter((_: any, i: number) => i !== idx);
                                   const updated = { ...footerConfig, companyOverview: newLinks };
                                   setFooterConfig(updated);
-                                  handleSaveFooter(undefined, updated, `"${link.label || 'Link'}" deleted successfully!`);
+                                  handleSaveFooter(undefined, { companyOverview: newLinks }, `"${link.label || 'Link'}" deleted successfully!`);
                                 }}
                                 className="px-2 py-1.5 bg-red-950/30 hover:bg-red-900/50 text-red-400 border border-red-900/35 rounded-xl text-xs cursor-pointer shrink-0"
                                 title="Delete link"
@@ -3145,7 +3143,7 @@ export default function AdminPanelPage() {
                             </button>
                             <button
                               type="button"
-                              onClick={() => handleSaveFooter(undefined, footerConfig, "Quick Links updated successfully!")}
+                              onClick={() => handleSaveFooter(undefined, { quickLinks: footerConfig.quickLinks }, "Quick Links updated successfully!")}
                               className="px-2.5 py-1 bg-emerald-950/40 hover:bg-emerald-900/60 text-[#52c47c] border border-emerald-800/50 rounded text-[10px] font-black uppercase transition-all cursor-pointer"
                             >
                               Update Section
@@ -3179,7 +3177,7 @@ export default function AdminPanelPage() {
                               />
                               <button
                                 type="button"
-                                onClick={() => handleSaveFooter(undefined, footerConfig, `"${link.label || 'Link'}" updated successfully!`)}
+                                onClick={() => handleSaveFooter(undefined, { quickLinks: footerConfig.quickLinks }, `"${link.label || 'Link'}" updated successfully!`)}
                                 className="px-2.5 py-1.5 bg-emerald-950/40 hover:bg-emerald-900/60 text-[#52c47c] border border-emerald-800/50 rounded-xl text-xs font-bold uppercase cursor-pointer shrink-0"
                                 title="Update this link"
                               >
@@ -3191,7 +3189,7 @@ export default function AdminPanelPage() {
                                   const newLinks = footerConfig.quickLinks.filter((_: any, i: number) => i !== idx);
                                   const updated = { ...footerConfig, quickLinks: newLinks };
                                   setFooterConfig(updated);
-                                  handleSaveFooter(undefined, updated, `"${link.label || 'Link'}" deleted successfully!`);
+                                  handleSaveFooter(undefined, { quickLinks: newLinks }, `"${link.label || 'Link'}" deleted successfully!`);
                                 }}
                                 className="px-2 py-1.5 bg-red-950/30 hover:bg-red-900/50 text-red-400 border border-red-900/35 rounded-xl text-xs cursor-pointer shrink-0"
                                 title="Delete link"

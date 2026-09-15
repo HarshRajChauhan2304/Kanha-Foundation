@@ -58,8 +58,24 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
     }
     const footerPath = getFallbackPath('footer.json');
-    await fs.writeFile(footerPath, JSON.stringify(payload, null, 2), 'utf-8');
-    return NextResponse.json(payload, {
+    let existingData = defaultFooter;
+    try {
+      const data = await fs.readFile(footerPath, 'utf-8');
+      existingData = JSON.parse(data);
+    } catch {
+      // ignore, use defaultFooter
+    }
+
+    const updatedData = {
+      ...existingData,
+      ...payload,
+      contact: payload.contact
+        ? { ...(existingData.contact || {}), ...payload.contact }
+        : existingData.contact
+    };
+
+    await fs.writeFile(footerPath, JSON.stringify(updatedData, null, 2), 'utf-8');
+    return NextResponse.json(updatedData, {
       headers: {
         'Cache-Control': 'no-store, max-age=0'
       }
